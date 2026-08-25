@@ -64,12 +64,14 @@ function FoundationModelCard({
   expectedSeconds,
   loadingExplainer,
   note,
+  unavailableExtra,
 }) {
   if (!available && state.status === "idle") {
     return (
       <p className="placeholder-note">
         Not configured on this server yet ({unavailableMessage}). CatBoost predictions still
         work fully.
+        {unavailableExtra}
       </p>
     );
   }
@@ -81,6 +83,7 @@ function FoundationModelCard({
       <p className="placeholder-note">
         Not configured on this server yet ({state.message}). CatBoost predictions still work
         fully.
+        {unavailableExtra}
       </p>
     );
   }
@@ -394,6 +397,16 @@ export default function PredictTab() {
             expectedSeconds={35}
             loadingExplainer="TabFM runs locally on this server's CPU — no GPU here, unlike the Colab benchmarks — so it typically takes 20 to 45 seconds. Still normal past that; the request will resolve or report a clear error, it will not hang silently."
             note="Runs locally on this server's CPU (no GPU here, unlike the Colab benchmarks), so it's slower than the other two models. Live per-request SHAP is not computed for TabFM (too slow) — see the SHAP charts in the Analysis tab."
+            unavailableExtra={
+              <>
+                {" "}
+                TabFM's PyTorch runtime needs more RAM than this site's free hosting tier
+                provides. Clone the repo and run{" "}
+                <code>python scripts/predict_tabfm_local.py scripts/sample_patient.json</code>{" "}
+                from the <code>backend/</code> folder to get a TabFM prediction on your own
+                machine instead.
+              </>
+            }
           />
         </div>
       </section>
