@@ -244,7 +244,9 @@ body {
 }
 
 .field input[type="number"],
+.field input[type="text"],
 .field select {
+  width: 100%;
   padding: 9px 11px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
