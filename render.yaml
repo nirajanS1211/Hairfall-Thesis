@@ -7,14 +7,40 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: TABPFN_TOKEN
-        sync: false
       - key: MONGODB_URI
         sync: false
       - key: FRONTEND_ORIGINS
         value: https://hairfall-thesis-frontend.onrender.com
+      - key: CATBOOST_SERVICE_URL
+        value: https://hairfall-thesis-catboost-backend.onrender.com
+      - key: TABPFN_SERVICE_URL
+        value: https://hairfall-thesis-tabpfn-backend.onrender.com
       - key: TABFM_SERVICE_URL
         value: https://hairfall-thesis-tabfm-backend.onrender.com
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: web
+    name: hairfall-thesis-catboost-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn catboost_service:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: web
+    name: hairfall-thesis-tabpfn-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn tabpfn_service:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: TABPFN_TOKEN
+        sync: false
       - key: PYTHON_VERSION
         value: 3.11.9
 

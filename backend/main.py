@@ -1,22 +1,20 @@
-import json
 import logging
 import os
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Optional
 
 import httpx
 import pandas as pd
-from catboost import CatBoostClassifier
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
 
 import db
 from features import FEATURE_GROUPS, FEATURE_META
 from results import EVALUATION_RESULTS
+from schemas import CLASS_NAMES, PatientInput, PredictionLogRequest
 from scripts.clean_dataset import load_clean_dataset
 
 load_dotenv()
@@ -25,7 +23,6 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("hairfall")
 
 BASE_DIR = Path(__file__).resolve().parent
-MODELS_DIR = BASE_DIR / "models"
 SHAP_DIR = BASE_DIR / "static" / "shap_reference"
 
 app = FastAPI(title="Hair Fall Risk Prediction API")
@@ -44,54 +41,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-with open(MODELS_DIR / "feature_columns.json") as f:
-    FEATURE_COLUMNS: list[str] = json.load(f)
-with open(MODELS_DIR / "class_names.json") as f:
-    CLASS_NAMES: list[str] = json.load(f)
-
+CATBOOST_SERVICE_URL = os.environ.get("CATBOOST_SERVICE_URL", "").rstrip("/")
+TABPFN_SERVICE_URL = os.environ.get("TABPFN_SERVICE_URL", "").rstrip("/")
 TABFM_SERVICE_URL = os.environ.get("TABFM_SERVICE_URL", "").rstrip("/")
-
-cb_model: Optional[CatBoostClassifier] = None
-cb_explainer = None
-X_train_context: Optional[pd.DataFrame] = None
-y_train_context = None
-tabpfn_model = None
-tabpfn_error: Optional[str] = None
-
-
-def _load_models() -> None:
-    """Runs after uvicorn has bound $PORT, so Render's port scan succeeds immediately."""
-    global cb_model, cb_explainer, X_train_context, y_train_context
-    global tabpfn_model, tabpfn_error
-
-    cb_model = CatBoostClassifier()
-    cb_model.load_model(str(MODELS_DIR / "catboost_model_production.cbm"))
-
-    import shap
-
-    cb_explainer = shap.TreeExplainer(cb_model)
-
-    X_train_context = pd.read_csv(MODELS_DIR / "tabpfn_context_X_full.csv")[FEATURE_COLUMNS]
-    y_train_context = pd.read_csv(MODELS_DIR / "tabpfn_context_y_full.csv").iloc[:, 0]
-
-    token = os.environ.get("TABPFN_TOKEN")
-    if not token:
-        tabpfn_error = "TABPFN_TOKEN environment variable is not set."
-        logger.warning(tabpfn_error)
-    else:
-        try:
-            import tabpfn_client
-
-            tabpfn_client.set_access_token(token)
-            from tabpfn_client import TabPFNClassifier
-
-            tabpfn_model = TabPFNClassifier()
-            tabpfn_model.fit(X_train_context, y_train_context)
-            logger.info("TabPFN client configured and fit on full-dataset context.")
-        except Exception as exc:  # noqa: BLE001
-            tabpfn_error = f"Failed to initialize TabPFN client: {exc}"
-            logger.exception(tabpfn_error)
-            tabpfn_model = None
 
 SHAP_IMAGES = {
     "catboost_shap_global": "catboost_shap_global_importance.png",
@@ -120,119 +72,21 @@ _dataset_cache: Optional[pd.DataFrame] = None
 @app.on_event("startup")
 async def on_startup():
     db.init_db()
-    await run_in_threadpool(_load_models)
 
 
-def _bounds(name: str) -> tuple[float, float]:
-    meta = FEATURE_META[name]
-    return meta["hard_min"], meta["hard_max"]
-
-
-class PatientInput(BaseModel):
-    age: float = Field(..., ge=_bounds("age")[0], le=_bounds("age")[1])
-    gender: Literal[0, 1, 2]
-    total_protein: float = Field(..., ge=_bounds("total_protein")[0], le=_bounds("total_protein")[1])
-    calcium: float = Field(..., ge=_bounds("calcium")[0], le=_bounds("calcium")[1])
-    iron: float = Field(..., ge=_bounds("iron")[0], le=_bounds("iron")[1])
-    vitamin_d: float = Field(..., ge=_bounds("vitamin_d")[0], le=_bounds("vitamin_d")[1])
-    alt_liver: float = Field(..., ge=_bounds("alt_liver")[0], le=_bounds("alt_liver")[1])
-    manganese: float = Field(..., ge=_bounds("manganese")[0], le=_bounds("manganese")[1])
-    body_water_content: float = Field(..., ge=_bounds("body_water_content")[0], le=_bounds("body_water_content")[1])
-    stress_level: float = Field(..., ge=_bounds("stress_level")[0], le=_bounds("stress_level")[1])
-    total_keratine: float = Field(..., ge=_bounds("total_keratine")[0], le=_bounds("total_keratine")[1])
-    hair_texture: float = Field(..., ge=_bounds("hair_texture")[0], le=_bounds("hair_texture")[1])
-    family_hair_fall_history: Literal[0, 1]
-    chronic_illness: Literal[0, 1]
-    late_night_sleep: Literal[0, 1]
-    sleep_disturbance: Literal[0, 1]
-    water_reason: Literal[0, 1]
-    chemical_use: Literal[0, 1]
-    anemia: Literal[0, 1]
-    stress: Literal[0, 1]
-
-
-class PredictionLogRequest(BaseModel):
-    input: PatientInput
-    catboost_result: Optional[dict] = None
-    tabpfn_result: Optional[dict] = None
-    tabfm_result: Optional[dict] = None
-
-
-def to_dataframe(data: PatientInput) -> pd.DataFrame:
-    row = data.model_dump()
-    return pd.DataFrame([row])[FEATURE_COLUMNS]
-
-
-def compute_warnings(data: PatientInput) -> list[str]:
-    warnings = []
-    row = data.model_dump()
-    for name, meta in FEATURE_META.items():
-        if meta["type"] != "number":
-            continue
-        value = row[name]
-        lo, hi = meta["train_min"], meta["train_max"]
-        if value < lo or value > hi:
-            warnings.append(
-                f"{meta['label']} = {value} is outside the training data range "
-                f"({lo}–{hi}); this prediction may be less reliable."
-            )
-    return warnings
-
-
-def predict_catboost(data: PatientInput) -> dict:
-    if cb_model is None or cb_explainer is None:
-        raise HTTPException(status_code=503, detail="Models are still loading, try again shortly.")
-    X = to_dataframe(data)
-    pred_idx = int(cb_model.predict(X)[0][0])
-    proba = cb_model.predict_proba(X)[0]
-
-    shap_vals = cb_explainer.shap_values(X)
-    class_shap = shap_vals[0, :, pred_idx]
-    ranked = sorted(zip(FEATURE_COLUMNS, class_shap), key=lambda x: abs(x[1]), reverse=True)[:5]
-    top_features = [
-        {
-            "feature": name,
-            "label": FEATURE_META[name]["label"],
-            "shap": round(float(val), 4),
-            "direction": "increases" if val > 0 else "decreases",
-        }
-        for name, val in ranked
-    ]
-
-    return {
-        "prediction": CLASS_NAMES[pred_idx],
-        "confidence": {CLASS_NAMES[i]: round(float(p), 4) for i, p in enumerate(proba)},
-        "top_features": top_features,
-        "warnings": compute_warnings(data),
-    }
-
-
-def predict_tabpfn(data: PatientInput) -> dict:
-    if tabpfn_model is None:
-        raise HTTPException(status_code=503, detail=tabpfn_error or "TabPFN is not available on this server.")
-    X = to_dataframe(data)
-    pred_idx = int(tabpfn_model.predict(X)[0])
-    proba = tabpfn_model.predict_proba(X)[0]
-    return {
-        "prediction": CLASS_NAMES[pred_idx],
-        "confidence": {CLASS_NAMES[i]: round(float(p), 4) for i, p in enumerate(proba)},
-        "warnings": compute_warnings(data),
-    }
-
-
-async def predict_tabfm(data: PatientInput) -> dict:
-    if not TABFM_SERVICE_URL:
-        raise HTTPException(status_code=503, detail="TABFM_SERVICE_URL is not configured.")
+async def _proxy_predict(service_url: str, service_name: str, path: str, data: PatientInput) -> dict:
+    if not service_url:
+        raise HTTPException(status_code=503, detail=f"{service_name} service is not configured.")
     async with httpx.AsyncClient(timeout=60.0) as client:
         try:
-            resp = await client.post(f"{TABFM_SERVICE_URL}/api/predict/tabfm", json=data.model_dump())
+            resp = await client.post(f"{service_url}{path}", json=data.model_dump())
         except httpx.RequestError as exc:
-            raise HTTPException(status_code=502, detail=f"TabFM service unreachable: {exc}") from exc
+            raise HTTPException(status_code=502, detail=f"{service_name} service unreachable: {exc}") from exc
     if resp.status_code >= 400:
         try:
-            detail = resp.json().get("detail", "TabFM service error.")
+            detail = resp.json().get("detail", f"{service_name} service error.")
         except ValueError:
-            detail = "TabFM service error."
+            detail = f"{service_name} service error."
         raise HTTPException(status_code=resp.status_code, detail=detail)
     return resp.json()
 
@@ -246,9 +100,8 @@ async def root():
 async def health():
     return {
         "status": "ok",
-        "catboost": cb_model is not None,
-        "tabpfn": tabpfn_model is not None,
-        "tabpfn_error": tabpfn_error,
+        "catboost_configured": bool(CATBOOST_SERVICE_URL),
+        "tabpfn_configured": bool(TABPFN_SERVICE_URL),
         "tabfm_configured": bool(TABFM_SERVICE_URL),
         "mongodb": db.get_db() is not None,
         "mongodb_error": db.connection_error,
@@ -261,8 +114,8 @@ async def api_meta():
         "feature_groups": FEATURE_GROUPS,
         "feature_meta": FEATURE_META,
         "class_names": CLASS_NAMES,
-        "tabpfn_available": tabpfn_model is not None,
-        "tabpfn_error": tabpfn_error,
+        "tabpfn_available": bool(TABPFN_SERVICE_URL),
+        "tabpfn_error": None if TABPFN_SERVICE_URL else "TABPFN_SERVICE_URL is not configured.",
         "tabfm_available": bool(TABFM_SERVICE_URL),
         "tabfm_error": None if TABFM_SERVICE_URL else "TABFM_SERVICE_URL is not configured.",
         "shap_images": {k: f"/static/shap_reference/{v}" for k, v in SHAP_IMAGES.items()},
@@ -272,35 +125,17 @@ async def api_meta():
 
 @app.post("/api/predict/catboost")
 async def api_predict_catboost(data: PatientInput):
-    try:
-        return await run_in_threadpool(predict_catboost, data)
-    except HTTPException:
-        raise
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("CatBoost prediction failed")
-        raise HTTPException(status_code=500, detail=f"CatBoost prediction failed: {exc}") from exc
+    return await _proxy_predict(CATBOOST_SERVICE_URL, "CatBoost", "/api/predict/catboost", data)
 
 
 @app.post("/api/predict/tabpfn")
 async def api_predict_tabpfn(data: PatientInput):
-    try:
-        return await run_in_threadpool(predict_tabpfn, data)
-    except HTTPException:
-        raise
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("TabPFN prediction failed")
-        raise HTTPException(status_code=502, detail=f"TabPFN cloud request failed: {exc}") from exc
+    return await _proxy_predict(TABPFN_SERVICE_URL, "TabPFN", "/api/predict/tabpfn", data)
 
 
 @app.post("/api/predict/tabfm")
 async def api_predict_tabfm(data: PatientInput):
-    try:
-        return await predict_tabfm(data)
-    except HTTPException:
-        raise
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("TabFM prediction failed")
-        raise HTTPException(status_code=502, detail=f"TabFM prediction failed: {exc}") from exc
+    return await _proxy_predict(TABFM_SERVICE_URL, "TabFM", "/api/predict/tabfm", data)
 
 
 @app.post("/api/predictions/log")
