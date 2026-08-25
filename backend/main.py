@@ -6,11 +6,13 @@ from typing import Optional
 import httpx
 import pandas as pd
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
+import auth
 import db
 from features import FEATURE_GROUPS, FEATURE_META
 from results import EVALUATION_RESULTS
@@ -68,6 +70,32 @@ SHAP_IMAGES_AVAILABLE = {key: (SHAP_DIR / name).exists() for key, name in SHAP_I
 
 _dataset_cache: Optional[pd.DataFrame] = None
 
+DEFAULT_SITE_SETTINGS = {
+    "university_line": "Tribhuvan University · Central Department of CSIT · M.Sc. CSIT Dissertation",
+    "submitted_by": "Nirajan Shahi · Roll No. 49/079",
+    "supervised_by": "Asst. Prof. Jagadish Bhatta",
+}
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class SiteSettingsPayload(BaseModel):
+    university_line: str
+    submitted_by: str
+    supervised_by: str
+
+
+def _require_auth(authorization: Optional[str] = Header(None)) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header.")
+    email = auth.verify_token(authorization.removeprefix("Bearer ").strip())
+    if email is None:
+        raise HTTPException(status_code=401, detail="Session expired or invalid, please log in again.")
+    return email
+
 
 @app.on_event("startup")
 async def on_startup():
@@ -123,6 +151,26 @@ async def api_meta():
     }
 
 
+@app.post("/api/auth/login")
+async def api_login(payload: LoginRequest):
+    user = await run_in_threadpool(db.get_user_by_email, payload.email)
+    if user is None or not auth.verify_password(payload.password, user.get("password_hash", "")):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    return {"token": auth.create_token(user["email"]), "email": user["email"]}
+
+
+@app.get("/api/site-settings")
+async def api_get_site_settings():
+    stored = await run_in_threadpool(db.get_site_settings)
+    return {**DEFAULT_SITE_SETTINGS, **(stored or {})}
+
+
+@app.put("/api/site-settings")
+async def api_update_site_settings(payload: SiteSettingsPayload, _email: str = Depends(_require_auth)):
+    await run_in_threadpool(db.update_site_settings, payload.model_dump())
+    return {**DEFAULT_SITE_SETTINGS, **payload.model_dump()}
+
+
 @app.post("/api/predict/catboost")
 async def api_predict_catboost(data: PatientInput):
     return await _proxy_predict(CATBOOST_SERVICE_URL, "CatBoost", "/api/predict/catboost", data)
@@ -156,7 +204,7 @@ async def api_log_prediction(payload: PredictionLogRequest):
 async def api_prediction_history(limit: int = 20, skip: int = 0):
     if db.get_db() is None:
         raise HTTPException(status_code=503, detail=db.connection_error or "MongoDB is not configured.")
-    limit = max(1, min(limit, 100))
+    limit = max(1, min(limit, 500))
     items = await run_in_threadpool(db.get_prediction_history, limit, skip)
     total = await run_in_threadpool(db.get_prediction_count)
     for item in items:

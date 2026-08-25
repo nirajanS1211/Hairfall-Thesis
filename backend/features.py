@@ -1,7 +1,7 @@
 FEATURE_GROUPS = [
     {
         "title": "Demographics",
-        "fields": ["age", "gender"],
+        "fields": ["name", "age", "gender"],
     },
     {
         "title": "Blood & Lab Values",
@@ -24,6 +24,9 @@ FEATURE_GROUPS = [
 ]
 
 FEATURE_META = {
+    "name": {
+        "label": "Full Name", "type": "text",
+    },
     "age": {
         "label": "Age", "unit": "years", "type": "number",
         "hard_min": 1, "hard_max": 120, "train_min": 20, "train_max": 55, "step": 1,

@@ -16,13 +16,15 @@ async function getJson(path) {
   return handleResponse(res);
 }
 
-async function postJson(path, payload, { timeoutMs = 20000 } = {}) {
+async function postJson(path, payload, { timeoutMs = 20000, method = "POST", token } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch(`${API_URL}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method,
+      headers,
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
@@ -49,3 +51,9 @@ export const predictTabpfn = (payload) =>
 export const predictTabfm = (payload) =>
   postJson("/api/predict/tabfm", payload, { timeoutMs: 60000 });
 export const logPrediction = (payload) => postJson("/api/predictions/log", payload, { timeoutMs: 10000 });
+
+export const fetchSiteSettings = () => getJson("/api/site-settings");
+export const login = (email, password) =>
+  postJson("/api/auth/login", { email, password }, { timeoutMs: 10000 });
+export const updateSiteSettings = (payload, token) =>
+  postJson("/api/site-settings", payload, { timeoutMs: 10000, method: "PUT", token });

@@ -139,6 +139,10 @@ export default function PredictTab() {
       if (raw === "" || raw === undefined || raw === null) {
         throw new Error(`${fmeta.label} is required.`);
       }
+      if (fmeta.type === "text") {
+        payload[name] = String(raw).trim();
+        continue;
+      }
       const num = fmeta.type === "number" ? parseFloat(raw) : parseInt(raw, 10);
       if (Number.isNaN(num)) throw new Error(`${fmeta.label} has an invalid value.`);
       payload[name] = num;
@@ -146,13 +150,43 @@ export default function PredictTab() {
     return payload;
   }
 
+  function fillFromHistory(input) {
+    const next = {};
+    for (const [name, fmeta] of Object.entries(meta.feature_meta)) {
+      const v = input?.[name];
+      next[name] = v === undefined || v === null ? (fmeta.type === "bool" ? "0" : "") : String(v);
+    }
+    setValues(next);
+    setCbState({ status: "idle" });
+    setTpState({ status: "idle" });
+    setTfState({ status: "idle" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const HISTORY_PAGE_SIZE = 20;
+
   async function loadHistory() {
     setHistory((h) => ({ ...h, status: "loading" }));
     try {
-      const data = await fetchHistory(10, 0);
+      const data = await fetchHistory(HISTORY_PAGE_SIZE, 0);
       setHistory({ status: "done", items: data.items, total: data.total, error: null });
     } catch (err) {
       setHistory({ status: "error", items: [], total: 0, error: err.message });
+    }
+  }
+
+  async function loadMoreHistory() {
+    setHistory((h) => ({ ...h, status: "loading-more" }));
+    try {
+      const data = await fetchHistory(HISTORY_PAGE_SIZE, history.items.length);
+      setHistory((h) => ({
+        status: "done",
+        items: [...h.items, ...data.items],
+        total: data.total,
+        error: null,
+      }));
+    } catch (err) {
+      setHistory((h) => ({ ...h, status: "done", error: err.message }));
     }
   }
 
@@ -284,6 +318,17 @@ export default function PredictTab() {
                         {fmeta.label}
                         {fmeta.unit && <span className="hint"> ({fmeta.unit})</span>}
                       </label>
+
+                      {fmeta.type === "text" && (
+                        <input
+                          type="text"
+                          id={`f_${name}`}
+                          required
+                          placeholder="e.g. Jane Doe"
+                          value={values[name] ?? ""}
+                          onChange={(e) => updateField(name, e.target.value)}
+                        />
+                      )}
 
                       {fmeta.type === "number" && (
                         <>
@@ -422,56 +467,82 @@ export default function PredictTab() {
             {history.status === "error" && (
               <p className="placeholder-note">History unavailable: {history.error}</p>
             )}
-            {history.status === "done" && history.items.length === 0 && (
-              <p className="placeholder-note">No predictions logged yet.</p>
-            )}
-            {history.status === "done" && history.items.length > 0 && (
-              <table className="history-table">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Age</th>
-                    <th>CatBoost</th>
-                    <th>TabPFN</th>
-                    <th>TabFM</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.items.map((item, i) => (
-                    <tr key={i}>
-                      <td>{item.timestamp ? new Date(item.timestamp).toLocaleString() : "—"}</td>
-                      <td>{item.input?.age ?? "—"}</td>
-                      <td>
-                        {item.catboost_result ? (
-                          <span className={`badge-sm ${item.catboost_result.prediction}`}>
-                            {item.catboost_result.prediction}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td>
-                        {item.tabpfn_result ? (
-                          <span className={`badge-sm ${item.tabpfn_result.prediction}`}>
-                            {item.tabpfn_result.prediction}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td>
-                        {item.tabfm_result ? (
-                          <span className={`badge-sm ${item.tabfm_result.prediction}`}>
-                            {item.tabfm_result.prediction}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {(history.status === "done" || history.status === "loading-more") &&
+              history.items.length === 0 && <p className="placeholder-note">No predictions logged yet.</p>}
+            {history.error && <p className="placeholder-note">Could not load more: {history.error}</p>}
+            {history.items.length > 0 && (
+              <>
+                <p className="placeholder-note" style={{ marginBottom: 10 }}>
+                  Click any row to refill the form with that submission and predict again.
+                </p>
+                <div className="table-scroll">
+                  <table className="history-table">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>CatBoost</th>
+                        <th>TabPFN</th>
+                        <th>TabFM</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.items.map((item, i) => (
+                        <tr
+                          key={i}
+                          className="history-row-clickable"
+                          onClick={() => fillFromHistory(item.input)}
+                        >
+                          <td>{item.timestamp ? new Date(item.timestamp).toLocaleString() : "—"}</td>
+                          <td>{item.input?.name ?? "—"}</td>
+                          <td>{item.input?.age ?? "—"}</td>
+                          <td>
+                            {item.catboost_result ? (
+                              <span className={`badge-sm ${item.catboost_result.prediction}`}>
+                                {item.catboost_result.prediction}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td>
+                            {item.tabpfn_result ? (
+                              <span className={`badge-sm ${item.tabpfn_result.prediction}`}>
+                                {item.tabpfn_result.prediction}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td>
+                            {item.tabfm_result ? (
+                              <span className={`badge-sm ${item.tabfm_result.prediction}`}>
+                                {item.tabfm_result.prediction}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {history.items.length < history.total && (
+                  <button
+                    type="button"
+                    className="link-btn"
+                    style={{ marginTop: 12 }}
+                    disabled={history.status === "loading-more"}
+                    onClick={loadMoreHistory}
+                  >
+                    {history.status === "loading-more"
+                      ? "Loading…"
+                      : `Load more (${history.items.length} of ${history.total})`}
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}

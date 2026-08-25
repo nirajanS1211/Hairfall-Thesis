@@ -9,6 +9,8 @@ services:
     envVars:
       - key: MONGODB_URI
         sync: false
+      - key: SESSION_SECRET
+        sync: false
       - key: FRONTEND_ORIGINS
         value: https://hairfall-thesis-frontend.onrender.com
       - key: CATBOOST_SERVICE_URL

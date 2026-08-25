@@ -17,6 +17,9 @@ logger = logging.getLogger("hairfall.db")
 DB_NAME = "hairfall"
 DATASET_COLLECTION = "dataset"
 PREDICTIONS_COLLECTION = "predictions"
+USERS_COLLECTION = "users"
+SETTINGS_COLLECTION = "site_settings"
+SETTINGS_DOC_ID = "default"
 
 _client: Optional[MongoClient] = None
 _db: Optional[Database] = None
@@ -72,6 +75,30 @@ def get_prediction_history(limit: int = 20, skip: int = 0) -> list[dict]:
         .limit(limit)
     )
     return list(cursor)
+
+
+def get_user_by_email(email: str) -> Optional[dict]:
+    database = get_db()
+    if database is None:
+        return None
+    return database[USERS_COLLECTION].find_one({"email": email.lower().strip()})
+
+
+def get_site_settings() -> Optional[dict]:
+    database = get_db()
+    if database is None:
+        return None
+    doc = database[SETTINGS_COLLECTION].find_one({"_id": SETTINGS_DOC_ID})
+    if doc:
+        doc.pop("_id", None)
+    return doc
+
+
+def update_site_settings(data: dict) -> None:
+    database = get_db()
+    if database is None:
+        raise RuntimeError("MongoDB is not configured.")
+    database[SETTINGS_COLLECTION].update_one({"_id": SETTINGS_DOC_ID}, {"$set": data}, upsert=True)
 
 
 def get_prediction_count() -> int:

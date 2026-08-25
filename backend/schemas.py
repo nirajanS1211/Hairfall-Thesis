@@ -22,6 +22,7 @@ def _bounds(name: str) -> tuple[float, float]:
 
 
 class PatientInput(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
     age: float = Field(..., ge=_bounds("age")[0], le=_bounds("age")[1])
     gender: Literal[0, 1, 2]
     total_protein: float = Field(..., ge=_bounds("total_protein")[0], le=_bounds("total_protein")[1])
