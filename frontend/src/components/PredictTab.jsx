@@ -313,7 +313,7 @@ export default function PredictTab() {
                 {group.fields.map((name) => {
                   const fmeta = meta.feature_meta[name];
                   return (
-                    <div className="field" key={name}>
+                    <div className={fmeta.type === "bool" ? "field field-compact" : "field"} key={name}>
                       <label htmlFor={`f_${name}`}>
                         {fmeta.label}
                         {fmeta.unit && <span className="hint"> ({fmeta.unit})</span>}

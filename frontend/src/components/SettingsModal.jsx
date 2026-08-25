@@ -49,7 +49,7 @@ export default function SettingsModal({ open, onClose, token, email, settings, o
 
         {!token ? (
           <form onSubmit={handleLogin}>
-            <h2>Sign in to edit dissertation details</h2>
+            <h2>Sign in</h2>
             {error && <p className="modal-error">{error}</p>}
             <div className="field">
               <label htmlFor="login-email">Email</label>
