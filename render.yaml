@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: hairfall-backend
+    name: hairfall-thesis-backend
     runtime: python
     plan: free
     rootDir: backend
@@ -12,14 +12,14 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: FRONTEND_ORIGINS
-        value: https://hairfall-frontend.onrender.com
+        value: https://hairfall-thesis-frontend.onrender.com
       - key: TABFM_SERVICE_URL
-        value: https://hairfall-tabfm-backend.onrender.com
+        value: https://hairfall-thesis-tabfm-backend.onrender.com
       - key: PYTHON_VERSION
         value: 3.11.9
 
   - type: web
-    name: hairfall-tabfm-backend
+    name: hairfall-thesis-tabfm-backend
     runtime: python
     plan: free
     rootDir: backend
@@ -30,14 +30,14 @@ services:
         value: 3.11.9
 
   - type: web
-    name: hairfall-frontend
+    name: hairfall-thesis-frontend
     runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://hairfall-backend.onrender.com
+        value: https://hairfall-thesis-backend.onrender.com
     routes:
       - type: rewrite
         source: /*
