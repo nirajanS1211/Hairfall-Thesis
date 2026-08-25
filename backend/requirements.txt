@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+httpx
 catboost
 tabpfn-client
 tabfm[pytorch]

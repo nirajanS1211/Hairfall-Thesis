@@ -13,6 +13,19 @@ services:
         sync: false
       - key: FRONTEND_ORIGINS
         value: https://hairfall-frontend.onrender.com
+      - key: TABFM_SERVICE_URL
+        value: https://hairfall-tabfm-backend.onrender.com
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: web
+    name: hairfall-tabfm-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn tabfm_service:app --host 0.0.0.0 --port $PORT
+    envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
 

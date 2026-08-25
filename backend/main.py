@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Literal, Optional
 
+import httpx
 import pandas as pd
 from catboost import CatBoostClassifier
 from dotenv import load_dotenv
@@ -48,22 +49,20 @@ with open(MODELS_DIR / "feature_columns.json") as f:
 with open(MODELS_DIR / "class_names.json") as f:
     CLASS_NAMES: list[str] = json.load(f)
 
+TABFM_SERVICE_URL = os.environ.get("TABFM_SERVICE_URL", "").rstrip("/")
+
 cb_model: Optional[CatBoostClassifier] = None
 cb_explainer = None
 X_train_context: Optional[pd.DataFrame] = None
 y_train_context = None
 tabpfn_model = None
 tabpfn_error: Optional[str] = None
-X_train_tabfm: Optional[pd.DataFrame] = None
-y_train_tabfm = None
-tabfm_model = None
-tabfm_error: Optional[str] = None
 
 
 def _load_models() -> None:
     """Runs after uvicorn has bound $PORT, so Render's port scan succeeds immediately."""
     global cb_model, cb_explainer, X_train_context, y_train_context
-    global tabpfn_model, tabpfn_error, X_train_tabfm, y_train_tabfm, tabfm_model, tabfm_error
+    global tabpfn_model, tabpfn_error
 
     cb_model = CatBoostClassifier()
     cb_model.load_model(str(MODELS_DIR / "catboost_model_production.cbm"))
@@ -93,23 +92,6 @@ def _load_models() -> None:
             tabpfn_error = f"Failed to initialize TabPFN client: {exc}"
             logger.exception(tabpfn_error)
             tabpfn_model = None
-
-    X_train_tabfm = pd.read_csv(MODELS_DIR / "tabfm_500row_context_X.csv")[FEATURE_COLUMNS]
-    y_train_tabfm = pd.read_csv(MODELS_DIR / "tabfm_500row_context_y.csv").iloc[:, 0]
-
-    try:
-        from tabfm import TabFMClassifier
-        from tabfm import tabfm_v1_0_0_pytorch as tabfm_v1_0_0
-
-        tabfm_base_model = tabfm_v1_0_0.load()
-        tabfm_model = TabFMClassifier(model=tabfm_base_model, n_estimators=1)
-        tabfm_model.fit(X_train_tabfm, y_train_tabfm)
-        tabfm_model.predict(X_train_tabfm.iloc[[0]])
-        logger.info("TabFM loaded, fit on 500-row context, and warmed up.")
-    except Exception as exc:  # noqa: BLE001
-        tabfm_error = f"Failed to initialize TabFM: {exc}"
-        logger.exception(tabfm_error)
-        tabfm_model = None
 
 SHAP_IMAGES = {
     "catboost_shap_global": "catboost_shap_global_importance.png",
@@ -238,17 +220,21 @@ def predict_tabpfn(data: PatientInput) -> dict:
     }
 
 
-def predict_tabfm(data: PatientInput) -> dict:
-    if tabfm_model is None:
-        raise HTTPException(status_code=503, detail=tabfm_error or "TabFM is not available on this server.")
-    X = to_dataframe(data)
-    pred_idx = int(tabfm_model.predict(X)[0])
-    proba = tabfm_model.predict_proba(X)[0]
-    return {
-        "prediction": CLASS_NAMES[pred_idx],
-        "confidence": {CLASS_NAMES[i]: round(float(p), 4) for i, p in enumerate(proba)},
-        "warnings": compute_warnings(data),
-    }
+async def predict_tabfm(data: PatientInput) -> dict:
+    if not TABFM_SERVICE_URL:
+        raise HTTPException(status_code=503, detail="TABFM_SERVICE_URL is not configured.")
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            resp = await client.post(f"{TABFM_SERVICE_URL}/api/predict/tabfm", json=data.model_dump())
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=502, detail=f"TabFM service unreachable: {exc}") from exc
+    if resp.status_code >= 400:
+        try:
+            detail = resp.json().get("detail", "TabFM service error.")
+        except ValueError:
+            detail = "TabFM service error."
+        raise HTTPException(status_code=resp.status_code, detail=detail)
+    return resp.json()
 
 
 @app.get("/")
@@ -263,8 +249,7 @@ async def health():
         "catboost": cb_model is not None,
         "tabpfn": tabpfn_model is not None,
         "tabpfn_error": tabpfn_error,
-        "tabfm": tabfm_model is not None,
-        "tabfm_error": tabfm_error,
+        "tabfm_configured": bool(TABFM_SERVICE_URL),
         "mongodb": db.get_db() is not None,
         "mongodb_error": db.connection_error,
     }
@@ -278,8 +263,8 @@ async def api_meta():
         "class_names": CLASS_NAMES,
         "tabpfn_available": tabpfn_model is not None,
         "tabpfn_error": tabpfn_error,
-        "tabfm_available": tabfm_model is not None,
-        "tabfm_error": tabfm_error,
+        "tabfm_available": bool(TABFM_SERVICE_URL),
+        "tabfm_error": None if TABFM_SERVICE_URL else "TABFM_SERVICE_URL is not configured.",
         "shap_images": {k: f"/static/shap_reference/{v}" for k, v in SHAP_IMAGES.items()},
         "shap_images_available": SHAP_IMAGES_AVAILABLE,
     }
@@ -310,7 +295,7 @@ async def api_predict_tabpfn(data: PatientInput):
 @app.post("/api/predict/tabfm")
 async def api_predict_tabfm(data: PatientInput):
     try:
-        return await run_in_threadpool(predict_tabfm, data)
+        return await predict_tabfm(data)
     except HTTPException:
         raise
     except Exception as exc:  # noqa: BLE001
