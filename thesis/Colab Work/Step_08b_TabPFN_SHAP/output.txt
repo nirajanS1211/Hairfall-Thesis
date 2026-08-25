@@ -1,0 +1,1 @@
+TabPFN SHAP computed via KernelExplainer (30 test samples, 800-row reduced context).

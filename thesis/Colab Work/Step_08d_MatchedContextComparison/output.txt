@@ -1,0 +1,14 @@
+=== Matched 500-Row Context Comparison ===
+CatBoost:  Acc=0.6964, F1=0.6768
+TabPFN:    Acc=0.7765, F1=0.7691
+TabFM:     Acc=0.7788, F1=0.7715
+
+=== Matched 100-Row Context Comparison (earlier run) ===
+CatBoost:  Acc=0.6053, F1=0.5745
+TabPFN:    Acc=0.7154, F1=0.7062
+TabFM:     Acc=0.7441, F1=0.7363
+
+=== Full-Context Reference ===
+CatBoost:  Acc=0.7851, F1=0.7763  (17,284 rows)
+TabPFN:    Acc=0.7857, F1=0.7787  (17,284 rows)
+TabFM:     Acc=0.7788, F1=0.7715  (500 rows)

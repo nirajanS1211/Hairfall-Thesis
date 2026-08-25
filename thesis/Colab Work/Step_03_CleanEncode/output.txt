@@ -1,0 +1,16 @@
+Gender value counts:
+gender
+1    12109
+0     9485
+2       12
+Name: count, dtype: int64
+
+X shape: (21606, 20)
+y shape: (21606,)
+
+Class distribution:
+hair_fall
+0    9723
+1    7562
+2    4321
+Name: count, dtype: int64

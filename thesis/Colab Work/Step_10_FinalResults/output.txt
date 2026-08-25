@@ -1,0 +1,9 @@
+   Model  Training_Context  Accuracy  Macro_Precision  Macro_Recall  Macro_F1  ROC_AUC
+CatBoost             17284  0.785053         0.791512      0.766157  0.776312 0.918900
+  TabPFN             17284  0.785747         0.787465      0.772167  0.778671 0.923204
+   TabFM               500  0.778806         0.790426      0.760847  0.771487 0.918034
+
+        Comparison  McNemar_Statistic  p_value  Significant
+CatBoost vs TabPFN           0.014652 0.903655        False
+ CatBoost vs TabFM           1.652812 0.198577        False
+   TabPFN vs TabFM           2.579755 0.108238        False

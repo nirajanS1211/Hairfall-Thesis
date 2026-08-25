@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+catboost
+tabpfn-client
+tabfm[pytorch]
+safetensors
+shap
+pandas
+numpy
+python-multipart
+python-dotenv
+pymongo

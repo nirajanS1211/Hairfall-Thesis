@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: hairfall-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: TABPFN_TOKEN
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: FRONTEND_ORIGINS
+        value: https://hairfall-frontend.onrender.com
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: web
+    name: hairfall-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://hairfall-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

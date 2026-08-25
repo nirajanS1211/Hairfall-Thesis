@@ -1,0 +1,5 @@
+df = pd.read_csv("/kaggle/input/datasets/nirajanshahi/hairfall/data.csv")
+print("Shape:", df.shape)
+print("Duplicates:", df.duplicated().sum())
+print("Missing values:\n", df.isnull().sum()[df.isnull().sum() > 0])
+print("\nhair_fall distribution:\n", df["hair_fall"].value_counts().sort_index())
