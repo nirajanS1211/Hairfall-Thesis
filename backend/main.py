@@ -48,57 +48,68 @@ with open(MODELS_DIR / "feature_columns.json") as f:
 with open(MODELS_DIR / "class_names.json") as f:
     CLASS_NAMES: list[str] = json.load(f)
 
-cb_model = CatBoostClassifier()
-cb_model.load_model(str(MODELS_DIR / "catboost_model_production.cbm"))
-
-import shap  # noqa: E402
-
-cb_explainer = shap.TreeExplainer(cb_model)
-
-X_train_context = pd.read_csv(MODELS_DIR / "tabpfn_context_X_full.csv")[FEATURE_COLUMNS]
-y_train_context = pd.read_csv(MODELS_DIR / "tabpfn_context_y_full.csv").iloc[:, 0]
-
+cb_model: Optional[CatBoostClassifier] = None
+cb_explainer = None
+X_train_context: Optional[pd.DataFrame] = None
+y_train_context = None
 tabpfn_model = None
 tabpfn_error: Optional[str] = None
-
-token = os.environ.get("TABPFN_TOKEN")
-if not token:
-    tabpfn_error = "TABPFN_TOKEN environment variable is not set."
-    logger.warning(tabpfn_error)
-else:
-    try:
-        import tabpfn_client
-
-        tabpfn_client.set_access_token(token)
-        from tabpfn_client import TabPFNClassifier
-
-        tabpfn_model = TabPFNClassifier()
-        tabpfn_model.fit(X_train_context, y_train_context)
-        logger.info("TabPFN client configured and fit on full-dataset context.")
-    except Exception as exc:  # noqa: BLE001
-        tabpfn_error = f"Failed to initialize TabPFN client: {exc}"
-        logger.exception(tabpfn_error)
-        tabpfn_model = None
-
-X_train_tabfm = pd.read_csv(MODELS_DIR / "tabfm_500row_context_X.csv")[FEATURE_COLUMNS]
-y_train_tabfm = pd.read_csv(MODELS_DIR / "tabfm_500row_context_y.csv").iloc[:, 0]
-
+X_train_tabfm: Optional[pd.DataFrame] = None
+y_train_tabfm = None
 tabfm_model = None
 tabfm_error: Optional[str] = None
 
-try:
-    from tabfm import TabFMClassifier
-    from tabfm import tabfm_v1_0_0_pytorch as tabfm_v1_0_0
 
-    tabfm_base_model = tabfm_v1_0_0.load()
-    tabfm_model = TabFMClassifier(model=tabfm_base_model, n_estimators=1)
-    tabfm_model.fit(X_train_tabfm, y_train_tabfm)
-    tabfm_model.predict(X_train_tabfm.iloc[[0]])
-    logger.info("TabFM loaded, fit on 500-row context, and warmed up.")
-except Exception as exc:  # noqa: BLE001
-    tabfm_error = f"Failed to initialize TabFM: {exc}"
-    logger.exception(tabfm_error)
-    tabfm_model = None
+def _load_models() -> None:
+    """Runs after uvicorn has bound $PORT, so Render's port scan succeeds immediately."""
+    global cb_model, cb_explainer, X_train_context, y_train_context
+    global tabpfn_model, tabpfn_error, X_train_tabfm, y_train_tabfm, tabfm_model, tabfm_error
+
+    cb_model = CatBoostClassifier()
+    cb_model.load_model(str(MODELS_DIR / "catboost_model_production.cbm"))
+
+    import shap
+
+    cb_explainer = shap.TreeExplainer(cb_model)
+
+    X_train_context = pd.read_csv(MODELS_DIR / "tabpfn_context_X_full.csv")[FEATURE_COLUMNS]
+    y_train_context = pd.read_csv(MODELS_DIR / "tabpfn_context_y_full.csv").iloc[:, 0]
+
+    token = os.environ.get("TABPFN_TOKEN")
+    if not token:
+        tabpfn_error = "TABPFN_TOKEN environment variable is not set."
+        logger.warning(tabpfn_error)
+    else:
+        try:
+            import tabpfn_client
+
+            tabpfn_client.set_access_token(token)
+            from tabpfn_client import TabPFNClassifier
+
+            tabpfn_model = TabPFNClassifier()
+            tabpfn_model.fit(X_train_context, y_train_context)
+            logger.info("TabPFN client configured and fit on full-dataset context.")
+        except Exception as exc:  # noqa: BLE001
+            tabpfn_error = f"Failed to initialize TabPFN client: {exc}"
+            logger.exception(tabpfn_error)
+            tabpfn_model = None
+
+    X_train_tabfm = pd.read_csv(MODELS_DIR / "tabfm_500row_context_X.csv")[FEATURE_COLUMNS]
+    y_train_tabfm = pd.read_csv(MODELS_DIR / "tabfm_500row_context_y.csv").iloc[:, 0]
+
+    try:
+        from tabfm import TabFMClassifier
+        from tabfm import tabfm_v1_0_0_pytorch as tabfm_v1_0_0
+
+        tabfm_base_model = tabfm_v1_0_0.load()
+        tabfm_model = TabFMClassifier(model=tabfm_base_model, n_estimators=1)
+        tabfm_model.fit(X_train_tabfm, y_train_tabfm)
+        tabfm_model.predict(X_train_tabfm.iloc[[0]])
+        logger.info("TabFM loaded, fit on 500-row context, and warmed up.")
+    except Exception as exc:  # noqa: BLE001
+        tabfm_error = f"Failed to initialize TabFM: {exc}"
+        logger.exception(tabfm_error)
+        tabfm_model = None
 
 SHAP_IMAGES = {
     "catboost_shap_global": "catboost_shap_global_importance.png",
@@ -127,6 +138,7 @@ _dataset_cache: Optional[pd.DataFrame] = None
 @app.on_event("startup")
 async def on_startup():
     db.init_db()
+    await run_in_threadpool(_load_models)
 
 
 def _bounds(name: str) -> tuple[float, float]:
@@ -186,6 +198,8 @@ def compute_warnings(data: PatientInput) -> list[str]:
 
 
 def predict_catboost(data: PatientInput) -> dict:
+    if cb_model is None or cb_explainer is None:
+        raise HTTPException(status_code=503, detail="Models are still loading, try again shortly.")
     X = to_dataframe(data)
     pred_idx = int(cb_model.predict(X)[0][0])
     proba = cb_model.predict_proba(X)[0]
@@ -246,7 +260,7 @@ async def root():
 async def health():
     return {
         "status": "ok",
-        "catboost": True,
+        "catboost": cb_model is not None,
         "tabpfn": tabpfn_model is not None,
         "tabpfn_error": tabpfn_error,
         "tabfm": tabfm_model is not None,
