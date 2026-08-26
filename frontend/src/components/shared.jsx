@@ -77,13 +77,20 @@ export function CodeBlock({ code }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="code-block-wrap">
-      <button type="button" className="code-toggle" onClick={() => setOpen((v) => !v)}>
-        {open ? "Hide code" : "View code"}
+      <button type="button" className="code-toggle" onClick={() => setOpen(true)}>
+        View code
       </button>
       {open && (
-        <pre className="code-block">
-          <code>{code}</code>
-        </pre>
+        <div className="code-panel-overlay" onClick={() => setOpen(false)}>
+          <div className="code-panel" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="modal-close" onClick={() => setOpen(false)} aria-label="Close">
+              &times;
+            </button>
+            <pre className="code-block code-panel-block">
+              <code>{code}</code>
+            </pre>
+          </div>
+        </div>
       )}
     </div>
   );
