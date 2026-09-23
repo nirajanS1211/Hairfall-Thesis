@@ -3,7 +3,7 @@ import re
 from xml.sax.saxutils import escape
 
 GREEK = {"nu": "ν", "phi": "φ", "chi": "χ", "theta": "θ", "Omega": "Ω", "kappa": "κ", "alpha": "α"}
-SYMS = {"partial": "∂", "mid": "∣", "subseteq": "⊆", "setminus": "∖", "cdot": "⋅", "times": "×"}
+SYMS = {"partial": "∂", "mid": "∣", "subseteq": "⊆", "setminus": "∖", "cup": "∪", "in": "∈", "le": "≤", "ge": "≥", "cdot": "⋅", "times": "×"}
 SPACE = {",", ";", "!", "quad", " ", ":"}
 
 RFONT = '<w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr>'

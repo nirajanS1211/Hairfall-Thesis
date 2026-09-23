@@ -16,7 +16,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_COLOR_INDEX, WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.oxml import OxmlElement, parse_xml
 from docx.oxml.ns import qn
-from docx.shared import Cm, Pt, RGBColor
+from docx.shared import Cm, Inches, Pt, RGBColor
 from lxml import etree
 from PIL import Image
 
@@ -24,18 +24,21 @@ sys.path.insert(0, os.path.dirname(__file__))
 from omml import latex_to_omml  # noqa: E402
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(os.path.dirname(BASE), "Hairfall_Thesis.docx")
+OUT = os.path.join(os.path.dirname(BASE), "final", "Hairfall_Thesis.docx")
+PAGES = {}
+if os.path.exists(os.path.join(BASE, "pages.json")):
+    PAGES = json.load(open(os.path.join(BASE, "pages.json"), encoding="utf-8"))
 FONT = "Times New Roman"
 
 TITLE = ("Comparative Benchmarking of CatBoost, TabPFN, and TabFM for Explainable "
          "Multi-Tier Hair Fall Risk Stratification")
-AUTHOR = "Nirajan Shahi"
-REGNO = "Roll No. 49/079"
-SUPERVISOR = "Asst. Prof. Jagadish Bhatta"
-DEPT = "Central Department of Computer Science and Information Technology"
-UNIV = "Tribhuvan University"
-DEGREE = "Master of Science in Computer Science and Information Technology (M.Sc. CSIT)"
-DATE = "[Month, Year]"
+AUTHOR = "Krishna Gautam"
+REGNO = "LC ID: [LC ID]"          # <- put the university registration number (LC ID) here
+SUPERVISOR = "Rabin Shrestha"
+COLLEGE = "Lincoln International College of Management & IT"
+UNIV = "Lincoln University College, Malaysia"
+DEGREE = "Master of Computer Science (MCS)"
+DATE = "September, 2026"          # <- month and year of thesis completion
 
 refs = json.load(open(os.path.join(BASE, "refs.json"), encoding="utf-8"))
 
@@ -160,7 +163,8 @@ new_style("Cover 14", size=14, align=WD_ALIGN_PARAGRAPH.CENTER, after=10)
 new_style("Cover Title", size=20, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, after=10)
 new_style("Blank 14", size=14, after=10, align=WD_ALIGN_PARAGRAPH.CENTER)
 new_style("Front Body", align=WD_ALIGN_PARAGRAPH.JUSTIFY, first=Cm(1.27))
-new_style("Front Plain", align=WD_ALIGN_PARAGRAPH.LEFT)
+new_style("Front Plain", align=WD_ALIGN_PARAGRAPH.LEFT, after=4)
+new_style("Abstract Body", align=WD_ALIGN_PARAGRAPH.JUSTIFY, after=10)
 new_style("Abbrev", align=WD_ALIGN_PARAGRAPH.LEFT, left=Cm(2.5), first=Cm(-2.5), after=2)
 new_style("Contents Entry", align=WD_ALIGN_PARAGRAPH.LEFT, after=0, line=1.5)
 for i in (1, 2, 3):
@@ -375,16 +379,27 @@ def add_table(rows):
         cs = OxmlElement("w:cantSplit")
         cs.set(qn("w:val"), "true")
         trpr.append(cs)
+    if len(t.rows) <= 30:  # short table: keep the whole table on one page (moves to the next page if needed)
+        for row in t.rows[:-1]:
+            for cell in row.cells:
+                for cp in cell.paragraphs:
+                    cp.paragraph_format.keep_with_next = True
     doc.add_paragraph(style="Normal").paragraph_format.space_after = Pt(4)
     return t
 
 
-def toc_field(entries, code, first_style_for=None):
-    """Adds a TOC-type field, pre-filled with entries [(level, text)], so it also reads well before updating."""
+def toc_field(entries, code, kind):
+    """Adds a TOC-type field, pre-filled with the entries and their page numbers (from pages.json, computed from
+    the rendered PDF by make_final.py), with a dot leader to a right-aligned page number."""
     paras = []
     for lvl, text in entries:
         p = doc.add_paragraph(style=f"TOC {min(lvl,3)}" if lvl else "Contents Entry")
-        p.add_run(resolve(text))
+        p.paragraph_format.tab_stops.add_tab_stop(Cm(15.5), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        label = resolve(text)
+        if lvl == 0:  # list entries: "Table 3.1  Title"
+            label = re.sub(r"^((?:Table|Fig\.) [A-Z0-9]+\.\d+):\s*", r"\1  ", label)
+        p.add_run(label)
+        p.add_run("\t" + PAGES.get(f"{kind}|{text}", "00"))
         paras.append(p)
     if not paras:
         return
@@ -510,6 +525,9 @@ for b in appendix_blocks:
     elif b[0] == "fig":
         figure_caps.append(b[1])
 
+json.dump({"toc": toc_entries, "tables": table_caps, "figures": figure_caps, "appendices": appendix_titles},
+          open(os.path.join(BASE, "entries.json"), "w", encoding="utf-8"), indent=1, ensure_ascii=False)
+
 
 def render(blocks, in_appendix=False):
     for b in blocks:
@@ -556,22 +574,29 @@ def render(blocks, in_appendix=False):
 
 
 # --------------------------------------------------------------------------------------------
-# 5. Front matter
+# 5. Front matter (format of syllabus Appendices 1-15)
 # --------------------------------------------------------------------------------------------
+LOGO = os.path.join(BASE, "assets", "lincoln_logo.jpeg")
+
+
+def logo_para():
+    p = doc.add_paragraph(style="Cover 14")
+    p.add_run().add_picture(LOGO, width=Inches(1.6 * 1.6))
+    return p
+
+
 # --- Cover (Appendix 1)
-blank(1)
 para("Thesis for the Degree of " + DEGREE, "Cover 16")
 blank(1)
 para(TITLE, "Cover Title")
-blank(3)
-para("[Logo of Tribhuvan University, 1.6 × 1.6 inch]", "Cover 14")
-blank(3)
+blank(2)
+logo_para()
+blank(2)
 para(AUTHOR, "Cover 16 Bold")
 para(f"({REGNO})", "Cover 16")
-para(DEPT, "Cover 14")
+para(COLLEGE, "Cover 16")
 blank(1)
-para(f"{UNIV}, Kirtipur, Kathmandu, Nepal", "Cover 16 Bold")
-blank(1)
+para(UNIV, "Cover 16 Bold")
 para(DATE, "Cover 16 Bold")
 
 # --- Section 2: pretext (roman numerals; title page counted as page i but number not shown)
@@ -581,24 +606,21 @@ set_pgnum(s_pre, "lowerRoman", 1)
 s_pre.different_first_page_header_footer = True
 add_footer_page_number(s_pre)
 s_pre.first_page_footer.is_linked_to_previous = False
-clear_footer_first = s_pre.first_page_footer.paragraphs[0]
-# cover section footer: empty
 clear_footer(doc.sections[0])
 
 # --- Title page (Appendix 3)
-para("Thesis for the Degree of " + DEGREE, "Cover 16")
+para("Research Project for the Degree of " + DEGREE, "Cover 16")
 blank(1)
 para(TITLE, "Cover Title")
-blank(3)
+blank(2)
 para(f"Supervised by {SUPERVISOR}", "Cover 16 Bold")
-para("A thesis submitted in partial fulfilment of the requirements for the degree of " + DEGREE,
-     "Cover 16")
-blank(3)
+para("A thesis submitted in partial fulfilment of the requirements for the degree of " + DEGREE, "Cover 16")
+blank(2)
 para(AUTHOR, "Cover 16 Bold")
 para(f"({REGNO})", "Cover 16")
-blank(2)
-para(DEPT, "Cover 14")
-para(f"{UNIV}, Kirtipur, Kathmandu, Nepal", "Cover 16 Bold")
+blank(1)
+para(COLLEGE, "Cover 16")
+para(UNIV, "Cover 16 Bold")
 para(DATE, "Cover 16 Bold")
 
 
@@ -607,20 +629,26 @@ def sign_block(rows):
         para(label, "Front Plain")
 
 
+def front_heading(text):
+    p = doc.add_paragraph(style="Front Heading")
+    p.add_run(text)
+    return p
+
+
 # --- Declaration (Appendix 5)
-para("Declaration", "Front Heading")
+front_heading("Declaration")
 p = para("", "Front Body")
 p.add_run("I hereby declare that this study entitled ")
 p.add_run(TITLE).bold = True
 p.add_run(" is based on my original research work. Related works on the topic by other researchers have been "
           "duly acknowledged. I owe all the liabilities relating to the accuracy and authenticity of the data and "
           "any other information included hereunder.")
-blank(2)
-sign_block(["Signature: ……………………………", f"Name of the Student: {AUTHOR}",
-            f"Registration Number: {REGNO}", "Date: [Date]"])
+blank(3)
+sign_block(["……………………………………", "Signature", f"Name of the Student: {AUTHOR}",
+            f"Registration Number: {REGNO}", "Date: ……………………………"])
 
 # --- Recommendation (Appendix 6)
-para("Recommendation", "Front Heading")
+front_heading("Recommendation")
 p = para("", "Front Body")
 p.add_run("This is to certify that this thesis entitled ")
 p.add_run(TITLE).bold = True
@@ -628,58 +656,56 @@ p.add_run(", prepared and submitted by ")
 p.add_run(AUTHOR).bold = True
 p.add_run(f", in partial fulfilment of the requirements of the degree of {DEGREE} awarded by {UNIV}, has been "
           f"completed under my supervision. I recommend the same for acceptance by {UNIV}.")
-blank(2)
-sign_block(["Signature: ……………………………", f"Name of the Supervisor: {SUPERVISOR}",
-            f"Organization: {DEPT}, {UNIV}", "Date: [Date]"])
+blank(3)
+sign_block(["……………………………………", "Signature", f"Name of the Supervisor: {SUPERVISOR}",
+            f"Organization: {COLLEGE}", "Date: ……………………………"])
 
-# --- Certificate (Appendix 7)
-para("Certificate", "Front Heading")
+# --- Certificate (Appendix 7) - print on college letterhead with the official stamp
+front_heading("Certificate")
 p = para("", "Front Body")
 p.add_run("This thesis entitled ")
 p.add_run(TITLE).bold = True
 p.add_run(" prepared and submitted by ")
 p.add_run(AUTHOR).bold = True
 p.add_run(f" has been examined by us and is accepted for the award of the degree of {DEGREE} by {UNIV}.")
-para("[Print this page on the department letterhead with the official stamp.]", "Front Plain")
-for name, role in [("[Name of the external examiner]", "External Examiner"),
-                   (f"{SUPERVISOR}", "Supervisor"),
-                   ("[Name of the co-supervisor, if applicable]", "Co-supervisor (if applicable)"),
-                   ("[Name of the Head of Department]", "Head of Department")]:
+for name, role in [("……………………………………", "External Examiner"),
+                   (SUPERVISOR, "Supervisor"),
+                   ("……………………………………", "Head of Department / Principal")]:
     blank(1)
-    para(name, "Front Plain")
-    para("Signature: ……………………………   Date signed: ……………………", "Front Plain")
+    p = para("", "Front Plain")
+    p.add_run(name).bold = True
+    para("Signature: ……………………………      Date signed: ……………………", "Front Plain")
     para(role, "Front Plain")
 
 # --- Acknowledgements (Appendix 8)
-para("Acknowledgements", "Front Heading")
-ack = ("I would like to express my sincere gratitude to my supervisor, Asst. Prof. Jagadish Bhatta, of the Central "
-       "Department of Computer Science and Information Technology, Tribhuvan University, for his guidance, "
-       "suggestions and encouragement throughout this research.\n"
-       "I am thankful to the Head of the Central Department of Computer Science and Information Technology, [name of "
-       "Head of Department], and to all the teachers and staff of the department for their support during my "
-       "studies. I also thank the creators of the public datasets used in this study for making their data "
-       "available, and the providers of the open-source software used in the experiments.\n"
+front_heading("Acknowledgements")
+ack = (f"I would like to express my sincere gratitude to my supervisor, {SUPERVISOR}, for his guidance, suggestions "
+       "and encouragement throughout this research. His comments at every stage helped me to shape the study "
+       "and to improve this thesis.\n"
+       f"I am thankful to {COLLEGE} and to all the faculty members and staff of the Master of Computer Science "
+       "programme for their teaching and support during my studies. I also thank the creators of the public "
+       "datasets used in this study for making their data available, and the developers of the open-source "
+       "software used in the experiments.\n"
        "I am grateful to my classmates and friends for their discussions and help, and to my family for their "
        "patience, support and encouragement.")
 for chunk in ack.split("\n"):
     para(chunk, "Front Body")
-blank(1)
-sign_block(["Signature: ……………………………", f"Name of the Student: {AUTHOR}", f"Registration Number: {REGNO}",
-            "Date: [Date]"])
+blank(2)
+sign_block(["……………………………………", "Signature", f"Name of the Student: {AUTHOR}",
+            f"Registration Number: {REGNO}", "Date: ……………………………"])
 
-# --- Abbreviations (Appendix 15)
-abbr = [("ALT", "Alanine Aminotransferase"), ("CSIT", "Computer Science and Information Technology"),
-        ("CUDA", "Compute Unified Device Architecture"), ("CV", "Cross-Validation"),
-        ("EHR", "Electronic Health Record"), ("GPU", "Graphics Processing Unit"),
-        ("JIT", "Just-In-Time (compilation)"), ("KNN", "k-Nearest Neighbour"),
-        ("MAE", "Mean Absolute Error"), ("M.Sc.", "Master of Science"),
+# --- Abbreviations (Appendix 15): tab of 2.5 cm, no colon, alphabetical
+abbr = [("ALT", "Alanine Aminotransferase"), ("CUDA", "Compute Unified Device Architecture"),
+        ("CV", "Cross-Validation"), ("EHR", "Electronic Health Record"), ("GPU", "Graphics Processing Unit"),
+        ("JIT", "Just-In-Time (compilation)"), ("KNN", "k-Nearest Neighbour"), ("LUC", "Lincoln University College"),
+        ("MAE", "Mean Absolute Error"), ("MCS", "Master of Computer Science"),
         ("NeurIPS", "Conference on Neural Information Processing Systems"),
+        ("QWK", "Quadratic Weighted Kappa"),
         ("ROC-AUC", "Receiver Operating Characteristic – Area Under the Curve"),
         ("SHAP", "Shapley Additive Explanations"), ("SVM", "Support Vector Machine"),
-        ("TabFM", "Tabular Foundation Model"), ("TabPFN", "Tabular Prior-Fitted Network"),
-        ("TU", "Tribhuvan University")]
+        ("TabFM", "Tabular Foundation Model"), ("TabPFN", "Tabular Prior-Fitted Network")]
 abbr.sort(key=lambda x: x[0].lower())
-para("List of Abbreviations/Acronyms", "Front Heading")
+front_heading("List of Abbreviations/Acronyms")
 for a, full in abbr:
     p = doc.add_paragraph(style="Abbrev")
     p.paragraph_format.tab_stops.add_tab_stop(Cm(2.5))
@@ -689,35 +715,33 @@ for a, full in abbr:
 units = [("%", "Percent"), ("g/dL", "Grams per decilitre"), ("GB", "Gigabyte"), ("mg/dL", "Milligrams per decilitre"),
          ("min", "Minute"), ("ng/mL", "Nanograms per millilitre"), ("s", "Second"), ("U/L", "Units per litre"),
          ("µg/dL", "Micrograms per decilitre"), ("µg/L", "Micrograms per litre")]
-para("Units and Conversions", "Front Heading")
+front_heading("Units and Conversions")
 for u, meaning in units:
     p = doc.add_paragraph(style="Abbrev")
     p.paragraph_format.tab_stops.add_tab_stop(Cm(2.5))
     p.add_run(f"{u}\t{meaning}")
 
-# --- Abstract (Appendix 9)
-pre = open(os.path.join(os.path.dirname(BASE), "drafts", "Pretext_Acknowledgements_to_List_of_Appendices.md"),
-           encoding="utf-8").read()
-abstract_text = pre.split("**ABSTRACT**", 1)[1].split("Keywords:", 1)[0].strip()
-keywords = pre.split("Keywords:", 1)[1].split("\n", 1)[0].strip()
-p = doc.add_paragraph(style="Front Heading")
-p.add_run("ABSTRACT")
+# --- Abstract (Appendix 9): one page, keywords after one blank line
+abstract_text = open(os.path.join(BASE, "abstract.md"), encoding="utf-8").read().strip()
+keywords = ("hair fall risk, tabular foundation models, CatBoost, TabPFN, TabFM, SHAP, "
+            "explainable machine learning")
+front_heading("ABSTRACT")
 for chunk in abstract_text.split("\n\n"):
-    para(chunk.strip(), "Front Body")
-blank(1)
-p = para("", "Front Plain")
+    p = para(chunk.strip(), "Abstract Body")
+p = para("", "Abstract Body")
+p.paragraph_format.space_before = Pt(12)
 p.add_run("Keywords: ").bold = True
 p.add_run(keywords)
 
-# --- Contents and lists (Appendices 10-14): fields, pre-filled, refreshed by Word (Ctrl+A, F9)
-para("Table of Contents", "Front Heading")
-toc_field(toc_entries, ' TOC \\o "1-3" \\h \\z \\t "Front Heading,1,Appendix Heading,1" ')
-para("List of Tables", "Front Heading")
-toc_field([(0, t) for t in table_caps], ' TOC \\h \\z \\t "Table Caption,1" ')
-para("List of Figures", "Front Heading")
-toc_field([(0, t) for t in figure_caps], ' TOC \\h \\z \\t "Figure Caption,1" ')
-para("List of Appendices", "Front Heading")
-toc_field([(0, t) for t in appendix_titles], ' TOC \\h \\z \\t "Appendix Heading,1" ')
+# --- Contents and lists (Appendices 10-14)
+front_heading("Table of Contents")
+toc_field(toc_entries, ' TOC \\o "1-3" \\h \\z \\t "Front Heading,1,Appendix Heading,1" ', "toc")
+front_heading("List of Tables")
+toc_field([(0, t) for t in table_caps], ' TOC \\h \\z \\t "Table Caption,1" ', "tab")
+front_heading("List of Figures")
+toc_field([(0, t) for t in figure_caps], ' TOC \\h \\z \\t "Figure Caption,1" ', "fig")
+front_heading("List of Appendices")
+toc_field([(0, t) for t in appendix_titles], ' TOC \\h \\z \\t "Appendix Heading,1" ', "app")
 
 # --------------------------------------------------------------------------------------------
 # 6. Main body (arabic page numbers from 1)
@@ -743,24 +767,9 @@ render(appendix_blocks, in_appendix=True)
 # --------------------------------------------------------------------------------------------
 # 7. Settings: update fields when the file is opened, document properties
 # --------------------------------------------------------------------------------------------
-settings = doc.settings.element
-uf = OxmlElement("w:updateFields")
-uf.set(qn("w:val"), "true")
-anchor = None
-for tag in ("w:hdrShapeDefaults", "w:footnotePr", "w:endnotePr", "w:compat", "w:docVars", "w:rsids", "m:mathPr",
-            "w:themeFontLang", "w:clrSchemeMapping", "w:doNotIncludeSubdocsInStats", "w:shapeDefaults",
-            "w:decimalSymbol", "w:listSeparator"):
-    el = settings.find(qn(tag))
-    if el is not None:
-        anchor = el
-        break
-if anchor is not None:
-    anchor.addprevious(uf)
-else:
-    settings.append(uf)
 doc.core_properties.title = TITLE
 doc.core_properties.author = AUTHOR
-doc.core_properties.subject = "M.Sc. CSIT thesis, Tribhuvan University"
+doc.core_properties.subject = "MCS thesis, Lincoln International College of Management & IT"
 
 doc.save(OUT)
 

@@ -1,0 +1,356 @@
+{
+ "toc": [
+  [
+   1,
+   "Declaration"
+  ],
+  [
+   1,
+   "Recommendation"
+  ],
+  [
+   1,
+   "Certificate"
+  ],
+  [
+   1,
+   "Acknowledgements"
+  ],
+  [
+   1,
+   "Abbreviations/Acronyms"
+  ],
+  [
+   1,
+   "Units and Conversions"
+  ],
+  [
+   1,
+   "ABSTRACT"
+  ],
+  [
+   1,
+   "Table of Contents"
+  ],
+  [
+   1,
+   "List of Tables"
+  ],
+  [
+   1,
+   "List of Figures"
+  ],
+  [
+   1,
+   "List of Appendices"
+  ],
+  [
+   1,
+   "CHAPTER 1  INTRODUCTION"
+  ],
+  [
+   2,
+   "1.1 Background"
+  ],
+  [
+   2,
+   "1.2 Statement of the problem"
+  ],
+  [
+   2,
+   "1.3 Research questions"
+  ],
+  [
+   2,
+   "1.4 Research objectives"
+  ],
+  [
+   2,
+   "1.5 Significance/Rationale of the study"
+  ],
+  [
+   1,
+   "CHAPTER 2  LITERATURE REVIEW"
+  ],
+  [
+   2,
+   "2.1 Machine learning for hair loss prediction"
+  ],
+  [
+   2,
+   "2.2 Tree ensembles and gradient boosting"
+  ],
+  [
+   2,
+   "2.3 Tree-based models and deep learning on tabular data"
+  ],
+  [
+   2,
+   "2.4 Transformers, attention and in-context learning"
+  ],
+  [
+   2,
+   "2.5 Tabular foundation models"
+  ],
+  [
+   2,
+   "2.6 Explainability with SHAP"
+  ],
+  [
+   2,
+   "2.7 Evaluating and comparing classifiers"
+  ],
+  [
+   2,
+   "2.8 Critical summary and research gap"
+  ],
+  [
+   1,
+   "CHAPTER 3  METHODOLOGY"
+  ],
+  [
+   2,
+   "3.1 Research design"
+  ],
+  [
+   2,
+   "3.2 Research approach"
+  ],
+  [
+   2,
+   "3.3 Study area"
+  ],
+  [
+   2,
+   "3.4 Study population"
+  ],
+  [
+   2,
+   "3.5 Sample selection"
+  ],
+  [
+   2,
+   "3.6 Sample size"
+  ],
+  [
+   2,
+   "3.7 Methods of data collection"
+  ],
+  [
+   2,
+   "3.8 Data analysis approach and tools"
+  ],
+  [
+   3,
+   "3.8.1 Data preprocessing"
+  ],
+  [
+   3,
+   "3.8.2 Descriptive analysis of the dataset"
+  ],
+  [
+   3,
+   "3.8.3 Models and justification"
+  ],
+  [
+   3,
+   "3.8.4 Experimental setup"
+  ],
+  [
+   3,
+   "3.8.5 Training context experiment"
+  ],
+  [
+   3,
+   "3.8.6 Explainability analysis"
+  ],
+  [
+   3,
+   "3.8.7 Evaluation metrics and statistical testing"
+  ],
+  [
+   3,
+   "3.8.8 Computational assessment"
+  ],
+  [
+   3,
+   "3.8.9 Tools and environment"
+  ],
+  [
+   2,
+   "3.9 Ethical considerations"
+  ],
+  [
+   2,
+   "3.10 Validity, reliability and reproducibility"
+  ],
+  [
+   1,
+   "CHAPTER 4  RESULTS AND DISCUSSION"
+  ],
+  [
+   2,
+   "4.1 Predictive performance of the three models"
+  ],
+  [
+   3,
+   "4.1.1 Overall performance"
+  ],
+  [
+   3,
+   "4.1.2 Per-class performance and confusion matrices"
+  ],
+  [
+   3,
+   "4.1.3 Statistical significance"
+  ],
+  [
+   2,
+   "4.2 Effect of training context size"
+  ],
+  [
+   2,
+   "4.3 Explainability of the predictions"
+  ],
+  [
+   3,
+   "4.3.1 Relationship between the features and the risk tier in the data"
+  ],
+  [
+   3,
+   "4.3.2 Global feature importance"
+  ],
+  [
+   3,
+   "4.3.3 Direction of the effects"
+  ],
+  [
+   3,
+   "4.3.4 Differences between the rankings"
+  ],
+  [
+   3,
+   "4.3.5 Patient-level explanations"
+  ],
+  [
+   2,
+   "4.4 Computational cost and implementation limitations"
+  ],
+  [
+   3,
+   "4.4.1 TabFM runtime"
+  ],
+  [
+   3,
+   "4.4.2 Software problems and workarounds"
+  ],
+  [
+   2,
+   "4.5 Discussion"
+  ],
+  [
+   3,
+   "4.5.1 Plausibility of the findings"
+  ],
+  [
+   3,
+   "4.5.2 Comparison with similar studies"
+  ],
+  [
+   3,
+   "4.5.3 Implications and cautions"
+  ],
+  [
+   3,
+   "4.5.4 Relation of the results to the research questions"
+  ],
+  [
+   1,
+   "CHAPTER 5  CONCLUSION AND RECOMMENDATIONS"
+  ],
+  [
+   2,
+   "5.1 Conclusion"
+  ],
+  [
+   2,
+   "5.2 Limitations of the study"
+  ],
+  [
+   2,
+   "5.3 Recommendations"
+  ],
+  [
+   1,
+   "REFERENCES"
+  ],
+  [
+   1,
+   "Appendix A: Source Code"
+  ],
+  [
+   1,
+   "Appendix B: Additional Figures"
+  ],
+  [
+   1,
+   "Appendix C: Result Tables From The Experiments"
+  ],
+  [
+   1,
+   "Appendix D: Dataset Description And Sample Records"
+  ]
+ ],
+ "tables": [
+  "Table 2.1: Summary of related studies on hair loss prediction",
+  "Table 2.2: Model families relevant to this study",
+  "Table 3.1: Link between the research objectives and the methods used",
+  "Table 3.2: Predictor variables",
+  "Table 3.3: Descriptive statistics of the continuous predictors (all 21,606 records)",
+  "Table 3.4: Settings of the three models",
+  "Table 3.5: Experimental environment",
+  "Table 4.1: Performance of the three models on the test partition",
+  "Table 4.2: Precision, recall and F1-score by risk tier",
+  "Table 4.3: Share of records of each true tier assigned to a neighbouring tier",
+  "Table 4.4: Ordinal-aware measures",
+  "Table 4.5: Pairwise McNemar's test",
+  "Table 4.6: Accuracy with 95% Wilson score intervals",
+  "Table 4.7: Accuracy and macro-F1 with reduced training context",
+  "Table 4.8: Mean of the continuous predictors by risk tier",
+  "Table 4.9: Proportion of records with each binary flag, by risk tier",
+  "Table 4.10: Ten most important features in each model",
+  "Table 4.11: Approximate TabFM prediction time by context size",
+  "Table C.1: Full-context results (final_three_way_results.csv)",
+  "Table C.2: McNemar's test (final_statistical_analysis.csv)",
+  "Table C.3: Reduced-context results on the 2,000-row run (matched_2000ctx_results.csv; 500 test records)",
+  "Table C.4: Per-class precision, recall and F1-score on the test partition",
+  "Table D.1: First three records of the dataset (full_name omitted; one column per record)"
+ ],
+ "figures": [
+  "Fig. 3.1: Block diagram of the research methodology",
+  "Fig. 4.1: CatBoost confusion matrix",
+  "Fig. 4.2: TabPFN confusion matrix",
+  "Fig. 4.3: TabFM confusion matrix",
+  "Fig. 4.4: Accuracy of the three models under reduced training context",
+  "Fig. 4.5: CatBoost global feature importance (SHAP)",
+  "Fig. 4.6: TabPFN global feature importance (SHAP)",
+  "Fig. 4.7: TabFM global feature importance (SHAP)",
+  "Fig. 4.8: CatBoost SHAP beeswarm plot (High risk)",
+  "Fig. 4.9: TabPFN SHAP beeswarm plot (High risk)",
+  "Fig. 4.10: TabFM SHAP beeswarm plot (High risk)",
+  "Fig. 4.11: CatBoost patient-level explanation",
+  "Fig. 4.12: TabPFN patient-level explanation",
+  "Fig. 4.13: TabFM patient-level explanation",
+  "Fig. B.1: CatBoost training curve",
+  "Fig. B.2: CatBoost confusion matrix with a 2,000-row training context (500 test records)",
+  "Fig. B.3: TabPFN confusion matrix with a 2,000-row training context (500 test records)",
+  "Fig. B.4: TabFM confusion matrix with a 2,000-row training context (500 test records)",
+  "Fig. B.5: Accuracy of the three models with a 2,000-row training context"
+ ],
+ "appendices": [
+  "Appendix A: Source Code",
+  "Appendix B: Additional Figures",
+  "Appendix C: Result Tables From The Experiments",
+  "Appendix D: Dataset Description And Sample Records"
+ ]
+}

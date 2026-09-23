@@ -634,12 +634,31 @@ Table C.4: Per-class precision, recall and F1-score on the test partition
 APPENDIX D
 DATASET DESCRIPTION AND SAMPLE RECORDS
 
-The dataset (data.csv) has 21,606 records and 23 columns. The columns id and full_name were removed before modelling, and hair_fall is the target. The 20 predictors are listed in Table 3.2. Table D.1 shows the first records of the dataset without the name column.
+The dataset (data.csv) has 21,606 records and 23 columns. The columns id and full_name were removed before modelling, and hair_fall is the target. The 20 predictors are listed in Table 3.2. Table D.1 shows the first three records of the dataset without the name column, with one column per record.
 
-Table D.1: First three records of the dataset (full_name omitted)
+Table D.1: First three records of the dataset (full_name omitted; one column per record)
 
-| id | age | gender | total_protein | calcium | iron | vitamin_d | alt_liver | manganese | body_water_content | stress_level | total_keratine | hair_texture | family_hair_fall_history | chronic_illness | late_night_sleep | sleep_disturbance | water_reason | chemical_use | anemia | stress | hair_fall |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 39 | Female | 7.5 | 9.8 | 56 | 26.8 | 18 | 9.69 | 55.8 | 23 | 50 | 48 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 2 | 26 | Male | 7.1 | 9.5 | 124 | 29.4 | 29 | 10.36 | 46.5 | 31 | 18 | 76 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 2 |
-| 3 | 34 | Male | 7.6 | 9.4 | 114 | 23.4 | 36 | 7.74 | 55.4 | 19 | 42 | 62 | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 1 |
+| Column | Record 1 | Record 2 | Record 3 |
+|---|---|---|---|
+| id | 1 | 2 | 3 |
+| age | 39 | 26 | 34 |
+| gender | Female | Male | Male |
+| total_protein | 7.5 | 7.1 | 7.6 |
+| calcium | 9.8 | 9.5 | 9.4 |
+| iron | 56 | 124 | 114 |
+| vitamin_d | 26.8 | 29.4 | 23.4 |
+| alt_liver | 18 | 29 | 36 |
+| manganese | 9.69 | 10.36 | 7.74 |
+| body_water_content | 55.8 | 46.5 | 55.4 |
+| stress_level | 23 | 31 | 19 |
+| total_keratine | 50 | 18 | 42 |
+| hair_texture | 48 | 76 | 62 |
+| family_hair_fall_history | 0 | 1 | 1 |
+| chronic_illness | 0 | 1 | 1 |
+| late_night_sleep | 0 | 0 | 0 |
+| sleep_disturbance | 0 | 1 | 1 |
+| water_reason | 1 | 0 | 0 |
+| chemical_use | 0 | 0 | 1 |
+| anemia | 0 | 0 | 0 |
+| stress | 0 | 1 | 0 |
+| hair_fall | 0 | 2 | 1 |
