@@ -20,7 +20,8 @@ def _dotenv() -> dict:
     if not f.exists():
         return {}
     pairs = (l.split("=", 1) for l in f.read_text().splitlines() if "=" in l and not l.lstrip().startswith("#"))
-    return {k.strip(): v.strip().strip('"').strip("'") for k, v in pairs}
+    env = {k.strip(): v.strip().strip('"').strip("'") for k, v in pairs}
+    return {k: v for k, v in env.items() if v}  # skip empty values (e.g. an unset HF_TOKEN=)
 
 
 class KernelDied(RuntimeError):

@@ -1,0 +1,13 @@
+{
+  "model": "TabPFN",
+  "size": "Full",
+  "context_rows": 17284,
+  "test_rows": 4322,
+  "accuracy": 0.786,
+  "macro_f1": 0.7783,
+  "weighted_f1": 0.7873,
+  "roc_auc_ovr": 0.9232,
+  "fit_seconds": 0.8,
+  "predict_seconds": 357.4,
+  "device": "mps"
+}
