@@ -1,26 +1,40 @@
-# OS
+# --- OS / editors ---
 .DS_Store
 Thumbs.db
-
-# Editors
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 *.swp
 
-# --- Python / backend ---
+# --- Old project files (kept on disk only) ---
+backup/
+
+# --- Python ---
 __pycache__/
 *.py[cod]
 *.egg-info/
-backend/venv/
-backend/.env
-backend/scripts/catboost_info/
+.ipynb_checkpoints/
+catboost_info/
+.env
+.venv/
+venv/
 
-# --- Node / frontend ---
-frontend/node_modules/
-frontend/dist/
+# --- Local lab: databases, object storage, logs, secrets ---
+backend/data/
+backend/workspace/outputs/
 *.log
+
+# --- Big/binary training artifacts (thesis_project keeps code, text, images) ---
+thesis_project/**/*.cbm
+thesis_project/**/*.pkl
+thesis_project/**/*.pt
+thesis_project/**/*.safetensors
+thesis_project/**/history/
+
+# --- Node (future UI) ---
+node_modules/
+dist/
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+
+# --- Personal dataset (names are only base64-encoded) ---
+thesis_project/data/

@@ -1,0 +1,13 @@
+# Local, offline storage. Data lives in ./data (survives restarts and reboots).
+name: hairfall-lab
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: lab
+      POSTGRES_DB: lab
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["./data/postgres:/var/lib/postgresql/data"]
+# MinIO no longer ships Docker images; it runs via Homebrew (see start.sh).

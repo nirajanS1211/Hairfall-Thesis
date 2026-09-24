@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+psycopg[binary]
+minio
+jupyter_client
+ipykernel
+pandas
+numpy
+scikit-learn
+statsmodels
+matplotlib
+catboost
+shap
+tabpfn
+tabfm[pytorch]
