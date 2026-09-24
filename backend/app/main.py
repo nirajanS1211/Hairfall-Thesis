@@ -68,6 +68,11 @@ def _worker():
 
         try:
             status, outputs, files = kmod.execute(_kernel(), run_id, code, push)
+        except kmod.KernelDied as exc:
+            status, outputs, files = "error", [{"type": "error", "text": str(exc), "ename": "KernelDied"}], []
+            with kernel_lock:
+                state["kernel"].shutdown()
+                state["kernel"] = None  # a fresh kernel starts on the next run
         except Exception as exc:  # noqa: BLE001
             log.exception("run %s failed", run_id)
             status, outputs, files = "error", [{"type": "error", "text": str(exc), "ename": "BackendError"}], []

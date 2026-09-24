@@ -14,10 +14,23 @@ WORKSPACE = Path(__file__).resolve().parent.parent / "workspace"
 OUTPUTS = WORKSPACE / "outputs"
 
 
+def _dotenv() -> dict:
+    """KEY=value lines from backend/.env (e.g. TABPFN_TOKEN, HF_TOKEN), passed to the kernel."""
+    f = WORKSPACE.parent / ".env"
+    if not f.exists():
+        return {}
+    pairs = (l.split("=", 1) for l in f.read_text().splitlines() if "=" in l and not l.lstrip().startswith("#"))
+    return {k.strip(): v.strip().strip('"').strip("'") for k, v in pairs}
+
+
+class KernelDied(RuntimeError):
+    pass
+
+
 class Kernel:
     def __init__(self):
         self.km = KernelManager(kernel_name="python3")
-        env = dict(os.environ, PYTHONPATH=str(WORKSPACE), PYTORCH_ENABLE_MPS_FALLBACK="1", MPLBACKEND="module://matplotlib_inline.backend_inline")
+        env = dict(os.environ, **_dotenv(), PYTHONPATH=str(WORKSPACE), PYTORCH_ENABLE_MPS_FALLBACK="1", MPLBACKEND="module://matplotlib_inline.backend_inline")
         self.km.start_kernel(cwd=str(WORKSPACE), env=env)
         self.kc = self.km.client()
         self.kc.start_channels()
@@ -57,7 +70,13 @@ def execute(kernel: Kernel, run_id: int, code: str, on_update):
     while True:
         try:
             msg = kernel.kc.get_iopub_msg(timeout=1)
-        except Exception:  # noqa: BLE001  (timeout: keep waiting)
+        except Exception:  # noqa: BLE001  (timeout: keep waiting, unless the kernel died)
+            if not kernel.km.is_alive():
+                raise KernelDied("The Python kernel crashed - most likely out of memory. "
+                                 "Lower BATCH / training size, or close other apps, then run again.")
+            if time.time() - last_push > 5:
+                on_update(outputs)
+                last_push = time.time()
             continue
         if msg["parent_header"].get("msg_id") != msg_id:
             continue
