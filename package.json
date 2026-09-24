@@ -1,7 +1,0 @@
-{
-  "name": "hairfall-thesis",
-  "private": true,
-  "scripts": {
-    "seed": "test -x backend/venv/bin/python && backend/venv/bin/python backend/scripts/seed_all.py || python3 backend/scripts/seed_all.py"
-  }
-}

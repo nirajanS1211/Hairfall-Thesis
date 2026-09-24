@@ -1,1 +1,0 @@
-TabFM SHAP computed via KernelExplainer (20 test samples, 500-row context, single-row padding workaround applied).

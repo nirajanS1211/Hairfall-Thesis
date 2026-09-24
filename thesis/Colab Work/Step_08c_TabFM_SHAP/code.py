@@ -1,2 +1,0 @@
-explainer_tabfm_kernel = shap.KernelExplainer(tabfm_predict_proba_padded, background_tabfm)
-shap_values_tabfm = explainer_tabfm_kernel.shap_values(X_test_sample_tabfm, nsamples=100)

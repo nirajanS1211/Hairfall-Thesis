@@ -1,3 +1,0 @@
-CatBoost vs TabPFN: statistic=0.0147, p=0.9037, significant=False
-CatBoost vs TabFM: statistic=1.6528, p=0.1986, significant=False
-TabPFN vs TabFM: statistic=2.5798, p=0.1082, significant=False
