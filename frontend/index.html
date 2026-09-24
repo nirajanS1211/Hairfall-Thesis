@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hairfall Lab</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">H</span> Hairfall Lab</div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="notebook">Notebook</button>
+      <button class="tab" data-tab="dataset">Dataset</button>
+    </nav>
+    <div class="top-actions">
+      <span id="status" class="pill">connecting…</span>
+      <button id="runAll" class="btn primary">Run all steps</button>
+      <button id="stop" class="btn">Stop</button>
+      <button id="restart" class="btn ghost" title="Restart the Python kernel (clears variables)">Restart kernel</button>
+    </div>
+  </header>
+
+  <main id="notebook" class="view">
+    <aside class="sidebar" id="sidebar"></aside>
+    <section class="step" id="step"></section>
+  </main>
+
+  <main id="dataset" class="view hidden">
+    <section class="dataset">
+      <div class="cards" id="dsCards"></div>
+      <div class="ds-toolbar">
+        <input id="dsSearch" type="search" placeholder="Search any column…">
+        <span id="dsInfo" class="muted"></span>
+        <div class="pager">
+          <button class="btn" id="dsPrev">‹ Prev</button>
+          <button class="btn" id="dsNext">Next ›</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table id="dsTable"></table></div>
+      <details class="stats"><summary>Column statistics</summary><div class="table-wrap"><table id="dsStats"></table></div></details>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

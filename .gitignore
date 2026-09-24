@@ -37,4 +37,7 @@ dist/
 npm-debug.log*
 
 # --- Personal dataset (names are only base64-encoded) ---
-thesis_project/data/
+thesis_project/data/# patient-level data written by steps 3-4
+thesis_project/**/hairfall_clean.csv
+thesis_project/**/train.csv
+thesis_project/**/test.csv

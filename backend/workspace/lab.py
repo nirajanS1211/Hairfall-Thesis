@@ -75,6 +75,7 @@ def predict_proba_batched(model, X, batch=500):
 
 def evaluate(model_name, size_label, n_context, y_true, proba, fit_seconds, predict_seconds, extra=None):
     """Metrics + confusion matrix; saves metrics.json and predictions.csv to outputs/."""
+    rows = y_true.index if hasattr(y_true, "index") else np.arange(len(y_true))
     y_true = np.asarray(y_true)
     y_pred = proba.argmax(axis=1)
     m = {
@@ -98,6 +99,38 @@ def evaluate(model_name, size_label, n_context, y_true, proba, fit_seconds, pred
     plt.show()
 
     (OUT / "metrics.json").write_text(json.dumps(m, indent=2))
-    pd.DataFrame({"y_true": y_true, "y_pred": y_pred, **{f"p_{c}": proba[:, i] for i, c in enumerate(CLASS_NAMES)}}) \
+    pd.DataFrame({"row": rows, "y_true": y_true, "y_pred": y_pred, **{f"p_{c}": proba[:, i] for i, c in enumerate(CLASS_NAMES)}}) \
         .to_csv(OUT / "predictions.csv", index=False)
     return m
+
+
+def shap_report(model_name, size_label, shap_values, X_explained, seconds, extra=None):
+    """Global importance bar + beeswarm (High class); saves shap_importance.csv and shap_summary.json."""
+    import shap
+    sv = np.stack(shap_values, axis=-1) if isinstance(shap_values, list) else np.asarray(shap_values)
+    if sv.ndim == 2:  # single-output model
+        sv = sv[..., None]
+    feats = list(X_explained.columns)
+    imp = pd.DataFrame({"feature": feats, **{f"mean_abs_{c}": np.abs(sv[:, :, i]).mean(0) for i, c in enumerate(CLASS_NAMES)}})
+    imp["mean_abs_all"] = imp[[f"mean_abs_{c}" for c in CLASS_NAMES]].mean(1)
+    imp = imp.sort_values("mean_abs_all", ascending=False).reset_index(drop=True)
+    imp.to_csv(OUT / "shap_importance.csv", index=False)
+    print(imp.round(4).to_string(index=False))
+
+    fig, ax = plt.subplots(figsize=(7, 6))
+    top = imp.head(15)[::-1]
+    ax.barh(top["feature"], top["mean_abs_all"], color="#2563eb")
+    ax.set_xlabel("mean |SHAP| (averaged over classes)")
+    ax.set_title(f"{model_name} ({size_label}) - global feature importance")
+    fig.tight_layout(); fig.savefig(OUT / "shap_global_importance.png", dpi=150); plt.show()
+
+    plt.figure()
+    shap.summary_plot(sv[:, :, 2], X_explained, show=False, max_display=15)
+    plt.title(f"{model_name} ({size_label}) - SHAP for High risk")
+    plt.tight_layout(); plt.savefig(OUT / "shap_beeswarm_high.png", dpi=150); plt.show()
+
+    summary = {"model": model_name, "size": size_label, "rows_explained": int(len(X_explained)),
+               "seconds": round(seconds, 1), "top_5": imp["feature"].head(5).tolist(), **(extra or {})}
+    (OUT / "shap_summary.json").write_text(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2))
+    return imp

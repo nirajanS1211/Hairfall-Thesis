@@ -1,5 +1,6 @@
 """One persistent Python kernel per notebook (variables survive between runs, like Colab)."""
 import base64
+import shutil
 import mimetypes
 import os
 import time
@@ -16,7 +17,7 @@ OUTPUTS = WORKSPACE / "outputs"
 class Kernel:
     def __init__(self):
         self.km = KernelManager(kernel_name="python3")
-        env = dict(os.environ, PYTORCH_ENABLE_MPS_FALLBACK="1", MPLBACKEND="module://matplotlib_inline.backend_inline")
+        env = dict(os.environ, PYTHONPATH=str(WORKSPACE), PYTORCH_ENABLE_MPS_FALLBACK="1", MPLBACKEND="module://matplotlib_inline.backend_inline")
         self.km.start_kernel(cwd=str(WORKSPACE), env=env)
         self.kc = self.km.client()
         self.kc.start_channels()
@@ -33,6 +34,13 @@ class Kernel:
             pass
 
 
+def _clear_outputs():
+    """Each run starts with an empty outputs/ so its files are exactly what that step produced."""
+    OUTPUTS.mkdir(parents=True, exist_ok=True)
+    for p in OUTPUTS.iterdir():
+        shutil.rmtree(p) if p.is_dir() else p.unlink()
+
+
 def _snapshot():
     OUTPUTS.mkdir(parents=True, exist_ok=True)
     return {str(p): p.stat().st_mtime for p in OUTPUTS.rglob("*") if p.is_file()}
@@ -41,6 +49,7 @@ def _snapshot():
 def execute(kernel: Kernel, run_id: int, code: str, on_update):
     """Run code; call on_update(outputs) as output arrives; return (status, outputs, files)."""
     outputs, files, status = [], [], "ok"
+    _clear_outputs()
     before = _snapshot()
     msg_id = kernel.kc.execute(code)
     last_push = 0.0
@@ -66,10 +75,12 @@ def execute(kernel: Kernel, run_id: int, code: str, on_update):
                 store.put_bytes(key, base64.b64decode(data["image/png"]), "image/png")
                 outputs.append({"type": "image", "key": key})
             elif "text/plain" in data:
-                outputs.append({"type": "result", "text": data["text/plain"]})
+                outputs.append({"type": "result", "text": data["text/plain"], "html": data.get("text/html")})
         elif t == "error":
             status = "error"
             outputs.append({"type": "error", "text": "\n".join(c["traceback"]), "ename": c["ename"]})
+        elif t == "clear_output":
+            outputs = [o for o in outputs if o["type"] != "stream"]
         elif t == "status" and c["execution_state"] == "idle":
             break
         if time.time() - last_push > 1:

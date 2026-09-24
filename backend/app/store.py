@@ -2,6 +2,7 @@
 import json
 import os
 import time
+from pathlib import Path
 
 import psycopg
 from minio import Minio
@@ -39,6 +40,7 @@ def init(retries=30):
                     created_at TIMESTAMPTZ DEFAULT now(), started_at TIMESTAMPTZ, finished_at TIMESTAMPTZ,
                     seconds REAL)""")
                 c.execute("ALTER TABLE runs ADD COLUMN IF NOT EXISTS step TEXT")
+                c.execute("ALTER TABLE runs ADD COLUMN IF NOT EXISTS batch_id TEXT")
             minio()
             return
         except Exception:  # noqa: BLE001
@@ -58,3 +60,34 @@ def put_file(key: str, path: str):
 
 def dumps(o):
     return json.dumps(o, default=str)
+
+
+DATA_CSV = Path(__file__).resolve().parent.parent.parent / "thesis_project" / "data" / "data.csv"
+RAW_TABLE = "hairfall_raw"
+
+
+def load_dataset() -> str:
+    """Load thesis_project/data/data.csv into Postgres table hairfall_raw (skipped if the file is unchanged)."""
+    import hashlib
+
+    import pandas as pd
+
+    if not DATA_CSV.exists():
+        return f"missing {DATA_CSV}"
+    digest = hashlib.sha256(DATA_CSV.read_bytes()).hexdigest()
+    with pg() as c:
+        c.execute("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)")
+        row = c.execute("SELECT value FROM meta WHERE key='dataset_sha256'").fetchone()
+        exists = c.execute("SELECT to_regclass(%s)", (RAW_TABLE,)).fetchone()[0]
+        if row and row[0] == digest and exists:
+            return "unchanged"
+        df = pd.read_csv(DATA_CSV)
+        types = {"int64": "BIGINT", "float64": "DOUBLE PRECISION"}
+        cols = ", ".join(f'"{k}" {types.get(str(v), "TEXT")}' for k, v in df.dtypes.items())
+        c.execute(f'DROP TABLE IF EXISTS "{RAW_TABLE}"')
+        c.execute(f'CREATE TABLE "{RAW_TABLE}" ({cols})')
+        with c.cursor().copy(f'COPY "{RAW_TABLE}" FROM STDIN WITH (FORMAT csv, HEADER true)') as cp:
+            cp.write(DATA_CSV.read_bytes())
+        c.execute("INSERT INTO meta VALUES ('dataset_sha256', %s) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value",
+                  (digest,))
+    return f"loaded {len(df):,} rows"

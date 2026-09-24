@@ -1,0 +1,82 @@
+/Users/midas/Desktop/Hairfall-Thesis/backend/.venv/lib/python3.12/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+                 feature  mean_abs_Low  mean_abs_Moderate  mean_abs_High  mean_abs_all
+            stress_level        0.6147             0.1391         0.5112        0.4216
+                    iron        0.4829             0.1147         0.4323        0.3433
+                 calcium        0.4631             0.0790         0.4014        0.3145
+           total_protein        0.4474             0.1220         0.3412        0.3035
+               vitamin_d        0.3978             0.0950         0.3091        0.2673
+               alt_liver        0.3863             0.0904         0.3122        0.2630
+               manganese        0.3383             0.0499         0.3380        0.2421
+      body_water_content        0.2184             0.0642         0.2672        0.1832
+                  stress        0.1810             0.0640         0.1171        0.1207
+            chemical_use        0.1313             0.0752         0.0562        0.0876
+                  anemia        0.1112             0.0180         0.1186        0.0826
+                     age        0.1031             0.0436         0.0837        0.0768
+         chronic_illness        0.1138             0.0201         0.0944        0.0761
+family_hair_fall_history        0.0896             0.0169         0.1028        0.0698
+            hair_texture        0.0338             0.0468         0.0672        0.0493
+       sleep_disturbance        0.0492             0.0140         0.0604        0.0412
+            water_reason        0.0540             0.0093         0.0484        0.0372
+          total_keratine        0.0355             0.0323         0.0435        0.0371
+        late_night_sleep        0.0319             0.0130         0.0376        0.0275
+                  gender        0.0038             0.0014         0.0037        0.0030
+{
+  "model": "CatBoost",
+  "size": "500",
+  "rows_explained": 1000,
+  "seconds": 0.1,
+  "top_5": [
+    "stress_level",
+    "iron",
+    "calcium",
+    "total_protein",
+    "vitamin_d"
+  ],
+  "explainer": "TreeExplainer"
+}
+                     feature  mean_abs_Low  mean_abs_Moderate  mean_abs_High  \
+0               stress_level      0.614672           0.139083       0.511166   
+1                       iron      0.482887           0.114719       0.432341   
+2                    calcium      0.463129           0.079029       0.401407   
+3              total_protein      0.447397           0.121967       0.341186   
+4                  vitamin_d      0.397768           0.095010       0.309137   
+5                  alt_liver      0.386268           0.090388       0.312195   
+6                  manganese      0.338346           0.049874       0.337982   
+7         body_water_content      0.218366           0.064183       0.267168   
+8                     stress      0.181008           0.064007       0.117112   
+9               chemical_use      0.131291           0.075205       0.056178   
+10                    anemia      0.111236           0.018025       0.118562   
+11                       age      0.103066           0.043577       0.083680   
+12           chronic_illness      0.113782           0.020087       0.094450   
+13  family_hair_fall_history      0.089572           0.016919       0.102831   
+14              hair_texture      0.033771           0.046800       0.067220   
+15         sleep_disturbance      0.049171           0.013976       0.060445   
+16              water_reason      0.053965           0.009323       0.048429   
+17            total_keratine      0.035500           0.032327       0.043472   
+18          late_night_sleep      0.031855           0.012988       0.037622   
+19                    gender      0.003751           0.001415       0.003739   
+
+    mean_abs_all  
+0       0.421640  
+1       0.343315  
+2       0.314521  
+3       0.303517  
+4       0.267305  
+5       0.262951  
+6       0.242067  
+7       0.183239  
+8       0.120709  
+9       0.087558  
+10      0.082608  
+11      0.076774  
+12      0.076106  
+13      0.069774  
+14      0.049264  
+15      0.041198  
+16      0.037239  
+17      0.037100  
+18      0.027489  
+19      0.002968  
+
+[finished OK | time: 4.3s | run #6]
