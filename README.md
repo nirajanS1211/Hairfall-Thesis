@@ -48,13 +48,13 @@ tail -f backend/data/api.log                                   # server log
 .venv/bin/hf download google/tabfm-1.0.0-pytorch               # resume a stuck download (run inside backend/)
 ```
 
-| What | Where |
-|---|---|
-| UI | http://127.0.0.1:8000 |
-| MinIO console | http://127.0.0.1:9001 (minioadmin / minioadmin) |
-| Step code | `backend/steps/` |
-| Results per step | `thesis_project/<Step>/` |
-| Database + files | `backend/data/` |
+| What             | Where                                           |
+| ---------------- | ----------------------------------------------- |
+| UI               | http://127.0.0.1:8000                           |
+| MinIO console    | http://127.0.0.1:9001 (minioadmin / minioadmin) |
+| Step code        | `backend/steps/`                                |
+| Results per step | `thesis_project/<Step>/`                        |
+| Database + files | `backend/data/`                                 |
 
 ## Move results to another laptop
 
@@ -66,3 +66,6 @@ tar czf hairfall-results.tgz thesis_project backend/data
 # new laptop (inside the project folder, before ./start.sh)
 tar xzf hairfall-results.tgz
 ```
+
+cd ~/Desktop/Hairfall-Thesis/backend
+.venv/bin/hf download google/tabfm-1.0.0-pytorch
