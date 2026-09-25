@@ -6,9 +6,6 @@ Thumbs.db
 .idea/
 *.swp
 
-# --- Old project files (kept on disk only) ---
-backup/
-
 # --- Python ---
 __pycache__/
 *.py[cod]
@@ -24,20 +21,12 @@ backend/data/
 backend/workspace/outputs/
 *.log
 
-# --- Big/binary training artifacts (thesis_project keeps code, text, images) ---
-thesis_project/**/*.cbm
-thesis_project/**/*.pkl
-thesis_project/**/*.pt
-thesis_project/**/*.safetensors
-thesis_project/**/history/
+# --- Huge model weights only (thesis_project results, models and history ARE committed) ---
+*.pkl
+*.pt
+*.safetensors
 
 # --- Node (future UI) ---
 node_modules/
 dist/
 npm-debug.log*
-
-# --- Personal dataset (names are only base64-encoded) ---
-thesis_project/data/# patient-level data written by steps 3-4
-thesis_project/**/hairfall_clean.csv
-thesis_project/**/train.csv
-thesis_project/**/test.csv
