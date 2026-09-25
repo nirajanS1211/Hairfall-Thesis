@@ -1,0 +1,12 @@
+{
+  "model": "TabFM",
+  "size": "Full",
+  "context_rows": 17284,
+  "test_rows": 4322,
+  "accuracy": 0.7862,
+  "macro_f1": 0.7797,
+  "weighted_f1": 0.7878,
+  "roc_auc_ovr": 0.923,
+  "fit_seconds": 84.6,
+  "predict_seconds": 3390.0
+}

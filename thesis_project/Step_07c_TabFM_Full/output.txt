@@ -1,0 +1,83 @@
+GPU: Tesla T4
+[test set] 4,322 rows
+Context rows: 17,284 | Test rows: 4,322
+Loading weights from local directory
+  predicted 100/4,322 rows | elapsed 64s | ETA 2,700s
+  predicted 200/4,322 rows | elapsed 142s | ETA 2,926s
+  predicted 300/4,322 rows | elapsed 219s | ETA 2,939s
+  predicted 400/4,322 rows | elapsed 296s | ETA 2,906s
+  predicted 500/4,322 rows | elapsed 374s | ETA 2,855s
+  predicted 600/4,322 rows | elapsed 451s | ETA 2,800s
+  predicted 700/4,322 rows | elapsed 529s | ETA 2,736s
+  predicted 800/4,322 rows | elapsed 606s | ETA 2,669s
+  predicted 900/4,322 rows | elapsed 684s | ETA 2,599s
+  predicted 1,000/4,322 rows | elapsed 761s | ETA 2,528s
+  predicted 1,100/4,322 rows | elapsed 838s | ETA 2,455s
+  predicted 1,200/4,322 rows | elapsed 915s | ETA 2,382s
+  predicted 1,300/4,322 rows | elapsed 993s | ETA 2,307s
+  predicted 1,400/4,322 rows | elapsed 1,070s | ETA 2,233s
+  predicted 1,500/4,322 rows | elapsed 1,147s | ETA 2,158s
+  predicted 1,600/4,322 rows | elapsed 1,224s | ETA 2,083s
+  predicted 1,700/4,322 rows | elapsed 1,301s | ETA 2,007s
+  predicted 1,800/4,322 rows | elapsed 1,379s | ETA 1,932s
+  predicted 1,900/4,322 rows | elapsed 1,456s | ETA 1,856s
+  predicted 2,000/4,322 rows | elapsed 1,533s | ETA 1,780s
+  predicted 2,100/4,322 rows | elapsed 1,610s | ETA 1,703s
+  predicted 2,200/4,322 rows | elapsed 1,687s | ETA 1,627s
+  predicted 2,300/4,322 rows | elapsed 1,764s | ETA 1,551s
+  predicted 2,400/4,322 rows | elapsed 1,842s | ETA 1,475s
+  predicted 2,500/4,322 rows | elapsed 1,920s | ETA 1,399s
+  predicted 2,600/4,322 rows | elapsed 1,997s | ETA 1,323s
+  predicted 2,700/4,322 rows | elapsed 2,075s | ETA 1,247s
+  predicted 2,800/4,322 rows | elapsed 2,152s | ETA 1,170s
+  predicted 2,900/4,322 rows | elapsed 2,229s | ETA 1,093s
+  predicted 3,000/4,322 rows | elapsed 2,307s | ETA 1,016s
+  predicted 3,100/4,322 rows | elapsed 2,384s | ETA 940s
+  predicted 3,200/4,322 rows | elapsed 2,461s | ETA 863s
+  predicted 3,300/4,322 rows | elapsed 2,538s | ETA 786s
+  predicted 3,400/4,322 rows | elapsed 2,616s | ETA 709s
+  predicted 3,500/4,322 rows | elapsed 2,694s | ETA 633s
+  predicted 3,600/4,322 rows | elapsed 2,771s | ETA 556s
+  predicted 3,700/4,322 rows | elapsed 2,848s | ETA 479s
+  predicted 3,800/4,322 rows | elapsed 2,925s | ETA 402s
+  predicted 3,900/4,322 rows | elapsed 3,002s | ETA 325s
+  predicted 4,000/4,322 rows | elapsed 3,079s | ETA 248s
+  predicted 4,100/4,322 rows | elapsed 3,157s | ETA 171s
+  predicted 4,200/4,322 rows | elapsed 3,234s | ETA 94s
+  predicted 4,300/4,322 rows | elapsed 3,312s | ETA 17s
+  predicted 4,322/4,322 rows | elapsed 3,390s | ETA 0s
+{
+  "model": "TabFM",
+  "size": "Full",
+  "context_rows": 17284,
+  "test_rows": 4322,
+  "accuracy": 0.7862,
+  "macro_f1": 0.7797,
+  "weighted_f1": 0.7878,
+  "roc_auc_ovr": 0.923,
+  "fit_seconds": 84.6,
+  "predict_seconds": 3390.0
+}
+              precision    recall  f1-score   support
+
+         Low     0.8655    0.8437    0.8545      1945
+    Moderate     0.6785    0.7422    0.7090      1513
+        High     0.8223    0.7338    0.7755       864
+
+    accuracy                         0.7862      4322
+   macro avg     0.7888    0.7732    0.7797      4322
+weighted avg     0.7914    0.7862    0.7878      4322
+
+{'model': 'TabFM', 'size': 'Full', 'context_rows': 17284, 'test_rows': 4322, 'accuracy': 0.7862, 'macro_f1': 0.7797, 'weighted_f1': 0.7878, 'roc_auc_ovr': np.float64(0.923), 'fit_seconds': 84.6, 'predict_seconds': 3390.0}
+{'model': 'TabFM',
+ 'size': 'Full',
+ 'context_rows': 17284,
+ 'test_rows': 4322,
+ 'accuracy': 0.7862,
+ 'macro_f1': 0.7797,
+ 'weighted_f1': 0.7878,
+ 'roc_auc_ovr': 0.923,
+ 'fit_seconds': 84.6,
+ 'predict_seconds': 3390.0}
+
+[finished OK | time: 3474.6s | run #1]
