@@ -6,5 +6,6 @@ Training sizes (same stratified rows for every model):
 1  2000   2000  0.45      0.35   0.2
 2  Full  17284  0.45      0.35   0.2
 Test class share: {0: 0.45, 1: 0.35, 2: 0.2}
+{}
 
-[finished OK | time: 0.1s | run #4]
+[finished OK | time: 0s | run #14]

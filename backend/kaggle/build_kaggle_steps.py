@@ -39,6 +39,7 @@ if any(n.startswith("tabfm") for n in NEEDS):
 import numpy as np
 import pandas as pd
 import torch
+from IPython.display import display  # steps call display(): a notebook builtin, imported so plain scripts work too
 
 if GPU:
     assert torch.cuda.is_available(), "No GPU - Notebook settings > Accelerator > GPU"
