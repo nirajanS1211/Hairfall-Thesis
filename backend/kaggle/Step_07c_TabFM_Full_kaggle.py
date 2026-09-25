@@ -53,7 +53,8 @@ class Tee(io.TextIOBase):  # everything printed is also saved to output.txt
 
 
 LOG = io.StringIO()
-sys.stdout = Tee(sys.__stdout__, LOG)
+NB_STDOUT = sys.stdout  # the notebook's own stream (sys.__stdout__ is NOT shown in the cell output)
+sys.stdout = Tee(NB_STDOUT, LOG)
 print(f"GPU: {torch.cuda.get_device_name(0)}")
 
 
@@ -167,7 +168,17 @@ pred_s = time.time() - t
 m = evaluate("TabFM", SIZE, len(X_ctx), y_test, proba, fit_s, pred_s)
 print(m)
 
-sys.stdout = sys.__stdout__
+sys.stdout = NB_STDOUT
 open(f"{OUT}/output.txt", "w").write(LOG.getvalue())
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", OUT)
-print(f"Done -> download /kaggle/working/{STEP}.zip")
+ZIP = f"/kaggle/working/{STEP}.zip"
+print(f"Done -> {ZIP}")
+
+# Kaggle wipes the session's files when it closes, so push the zip straight to your computer's Downloads folder
+# (the zip is tiny, so it is embedded in the page and downloaded automatically) + a manual link as a fallback.
+import base64
+from IPython.display import HTML, FileLink, display
+b64 = base64.b64encode(open(ZIP, "rb").read()).decode()
+display(HTML(f'<a id="dl" download="{STEP}.zip" href="data:application/zip;base64,{b64}">Download {STEP}.zip</a>'
+             '<script>document.getElementById("dl").click()</script>'))
+display(FileLink(ZIP))
