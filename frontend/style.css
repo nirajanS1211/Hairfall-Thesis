@@ -308,3 +308,52 @@ table.mt .pb { width: 40%; }
 .disclaimer { color: var(--muted); font-size: .9em; margin-top: 8px; }
 .runline { display: flex; align-items: center; gap: 5px; color: var(--accent); }
 .runline .spin { border-color: var(--accent-soft); border-top-color: var(--accent); }
+
+/* ----- predict: patient view ----- */
+.view-seg { width: auto; height: 16px; margin-left: 6px; }
+.view-seg button { padding: 0 8px; }
+.pf-sec-h .n { text-transform: none; letter-spacing: 0; font-weight: 400; margin-left: auto; }
+.pr-empty .big-q { font-size: 2em; font-weight: 750; color: var(--text); margin-bottom: 6px; }
+.pr-wait { display: flex; align-items: center; gap: 10px; padding: 24px 12px; }
+.spin.big { width: 18px; height: 18px; border-width: 2.5px; border-color: var(--accent-soft); border-top-color: var(--accent); }
+.answer { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; }
+.answer.c0 { background: var(--c0s); border-color: var(--c0); } .answer.c1 { background: var(--c1s); border-color: var(--c1); } .answer.c2 { background: var(--c2s); border-color: var(--c2); }
+.answer .ans-l { flex: 1; min-width: 0; }
+.answer .q { color: var(--muted); font-weight: 650; text-transform: uppercase; letter-spacing: .05em; font-size: .95em; }
+.answer .a { font-size: 3em; font-weight: 800; line-height: 1.05; }
+.answer.c0 .a { color: var(--c0); } .answer.c1 .a { color: var(--c1); } .answer.c2 .a { color: var(--c2); }
+.answer .t { font-size: 1.3em; margin-top: 2px; }
+.answer .s { color: var(--muted); margin-top: 3px; }
+.answer .ans-r { width: 170px; flex-shrink: 0; text-align: center; }
+.gauge { width: 100%; display: block; }
+.gauge .gv { font: 800 20px -apple-system, sans-serif; }
+.gauge .gv.c0 { fill: var(--c0); } .gauge .gv.c1 { fill: var(--c1); } .gauge .gv.c2 { fill: var(--c2); }
+.answer .gl { display: flex; justify-content: space-between; color: var(--muted); font-size: .9em; }
+.pr-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; margin-bottom: 8px; }
+.card2 { border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; background: var(--panel); }
+.card2.up { border-top: 3px solid var(--c2); } .card2.down { border-top: 3px solid var(--c0); }
+.card2.up .pr-sec-h { color: var(--c2); } .card2.down .pr-sec-h { color: var(--c0); }
+.card2.tips { margin-bottom: 8px; border-left: 3px solid var(--accent); }
+.card2.tips ul { margin: 2px 0 0; padding-left: 14px; }
+.card2.tips li { margin: 2px 0; }
+.chance { display: grid; grid-template-columns: 80px 1fr 36px; align-items: center; gap: 6px; padding: 2px 0; }
+.ctrack { height: 9px; background: var(--panel-2); border-radius: 5px; overflow: hidden; }
+.ctrack span { display: block; height: 100%; border-radius: 5px; }
+.chance .cv { text-align: right; font-variant-numeric: tabular-nums; }
+.chance .cv.b, td.b { font-weight: 750; }
+.sure { margin-top: 4px; }
+.blood .brow { display: grid; grid-template-columns: 78px 1fr 34px 44px; align-items: center; gap: 5px; padding: 1.5px 0; }
+.blood .bn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btrack { position: relative; height: 6px; background: var(--panel-2); border-radius: 3px; }
+.btrack .bz { position: absolute; top: 0; bottom: 0; background: var(--c0s); border: 1px solid var(--c0); border-radius: 3px; opacity: .8; }
+.btrack .bm { position: absolute; top: -2.5px; width: 9px; height: 9px; border-radius: 50%; transform: translateX(-4.5px); background: var(--c0); border: 1.5px solid var(--panel); }
+.btrack .bm.low, .btrack .bm.high { background: var(--c1); }
+.blood .bv { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.blood .fl { text-align: center; font-size: .85em; font-weight: 650; padding: 0 3px; border-radius: 3px; }
+.reason { display: grid; grid-template-columns: 1fr 60px; align-items: center; gap: 8px; padding: 2.5px 0; border-bottom: 1px dotted var(--border); }
+.reason:last-child { border-bottom: 0; }
+.reason .rs { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
+.reason .rs span { display: block; height: 100%; border-radius: 3px; }
+.reason.up .rs span { background: var(--c2); } .reason.down .rs span { background: var(--c0); }
+.calc { font-family: ui-monospace, Menlo, monospace; font-size: var(--fm); line-height: 1.7; padding: 5px 8px; background: var(--panel-2); border-radius: 4px; }
+table.mt td.up { color: var(--c2); font-weight: 650; } table.mt td.down { color: var(--c0); font-weight: 650; }

@@ -28,26 +28,26 @@ CATBOOST_MODEL = project.ROOT / "Step_05c_CatBoost_Full" / "catboost.cbm"
 
 # (name, label, unit, group, kind, clinical normal range or None, help)
 FIELDS = [
-    ("age", "Age", "years", "Patient", "int", None, ""),
-    ("gender", "Gender", "", "Patient", "choice", None, ""),
-    ("total_protein", "Total protein", "g/dL", "Blood tests", "float", (6.0, 8.3), "Serum total protein"),
-    ("calcium", "Calcium", "mg/dL", "Blood tests", "float", (8.5, 10.5), "Serum calcium"),
-    ("iron", "Iron", "µg/dL", "Blood tests", "int", (60, 170), "Serum iron"),
-    ("vitamin_d", "Vitamin D", "ng/mL", "Blood tests", "float", (25, 80), "25-OH vitamin D"),
-    ("alt_liver", "ALT (liver)", "U/L", "Blood tests", "int", (7, 56), "Alanine aminotransferase"),
-    ("manganese", "Manganese", "µg/L", "Blood tests", "float", (4, 15), "Whole-blood manganese"),
-    ("body_water_content", "Body water", "%", "Blood tests", "float", (45, 65), "Total body water"),
-    ("stress_level", "Stress level", "score", "Scores", "int", None, "Stress score"),
-    ("total_keratine", "Keratin", "score", "Scores", "int", None, "Total keratin score"),
-    ("hair_texture", "Hair texture", "score", "Scores", "int", None, "Hair texture score"),
-    ("family_hair_fall_history", "Family history of hair fall", "", "History & lifestyle", "bool", None, ""),
-    ("chronic_illness", "Chronic illness", "", "History & lifestyle", "bool", None, ""),
-    ("late_night_sleep", "Late-night sleep", "", "History & lifestyle", "bool", None, ""),
-    ("sleep_disturbance", "Sleep disturbance", "", "History & lifestyle", "bool", None, ""),
-    ("water_reason", "Water quality issue", "", "History & lifestyle", "bool", None, ""),
-    ("chemical_use", "Chemical hair products", "", "History & lifestyle", "bool", None, ""),
-    ("anemia", "Anemia", "", "History & lifestyle", "bool", None, ""),
-    ("stress", "Stressed", "", "History & lifestyle", "bool", None, ""),
+    ("age", "Age", "years", "About you", "int", None, ""),
+    ("gender", "Gender", "", "About you", "choice", None, ""),
+    ("total_protein", "Total protein", "g/dL", "Blood test results", "float", (6.0, 8.3), "Serum total protein"),
+    ("calcium", "Calcium", "mg/dL", "Blood test results", "float", (8.5, 10.5), "Serum calcium"),
+    ("iron", "Iron", "µg/dL", "Blood test results", "int", (60, 170), "Serum iron"),
+    ("vitamin_d", "Vitamin D", "ng/mL", "Blood test results", "float", (25, 80), "25-OH vitamin D"),
+    ("alt_liver", "ALT (liver)", "U/L", "Blood test results", "int", (7, 56), "Alanine aminotransferase"),
+    ("manganese", "Manganese", "µg/L", "Blood test results", "float", (4, 15), "Whole-blood manganese"),
+    ("body_water_content", "Body water", "%", "Blood test results", "float", (45, 65), "Total body water"),
+    ("stress_level", "Stress level", "0–40", "Other scores", "int", None, "How stressed you are, 0 = none, 40 = extreme"),
+    ("total_keratine", "Keratin", "0–100", "Other scores", "int", None, "Total keratin score"),
+    ("hair_texture", "Hair texture", "0–100", "Other scores", "int", None, "Hair texture score"),
+    ("family_hair_fall_history", "Family history of hair fall", "", "Health & lifestyle", "bool", None, ""),
+    ("chronic_illness", "Chronic illness", "", "Health & lifestyle", "bool", None, ""),
+    ("late_night_sleep", "Sleep late at night", "", "Health & lifestyle", "bool", None, ""),
+    ("sleep_disturbance", "Disturbed sleep", "", "Health & lifestyle", "bool", None, ""),
+    ("water_reason", "Poor water quality", "", "Health & lifestyle", "bool", None, ""),
+    ("chemical_use", "Use chemical hair products", "", "Health & lifestyle", "bool", None, ""),
+    ("anemia", "Anemia", "", "Health & lifestyle", "bool", None, ""),
+    ("stress", "Often feel stressed", "", "Health & lifestyle", "bool", None, ""),
 ]
 GENDERS = {0: "Female", 1: "Male", 2: "Other"}
 MODELS = {"catboost": ["Full"], "tabpfn": ["500", "2000", "Full"], "tabfm": ["500", "2000"]}
@@ -210,11 +210,16 @@ def _predict_raw(kind, size, row: pd.DataFrame):
     out["pred"] = int(np.argmax(out["proba"]))
     if kind == "catboost":
         from catboost import Pool
-        sv = m.get_feature_importance(Pool(row), type="ShapValues")[0]  # [class, feature+1]
+        sv = m.get_feature_importance(Pool(row), type="ShapValues")[0]  # [class, feature + bias]
         c = out["pred"]
         contrib = sorted(({"feature": f, "value": round(float(sv[c][i]), 4)} for i, f in enumerate(row.columns)),
                          key=lambda d: -abs(d["value"]))
-        out["shap"] = {"class": c, "base": round(float(sv[c][-1]), 4), "top": contrib[:8]}
+        # risk direction per feature: SHAP(High) - SHAP(Low) in log-odds; > 0 raises the hair-fall risk
+        risk = sorted(({"feature": f, "value": round(float(sv[2][i] - sv[0][i]), 4)} for i, f in enumerate(row.columns)),
+                      key=lambda d: -abs(d["value"]))
+        out["shap"] = {"class": c, "base": round(float(sv[c][-1]), 4), "top": contrib[:8], "risk": risk,
+                       "all": {CLASSES[k]: [round(float(x), 4) for x in sv[k][:-1]] for k in range(len(CLASSES))},
+                       "features": list(row.columns)}
     return out
 
 
@@ -266,6 +271,25 @@ def init_table():
             id SERIAL PRIMARY KEY, created_at TIMESTAMPTZ DEFAULT now(), label TEXT,
             inputs JSONB NOT NULL, models JSONB NOT NULL, results JSONB NOT NULL DEFAULT '{}',
             status TEXT NOT NULL DEFAULT 'queued', pred INT, seconds REAL, true_class INT, minio_key TEXT)""")
+
+
+DEFAULT_MODELS = {"catboost": "Full", "tabpfn": "2000", "tabfm": "2000"}
+_warming = threading.Event()
+
+
+def warm():
+    """Load the default models in the background so the first patient does not wait ~30 s."""
+    if _warming.is_set():
+        return
+    _warming.set()
+
+    def go():
+        for k, v in DEFAULT_MODELS.items():
+            try:
+                _model(k, v)
+            except Exception:  # noqa: BLE001
+                log.exception("warm-up of %s failed", k)
+    threading.Thread(target=go, daemon=True).start()
 
 
 def loaded():

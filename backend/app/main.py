@@ -276,7 +276,8 @@ class PredictReq(BaseModel):
 
 @app.get("/api/predict/schema")
 def predict_schema():
-    return {**pmod.schema(), "loaded": pmod.loaded()}
+    pmod.warm()
+    return {**pmod.schema(), "loaded": pmod.loaded(), "default_models": pmod.DEFAULT_MODELS}
 
 
 @app.get("/api/predict/sample")
