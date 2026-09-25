@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hairfall Lab</title>
-  <link rel="stylesheet" href="/static/style.css?v=2">
+  <link rel="stylesheet" href="/static/style.css?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -15,6 +15,7 @@
       <button class="tab" data-tab="dataset">Dataset</button>
     </nav>
     <div class="top-actions">
+      <button class="btn icon ghost-danger" id="fsDown" title="Smaller text">A−</button><button class="btn icon ghost-danger" id="fsUp" title="Bigger text">A+</button>
       <span id="status" class="pill">connecting…</span>
       <button id="stopAll" class="btn danger hidden" title="Stop the running step and clear the queue"><svg class="ic" viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/></svg>Stop</button>
       <button id="runAll" class="btn" title="Run every step in order"><svg class="ic" viewBox="0 0 16 16"><path d="M3 3l6 5-6 5zM9 3l6 5-6 5z"/></svg>Run all</button>
@@ -75,6 +76,6 @@
     </section>
   </main>
 
-  <script src="/static/app.js?v=2"></script>
+  <script src="/static/app.js?v=3"></script>
 </body>
 </html>

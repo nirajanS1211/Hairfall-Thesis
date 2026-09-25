@@ -307,49 +307,149 @@ async function loadHistory(stepId) {
 
 /* ---------------- compare tab ---------------- */
 const SIZE_ORDER = { "500": 0, "2000": 1, "Full": 2 };
-let cmpRows = [];
+const bySizeOrder = (a, b) => a.d.model.localeCompare(b.d.model) || (SIZE_ORDER[a.d.size] ?? 9) - (SIZE_ORDER[b.d.size] ?? 9);
+let cmpRows = [], cmpSig = "";
+
+function parseCSV(text) {
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ",") { row.push(f); f = ""; }
+    else if (c === "\n") { row.push(f); rows.push(row); row = []; f = ""; }
+    else if (c !== "\r") f += c;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  const [head, ...body] = rows.filter((r) => r.length > 1 || r[0] !== "");
+  return body.map((r) => Object.fromEntries(head.map((h, i) => [h, r[i]])));
+}
+async function stepFile(stepPrefix, name) {
+  const s = steps.find((x) => x.id.startsWith(stepPrefix));
+  const f = s && s.last_run && s.last_run.status === "ok" && (s.last_run.files || []).find((x) => x.name === name);
+  return f ? { key: f.key, text: await (await fetch(`/api/files/${f.key}`)).text() } : null;
+}
+const fmtP = (p) => (p < 0.001 ? "<0.001" : p.toFixed(3));
+const num = (v) => (v === "" || v == null ? NaN : Number(v));
+const isFast = (d) => d.predict_seconds === 0 && /TabPFN|TabFM/.test(d.model);
+
 async function renderCompare() {
   const page = $("#cmpPage");
-  page.innerHTML = `<div class="muted">Loading…</div>`;
+  if (!cmpRows.length) page.innerHTML = `<div class="muted">Loading…</div>`;
   const okSteps = steps.filter((s) => s.last_run && s.last_run.status === "ok");
-  const got = await Promise.all(okSteps.map(async (s) => ({ s, d: await runSummary(s.last_run) })));
-  const met = got.filter((x) => x.d && x.d._kind === "metrics")
-    .sort((a, b) => a.d.model.localeCompare(b.d.model) || (SIZE_ORDER[a.d.size] ?? 9) - (SIZE_ORDER[b.d.size] ?? 9));
-  const shap = got.filter((x) => x.d && x.d._kind === "shap")
-    .sort((a, b) => a.d.model.localeCompare(b.d.model) || (SIZE_ORDER[a.d.size] ?? 9) - (SIZE_ORDER[b.d.size] ?? 9));
+  const [got, dsStats, mc, fin] = await Promise.all([
+    Promise.all(okSteps.map(async (s) => ({ s, d: await runSummary(s.last_run) }))),
+    api("/api/dataset/stats").catch(() => null),
+    stepFile("Step_09", "mcnemar_results.csv").catch(() => null),
+    (async () => {
+      const s = steps.find((x) => x.id.startsWith("Step_10"));
+      return s && s.last_run && s.last_run.status === "ok" ? s.last_run.files.filter((f) => f.name.endsWith(".png")) : [];
+    })(),
+  ]);
+  const met = got.filter((x) => x.d && x.d._kind === "metrics").sort(bySizeOrder);
+  const shap = got.filter((x) => x.d && x.d._kind === "shap").sort(bySizeOrder);
   cmpRows = met;
+  const models = [...new Set(met.map((x) => x.d.model))];
+  const sizes = ["500", "2000", "Full"];
+  const cell = (m, sz) => met.find((x) => x.d.model === m && x.d.size === sz)?.d;
 
-  const cols = [["accuracy", "Accuracy", 1], ["macro_f1", "Macro F1", 1], ["weighted_f1", "Weighted F1", 1], ["roc_auc_ovr", "ROC-AUC", 1]];
-  const best = {};
-  cols.forEach(([k]) => { best[k] = Math.max(...met.map((x) => x.d[k] ?? -1)); });
+  // dataset strip
+  const t = dsStats ? dsStats.target : {};
+  const testRows = met[0]?.d.test_rows, trainFull = Math.max(0, ...met.map((x) => x.d.context_rows || 0));
+  const strip = dsStats ? `<div class="cards">
+    ${[["Patients", dsStats.rows.toLocaleString()], ["Columns", dsStats.columns], ["Missing", dsStats.missing],
+       ["Low", (t[0] || 0).toLocaleString(), (((t[0] || 0) / dsStats.rows) * 100).toFixed(0) + "%"],
+       ["Moderate", (t[1] || 0).toLocaleString(), (((t[1] || 0) / dsStats.rows) * 100).toFixed(0) + "%"],
+       ["High", (t[2] || 0).toLocaleString(), (((t[2] || 0) / dsStats.rows) * 100).toFixed(0) + "%"],
+       ["Train", trainFull.toLocaleString()], ["Test", (testRows || 0).toLocaleString()]]
+      .map(([k, v, sub]) => `<div class="stat"><span class="k">${k}</span><span class="v">${v}</span>${sub ? `<span class="s">${sub}</span>` : ""}</div>`).join("")}</div>` : "";
+
+  // main metrics table
+  const cols = [["accuracy", "Accuracy"], ["macro_f1", "Macro F1"], ["weighted_f1", "Wtd F1"], ["roc_auc_ovr", "ROC-AUC"]];
+  const best = {}, lo = {};
+  cols.forEach(([k]) => { best[k] = Math.max(...met.map((x) => x.d[k] ?? -1)); lo[k] = Math.min(...met.map((x) => x.d[k] ?? 9)); });
   let prev = null;
-  const rows = met.map(({ s, d }) => {
+  const mainRows = met.map(({ s, d }) => {
     const sep = prev && prev !== d.model ? "sep" : ""; prev = d.model;
     return `<tr class="${sep}"><td class="l"><code>${esc(s.label)}</code></td><td class="l">${esc(d.model)}</td><td class="l">${esc(d.size)}</td>
       <td>${(d.context_rows ?? 0).toLocaleString()}</td>
-      ${cols.map(([k]) => `<td class="${d[k] === best[k] ? "best" : ""}">${d[k]}</td>`).join("")}
-      <td>${fmtTime(d.fit_seconds)}</td><td class="${d.predict_seconds === 0 && /TabPFN|TabFM/.test(d.model) ? "warn" : ""}">${fmtTime(d.predict_seconds)}</td></tr>`;
+      ${cols.map(([k]) => `<td class="${d[k] === best[k] ? "best" : ""}">${d[k]}<span class="bar" style="width:${Math.round(((d[k] - lo[k] * 0.98) / (best[k] - lo[k] * 0.98 || 1)) * 30)}px"></span></td>`).join("")}
+      <td>${fmtTime(d.fit_seconds)}</td><td class="${isFast(d) ? "warn" : ""}" title="${isFast(d) ? "0s: predictions came from a saved checkpoint" : ""}">${fmtTime(d.predict_seconds)}</td></tr>`;
   }).join("");
 
-  const shapRows = shap.map(({ s, d }) => `<tr><td class="l"><code>${esc(s.label)}</code></td><td class="l">${esc(d.model)}</td><td class="l">${esc(d.size)}</td>
-    <td>${d.rows_explained}</td><td>${fmtTime(d.seconds)}</td><td class="l">${(d.top_5 || []).map(esc).join(", ")}</td></tr>`).join("");
+  // pivots (model x size)
+  const pivot = (title, fn, higherBetter) => {
+    const vals = met.map((x) => fn(x.d)).filter((v) => v != null);
+    const top = higherBetter ? Math.max(...vals) : null;
+    return `<div class="sec"><div class="sec-head"><h2>${title}</h2></div><div class="table-wrap"><table class="data cmp">
+      <tr><th class="l">Model</th>${sizes.map((z) => `<th>${z}</th>`).join("")}<th>Δ 500→Full</th></tr>
+      ${models.map((m) => {
+        const v = sizes.map((z) => { const d = cell(m, z); return d ? fn(d) : null; });
+        const delta = v[0] != null && v[2] != null ? v[2] - v[0] : null;
+        return `<tr><td class="l">${esc(m)}</td>${v.map((x) => `<td class="${higherBetter && x === top ? "best" : ""}">${x == null ? "–" : (higherBetter ? x.toFixed(4) : fmtTime(x))}</td>`).join("")}
+          <td>${delta == null ? "–" : (delta >= 0 ? "+" : "") + (higherBetter ? delta.toFixed(4) : fmtTime(Math.abs(delta)))}</td></tr>`;
+      }).join("")}</table></div></div>`;
+  };
 
-  page.innerHTML = `
-    <div class="page-bar"><h2 style="margin:0">Model comparison</h2><span class="muted">${met.length} runs · best value per column highlighted</span><span class="spacer"></span>
+  // McNemar
+  let mcHtml = `<div class="muted">Run Step 9 to see McNemar tests.</div>`;
+  if (mc) {
+    const rows = parseCSV(mc.text);
+    mcHtml = `<div class="table-wrap"><table class="data cmp">
+      <tr><th class="l">Size</th><th class="l">Comparison</th><th>Only A right</th><th>Only B right</th><th>χ²</th><th>p</th><th>Result (α = 0.05)</th></tr>
+      ${rows.map((r) => {
+        const [A, B] = r.comparison.split(" vs ");
+        const a = num(r[`only_${A}_correct`]), b = num(r.only_other_correct), p = num(r.p_value), sig = String(r["significant_0.05"]).toLowerCase() === "true";
+        const win = sig ? (a > b ? A : B) : null;
+        return `<tr><td class="l">${esc(r.size)}</td><td class="l">${esc(A)} vs ${esc(B)}</td><td>${a}</td><td>${b}</td><td>${num(r.chi2).toFixed(2)}</td><td>${fmtP(p)}</td>
+          <td class="${sig ? "sig" : "ns"}">${sig ? `${esc(win)} better` : "no difference"}</td></tr>`;
+      }).join("")}</table></div>`;
+  }
+
+  // SHAP
+  const shapHtml = shap.length ? `<div class="table-wrap"><table class="data cmp">
+    <tr><th class="l">Model</th><th class="l">Size</th><th>Rows</th><th>Time</th><th class="l">Top 5 features</th></tr>
+    ${shap.map(({ d }) => `<tr><td class="l">${esc(d.model)}</td><td class="l">${esc(d.size)}</td><td>${d.rows_explained}</td><td>${fmtTime(d.seconds)}</td>
+      <td class="ft">${(d.top_5 || []).map((f) => `<span class="fchip">${esc(f)}</span>`).join("")}</td></tr>`).join("")}</table></div>`
+    : `<div class="muted">No SHAP runs yet.</div>`;
+
+  page.innerHTML = `${strip}
+    <div class="sec"><div class="sec-head"><h2>Model comparison</h2><span class="note">${met.length} runs · best per column highlighted · orange predict time = checkpoint reused</span><span class="spacer"></span>
       <button class="btn" id="cmpCopy">Copy CSV</button></div>
-    <div class="table-wrap"><table class="data cmp">
-      <tr><th class="l">Step</th><th class="l">Model</th><th class="l">Size</th><th>Context rows</th>${cols.map((c) => `<th>${c[1]}</th>`).join("")}<th>Fit</th><th>Predict</th></tr>
-      ${rows || `<tr><td class="l" colspan="10">No finished runs with metrics yet.</td></tr>`}</table></div>
-    <h2>SHAP — top features</h2>
-    <div class="table-wrap"><table class="data cmp">
-      <tr><th class="l">Step</th><th class="l">Model</th><th class="l">Size</th><th>Rows explained</th><th>Time</th><th class="l">Top 5 features</th></tr>
-      ${shapRows || `<tr><td class="l" colspan="6">No SHAP runs yet.</td></tr>`}</table></div>`;
+      <div class="table-wrap"><table class="data cmp">
+      <tr><th class="l">Step</th><th class="l">Model</th><th class="l">Size</th><th>Context</th>${cols.map((c) => `<th>${c[1]}</th>`).join("")}<th>Fit</th><th>Predict</th></tr>
+      ${mainRows || `<tr><td class="l" colspan="10">No finished runs with metrics yet.</td></tr>`}</table></div></div>
+    <div class="grid2">
+      ${pivot("Macro F1 vs context size", (d) => d.macro_f1, true)}
+      ${pivot("ROC-AUC vs context size", (d) => d.roc_auc_ovr, true)}
+      ${pivot("Predict time vs context size", (d) => (isFast(d) ? null : d.predict_seconds), false)}
+    </div>
+    <div class="grid2">
+      <div class="sec"><div class="sec-head"><h2>McNemar's tests</h2><span class="note">paired, same 4,322 test rows</span></div>${mcHtml}</div>
+      <div class="sec"><div class="sec-head"><h2>SHAP — top features</h2></div>${shapHtml}</div>
+    </div>
+    ${fin.length ? `<div class="sec"><div class="sec-head"><h2>Final figures</h2><span class="note">click to enlarge</span></div>
+      <div class="imgrow">${fin.map((f) => `<img src="/api/files/${f.key}" title="${esc(f.name)}">`).join("")}</div></div>` : ""}`;
   $("#cmpCopy").onclick = () => {
     const head = ["step", "model", "size", "context_rows", "accuracy", "macro_f1", "weighted_f1", "roc_auc_ovr", "fit_seconds", "predict_seconds"];
     const csv = [head.join(","), ...cmpRows.map(({ s, d }) => [s.id, d.model, d.size, d.context_rows, d.accuracy, d.macro_f1, d.weighted_f1, d.roc_auc_ovr, d.fit_seconds, d.predict_seconds].join(","))].join("\n");
     navigator.clipboard.writeText(csv).then(() => { $("#cmpCopy").textContent = "Copied ✓"; setTimeout(() => ($("#cmpCopy").textContent = "Copy CSV"), 1500); });
   };
 }
+
+/* click any output / compare image to open it full size */
+document.addEventListener("click", (e) => { if (e.target.matches(".out-img, .imgrow img")) window.open(e.target.src, "_blank"); });
+
+/* ---------------- font size (A- / A+) ---------------- */
+let fs = parseFloat(localStorageGet("fs")) || 9;
+function applyFs() {
+  document.documentElement.style.setProperty("--fs", fs + "px");
+  document.documentElement.style.setProperty("--fm", Math.max(6.5, fs - 0.5) + "px");
+  localStorageSet("fs", String(fs));
+}
+applyFs();
+$("#fsDown").onclick = () => { fs = Math.max(7, fs - 0.5); applyFs(); };
+$("#fsUp").onclick = () => { fs = Math.min(14, fs + 0.5); applyFs(); };
 
 /* ---------------- keyboard ---------------- */
 document.addEventListener("keydown", (e) => {
@@ -370,6 +470,10 @@ async function refresh() {
     $("#status").classList.toggle("busy", !!(st.running || st.queued));
     $("#stopAll").classList.toggle("hidden", !(st.running || st.queued));
     renderSidebar(); renderStep();
+    if (!$("#compare").classList.contains("hidden")) {   // keep the compare tab current without re-rendering every poll
+      const sig = JSON.stringify(steps.map((x) => x.last_run && [x.last_run.id, x.last_run.status]));
+      if (sig !== cmpSig) { cmpSig = sig; renderCompare(); }
+    }
   } catch (e) {
     $("#status").textContent = "backend offline";
   }
@@ -419,3 +523,7 @@ $("#dsPrev").onclick = () => { ds.offset = Math.max(0, ds.offset - ds.limit); lo
 $("#dsNext").onclick = () => { ds.offset += ds.limit; loadRows(); };
 let searchTimer;
 $("#dsSearch").oninput = (e) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { ds.q = e.target.value.trim(); ds.offset = 0; loadRows(); }, 300); };
+
+/* remember the open tab across reloads: /#compare, /#dataset */
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => history.replaceState(null, "", "#" + t.dataset.tab)));
+{ const h = location.hash.slice(1); if (h) document.querySelector(`.tab[data-tab="${h}"]`)?.click(); }
