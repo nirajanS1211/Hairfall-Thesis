@@ -18,6 +18,6 @@ model.fit(X_ctx, y_ctx)
 fit_s = time.time() - t
 
 t = time.time()
-proba = predict_proba_batched(model, X_test, BATCH)
+proba = predict_proba_batched(model, X_test, BATCH, tag=f"tabpfn_{SIZE}_{len(X_test)}")
 pred_s = time.time() - t
 evaluate("TabPFN", SIZE, len(X_ctx), y_test, proba, fit_s, pred_s, extra={"device": dev})

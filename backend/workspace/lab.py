@@ -61,16 +61,29 @@ def device() -> str:
     return "mps" if torch.backends.mps.is_available() else "cpu"
 
 
-def predict_proba_batched(model, X, batch=500):
-    """predict_proba in batches with progress + ETA (foundation models are slow on big test sets)."""
-    parts, t0 = [], time.time()
-    for i in range(0, len(X), batch):
-        parts.append(model.predict_proba(X.iloc[i:i + batch]))
+def predict_proba_batched(model, X, batch=500, tag=None):
+    """predict_proba in batches with progress + ETA. With `tag`, finished batches are saved to
+    backend/workspace/checkpoints/<tag>.npy, so a stopped or crashed run resumes where it left off."""
+    ckpt = OUT.parent / "checkpoints" / f"{tag}.npy" if tag else None
+    done_parts = []
+    if ckpt is not None:
+        ckpt.parent.mkdir(exist_ok=True)
+        if ckpt.exists():
+            saved = np.load(ckpt)
+            if len(saved) <= len(X):
+                done_parts = [saved]
+                print(f"  resuming: {len(saved):,}/{len(X):,} rows already predicted", flush=True)
+    start = sum(len(p) for p in done_parts)
+    t0 = time.time()
+    for i in range(start, len(X), batch):
+        done_parts.append(model.predict_proba(X.iloc[i:i + batch]))
         done = min(i + batch, len(X))
-        eta = (time.time() - t0) / done * (len(X) - done)
-        print(f"  predicted {done:,}/{len(X):,} rows | elapsed {time.time() - t0:,.0f}s | ETA {eta:,.0f}s",
-              flush=True)
-    return np.vstack(parts)
+        rate = (time.time() - t0) / (done - start)
+        print(f"  predicted {done:,}/{len(X):,} rows | elapsed {time.time() - t0:,.0f}s | "
+              f"ETA {rate * (len(X) - done):,.0f}s", flush=True)
+        if ckpt is not None:
+            np.save(ckpt, np.vstack(done_parts))
+    return np.vstack(done_parts)
 
 
 def evaluate(model_name, size_label, n_context, y_true, proba, fit_seconds, predict_seconds, extra=None):

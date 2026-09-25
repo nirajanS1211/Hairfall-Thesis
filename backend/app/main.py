@@ -71,7 +71,8 @@ def _worker():
         except kmod.KernelDied as exc:
             status, outputs, files = "error", [{"type": "error", "text": str(exc), "ename": "KernelDied"}], []
             with kernel_lock:
-                state["kernel"].shutdown()
+                if state["kernel"]:
+                    state["kernel"].shutdown()
                 state["kernel"] = None  # a fresh kernel starts on the next run
         except Exception as exc:  # noqa: BLE001
             log.exception("run %s failed", run_id)
@@ -163,16 +164,27 @@ def stop():
         c.execute("UPDATE runs SET status='cancelled' WHERE status='queued'")
     if state["kernel"] and state["running"]:
         state["kernel"].interrupt()
+        run_id = state["running"]
+
+        def force():  # long native calls (GPU inference) ignore the interrupt -> kill the kernel
+            time.sleep(5)
+            if state["running"] == run_id and state["kernel"]:
+                state["kernel"].km.kernel.kill() if hasattr(state["kernel"].km, "kernel") else None
+                state["kernel"].km.shutdown_kernel(now=True)
+        threading.Thread(target=force, daemon=True).start()
     return {"ok": True}
 
 
 @app.post("/api/restart")
 def restart():
     stop()
-    with kernel_lock:
-        if state["kernel"]:
-            state["kernel"].shutdown()
-        state["kernel"] = None
+    if state["kernel"] and state["running"]:
+        state["kernel"].km.shutdown_kernel(now=True)  # the running job then ends via KernelDied
+    else:
+        with kernel_lock:
+            if state["kernel"]:
+                state["kernel"].shutdown()
+            state["kernel"] = None
     return {"ok": True}
 
 
