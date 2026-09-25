@@ -25,6 +25,11 @@ from IPython.display import display
 
 if GPU:
     assert torch.cuda.is_available(), "No GPU - Notebook settings > Accelerator > GPU"
+    import gc
+    for _v in ("model", "explainer"):
+        globals().pop(_v, None)
+    gc.collect()
+    torch.cuda.empty_cache()
 
 try:
     from kaggle_secrets import UserSecretsClient
@@ -211,12 +216,16 @@ def _chunk_predict(cls, chunk):
     def predict_proba(self, X, *a, **k):
         parts, i, b = [], 0, chunk
         while i < len(X):
+            oom = False
             try:
                 parts.append(orig(self, X.iloc[i:i + b] if hasattr(X, "iloc") else X[i:i + b], *a, **k))
             except torch.cuda.OutOfMemoryError:
+                oom = True
+            if oom:
+                gc.collect()
                 torch.cuda.empty_cache()
                 if b == 1:
-                    raise
+                    raise RuntimeError("GPU out of memory even at batch size 1 - restart the session and run this step alone")
                 b = max(1, b // 2)
                 print(f"  GPU out of memory -> batch size {b}", flush=True)
                 continue
