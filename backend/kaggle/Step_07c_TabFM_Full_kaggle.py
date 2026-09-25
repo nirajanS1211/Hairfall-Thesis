@@ -76,6 +76,8 @@ def predict_proba_batched(model, X, batch, tag):
             parts.append(model.predict_proba(X.iloc[i:i + batch]))
         except torch.cuda.OutOfMemoryError:
             torch.cuda.empty_cache()
+            if batch == 1:
+                raise
             batch = max(1, batch // 2)
             print(f"  GPU out of memory -> batch size {batch}", flush=True)
             continue
@@ -129,8 +131,33 @@ print(f"[test set] {len(X_test):,} rows")
 X_ctx, y_ctx = context(X_train, y_train, None)
 print(f"Context rows: {len(X_ctx):,} | Test rows: {len(X_test):,}")
 
+# The T4 has no bf16 flash attention, so SDPA materializes the full 17,284 x 17,284 score matrix and runs out of
+# memory. Splitting the queries into chunks gives the exact same result (softmax is per query row) with far less memory.
+_sdpa = torch.nn.functional.scaled_dot_product_attention
+Q_CHUNK = 1024
+
+
+def _chunked_sdpa(q, k, v, attn_mask=None, **kw):
+    n = q.shape[-2]
+    if n <= Q_CHUNK:
+        return _sdpa(q, k, v, attn_mask=attn_mask, **kw)
+    out = []
+    for s in range(0, n, Q_CHUNK):
+        m = attn_mask
+        if m is not None and m.shape[-2] == n:
+            m = m[..., s:s + Q_CHUNK, :]
+        out.append(_sdpa(q[..., s:s + Q_CHUNK, :], k, v, attn_mask=m, **kw))
+    return torch.cat(out, dim=-2)
+
+
+torch.nn.functional.scaled_dot_product_attention = _chunked_sdpa
+
 t = time.time()
-model = TabFMClassifier(model=tabfm_v1.load(device="cuda"), n_estimators=1)  # load() defaults to CPU!
+net = tabfm_v1.load(device="cuda")  # load() defaults to CPU!
+for mod in net.modules():
+    if hasattr(mod, "col_chunk_size"):
+        mod.col_chunk_size = 4  # default 16 feature-columns at once -> too much memory on a 15 GB T4
+model = TabFMClassifier(model=net, n_estimators=1)
 model.fit(X_ctx, y_ctx)
 fit_s = time.time() - t
 
