@@ -4,13 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hairfall Lab</title>
-  <link rel="stylesheet" href="/static/style.css?v=3">
+  <link rel="stylesheet" href="/static/style.css?v=4">
 </head>
 <body>
   <header class="topbar">
     <div class="brand"><span class="logo">H</span>Hairfall Lab</div>
     <nav class="tabs">
-      <button class="tab active" data-tab="notebook">Notebook</button>
+      <button class="tab active" data-tab="predict">Predict</button>
+      <button class="tab" data-tab="notebook">Notebook</button>
       <button class="tab" data-tab="compare">Compare</button>
       <button class="tab" data-tab="dataset">Dataset</button>
     </nav>
@@ -23,7 +24,37 @@
     </div>
   </header>
 
-  <main id="notebook" class="view">
+  <main id="predict" class="view">
+    <aside class="sidebar ph" id="phSide">
+      <div class="ph-top"><input id="phSearch" type="search" placeholder="Search history…"><span class="muted" id="phCount"></span></div>
+      <div id="phList"></div>
+    </aside>
+    <section class="pf-pane" id="pfPane">
+      <div class="pane-head"><span id="pfTitle">New patient</span><span class="spacer"></span>
+        <button class="btn" id="pfSample" title="Fill with a random real patient from the test set (true class known)"><svg class="ic" viewBox="0 0 16 16"><path d="M2 4h3l6 8h3M2 12h3l2-2.7M11 4h3M12.5 2.5L14 4l-1.5 1.5M12.5 10.5L14 12l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Test patient</button>
+        <button class="btn" id="pfTypical" title="Fill every field with the typical (median) value"><svg class="ic" viewBox="0 0 16 16"><path d="M3 13V8M8 13V3M13 13V6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Typical</button>
+        <button class="btn" id="pfNew" title="Clear every field and start a new patient"><svg class="ic" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>New patient</button>
+      </div>
+      <div class="pf-body">
+        <div class="pf-note hidden" id="pfNote"></div>
+        <div class="pf-name"><label>Patient name / ID <span class="muted">(optional)</span></label><input id="pfLabel" type="text" maxlength="80" placeholder="e.g. Ram S. or OPD-1043"></div>
+        <div id="pfFields"></div>
+        <div class="pf-sec"><div class="pf-sec-h">Models</div><div class="pf-models" id="pfModels"></div>
+          <div class="muted pf-hint" id="pfWarm"></div></div>
+      </div>
+      <div class="pf-foot">
+        <span class="pf-status" id="pfStatus"></span><span class="spacer"></span>
+        <button class="btn primary big" id="pfPredict" title="Predict (⌘/Ctrl + Enter)"><svg class="ic" viewBox="0 0 16 16"><path d="M4 2.5l9 5.5-9 5.5z"/></svg>Predict &amp; save</button>
+      </div>
+    </section>
+    <div class="divider" id="pDivider" title="Drag to resize · double-click to reset"></div>
+    <section class="pr-pane">
+      <div class="pane-head"><span id="prTitle">Result</span><span class="spacer"></span><span class="hint" id="prMeta"></span></div>
+      <div class="pr-body" id="prBody"></div>
+    </section>
+  </main>
+
+  <main id="notebook" class="view hidden">
     <aside class="sidebar" id="sidebar"></aside>
     <section class="workspace">
       <div class="ws-head">
@@ -76,6 +107,7 @@
     </section>
   </main>
 
-  <script src="/static/app.js?v=3"></script>
+  <script src="/static/app.js?v=4"></script>
+  <script src="/static/predict.js?v=4"></script>
 </body>
 </html>

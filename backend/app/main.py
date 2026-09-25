@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import kernel as kmod
+from . import predict as pmod
 from . import project, store
 
 logging.basicConfig(level=logging.INFO)
@@ -102,6 +103,7 @@ def _worker():
 @app.on_event("startup")
 def startup():
     store.init()
+    pmod.init_table()
     project.ensure_steps()
     with store.pg() as c:
         c.execute("UPDATE runs SET status='interrupted' WHERE status IN ('queued','running')")
@@ -254,6 +256,81 @@ def get_file(key: str, download: bool = False):
         raise HTTPException(404, "file not found")
     headers = {"Content-Disposition": f'attachment; filename="{key.split("/")[-1]}"'} if download else {}
     return Response(data, media_type=ctype, headers=headers)
+
+
+# ---------- single-patient prediction ----------
+
+PRED_COLS = "id, created_at, label, inputs, models, results, status, pred, seconds, true_class, minio_key"
+
+
+def _prow(r):
+    return dict(zip(PRED_COLS.split(", "), r))
+
+
+class PredictReq(BaseModel):
+    label: Optional[str] = None
+    inputs: dict
+    models: dict                    # {"catboost": "Full", "tabpfn": "2000", "tabfm": "2000"}
+    true_class: Optional[int] = None  # known class when the patient came from the test set
+
+
+@app.get("/api/predict/schema")
+def predict_schema():
+    return {**pmod.schema(), "loaded": pmod.loaded()}
+
+
+@app.get("/api/predict/sample")
+def predict_sample():
+    return pmod.sample()
+
+
+@app.post("/api/predict")
+def predict_create(body: PredictReq):
+    try:
+        inputs = pmod.validate(body.inputs)
+    except ValueError as exc:
+        raise HTTPException(422, {"fields": exc.args[0]})
+    models = {k: v for k, v in body.models.items() if k in pmod.MODELS and v in pmod.MODELS[k]}
+    if not models:
+        raise HTTPException(422, "choose at least one model")
+    with store.pg() as c:
+        pid = c.execute("INSERT INTO predictions (label, inputs, models, true_class) VALUES (%s,%s,%s,%s) RETURNING id",
+                        ((body.label or "").strip() or None, store.dumps(inputs), store.dumps(models),
+                         body.true_class)).fetchone()[0]
+    threading.Thread(target=pmod.run, args=(pid, inputs, models), daemon=True).start()
+    return {"id": pid}
+
+
+@app.get("/api/predictions")
+def predictions_list(q: Optional[str] = None, limit: int = 300):
+    where, params = "", []
+    if q:
+        where, params = "WHERE label ILIKE %s OR CAST(id AS TEXT) = %s", [f"%{q}%", q.lstrip("#")]
+    with store.pg() as c:
+        rows = c.execute(f"SELECT {PRED_COLS} FROM predictions {where} ORDER BY id DESC LIMIT %s",
+                         params + [max(1, min(limit, 1000))]).fetchall()
+    return [_prow(r) for r in rows]
+
+
+@app.get("/api/predictions/{pid}")
+def predictions_get(pid: int):
+    with store.pg() as c:
+        r = c.execute(f"SELECT {PRED_COLS} FROM predictions WHERE id=%s", (pid,)).fetchone()
+    if not r:
+        raise HTTPException(404, "prediction not found")
+    return _prow(r)
+
+
+@app.delete("/api/predictions/{pid}")
+def predictions_delete(pid: int):
+    with store.pg() as c:
+        r = c.execute("DELETE FROM predictions WHERE id=%s RETURNING minio_key", (pid,)).fetchone()
+    if r and r[0]:
+        try:
+            store.minio().remove_object(store.BUCKET, r[0])
+        except Exception:  # noqa: BLE001
+            log.exception("could not remove %s", r[0])
+    return {"ok": bool(r)}
 
 
 # ---------- UI ----------

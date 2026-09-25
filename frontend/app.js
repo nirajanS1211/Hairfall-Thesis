@@ -27,7 +27,7 @@ const isBusy = (r) => !!r && (r.status === "running" || r.status === "queued");
 /* ---------------- tabs ---------------- */
 document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
   document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === t));
-  ["notebook", "compare", "dataset"].forEach((v) => $("#" + v).classList.toggle("hidden", t.dataset.tab !== v));
+  ["predict", "notebook", "compare", "dataset"].forEach((v) => $("#" + v).classList.toggle("hidden", t.dataset.tab !== v));
   if (t.dataset.tab === "dataset" && !ds.loaded) loadDataset();
   if (t.dataset.tab === "compare") renderCompare();
 }));
@@ -525,5 +525,7 @@ let searchTimer;
 $("#dsSearch").oninput = (e) => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { ds.q = e.target.value.trim(); ds.offset = 0; loadRows(); }, 300); };
 
 /* remember the open tab across reloads: /#compare, /#dataset */
-document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => history.replaceState(null, "", "#" + t.dataset.tab)));
-{ const h = location.hash.slice(1); if (h) document.querySelector(`.tab[data-tab="${h}"]`)?.click(); }
+document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => {
+  if (location.hash.slice(1).split("/")[0] !== t.dataset.tab) history.replaceState(null, "", "#" + t.dataset.tab);
+}));
+{ const h = location.hash.slice(1).split("/")[0]; if (h) document.querySelector(`.tab[data-tab="${h}"]`)?.click(); }
