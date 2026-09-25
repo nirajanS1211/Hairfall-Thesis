@@ -315,6 +315,8 @@ ZIP = f"/kaggle/working/{STEP}.zip"
 print(f"Done -> {ZIP}   (import on the Mac: cd backend && .venv/bin/python import_kaggle_run.py ~/Downloads/{STEP}.zip)")
 
 from IPython.display import HTML, FileLink, display
+import html
+display(HTML("<pre style='white-space:pre-wrap;font-size:12px'>" + html.escape(_LOG.getvalue()) + "</pre>"))
 b64 = base64.b64encode(open(ZIP, "rb").read()).decode()
 display(HTML(f'<a id="dl_{STEP}" download="{STEP}.zip" href="data:application/zip;base64,{b64}">Download {STEP}.zip</a>'
              f'<script>try{{var k="dl_{STEP}_{_T0}";if(!localStorage.getItem(k)){{localStorage.setItem(k,1);document.getElementById("dl_{STEP}").click()}}}}catch(e){{document.getElementById("dl_{STEP}").click()}}</script>'))
