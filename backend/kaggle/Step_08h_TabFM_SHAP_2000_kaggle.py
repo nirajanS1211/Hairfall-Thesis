@@ -234,25 +234,25 @@ if any(n.startswith("tabfm") for n in NEEDS):
     from tabfm import TabFMClassifier
     from tabfm import tabfm_v1_0_0_pytorch as tabfm_v1
     _chunk_predict(TabFMClassifier, 100)
-    _sdpa = getattr(torch.nn.functional, "_orig_sdpa", None) or torch.nn.functional.scaled_dot_product_attention
-    torch.nn.functional._orig_sdpa = _sdpa
+    _sdpa0 = getattr(torch.nn.functional, "_orig_sdpa", None) or torch.nn.functional.scaled_dot_product_attention
+    torch.nn.functional._orig_sdpa = _sdpa0
 
-    def _chunked_sdpa(q, k, v, attn_mask=None, **kw):
+    def _chunked_sdpa(q, k, v, attn_mask=None, _f=_sdpa0, **kw):
         n, Q = q.shape[-2], 1024
         if n <= Q:
-            return _sdpa(q, k, v, attn_mask=attn_mask, **kw)
+            return _f(q, k, v, attn_mask=attn_mask, **kw)
         out = []
         for s in range(0, n, Q):
             m = attn_mask[..., s:s + Q, :] if attn_mask is not None and attn_mask.shape[-2] == n else attn_mask
-            out.append(_sdpa(q[..., s:s + Q, :], k, v, attn_mask=m, **kw))
+            out.append(_f(q[..., s:s + Q, :], k, v, attn_mask=m, **kw))
         return torch.cat(out, dim=-2)
 
     torch.nn.functional.scaled_dot_product_attention = _chunked_sdpa
     _tabfm_load = tabfm_v1.load
 
-    def _load(*a, **k):
+    def _load(*a, _l=_tabfm_load, **k):
         k.setdefault("device", "cuda")
-        net = _tabfm_load(*a, **k)
+        net = _l(*a, **k)
         for mod in net.modules():
             if hasattr(mod, "col_chunk_size"):
                 mod.col_chunk_size = 4
@@ -263,15 +263,15 @@ if any(n.startswith("tabfm") for n in NEEDS):
 
 import builtins
 
-_print = getattr(builtins, "_orig_print", None) or builtins.print
-builtins._orig_print = _print
+_print0 = getattr(builtins, "_orig_print", None) or builtins.print
+builtins._orig_print = _print0
 _LOG, _NB_STDOUT = io.StringIO(), sys.stdout
 
 
-def _logged_print(*a, **k):
-    _print(*a, **k)
+def _logged_print(*a, _p=_print0, _l=_LOG, **k):
+    _p(*a, **k)
     if k.get("file") is None:
-        _print(*a, **{**k, "file": _LOG, "flush": False})
+        _p(*a, **{**k, "file": _l, "flush": False})
 
 
 builtins.print = _logged_print
@@ -321,7 +321,7 @@ shap_values = shap.KernelExplainer(predict_proba, background).shap_values(X_exp,
 shap_report("TabFM", SIZE, shap_values, X_exp, time.time() - t,
             extra={"explainer": "KernelExplainer", "nsamples": NSAMPLES, "background": BACKGROUND})
 
-builtins.print = _print
+builtins.print = _print0
 (OUT / "output.txt").write_text(_LOG.getvalue() + f"\n[finished OK | time: {round(time.time() - _T0, 1)}s]\n")
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", root_dir=PROJECT, base_dir=STEP)
 ZIP = f"/kaggle/working/{STEP}.zip"
