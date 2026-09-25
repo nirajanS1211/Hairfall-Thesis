@@ -38,11 +38,24 @@ def step_file(step: str, name: str) -> Path:
     return p
 
 
+def test_rows():
+    """Test rows every model is scored on: number in workspace/test_rows.txt ('all' = whole test set).
+    Read fresh on each call, so editing the file needs no restart."""
+    v = (OUT.parent / "test_rows.txt").read_text().strip().lower()
+    return None if v in ("all", "none", "") else int(v)
+
+
 def load_split():
-    """Train/test split written by Step 4."""
+    """Train/test split from Step 4. The test set is the same stratified subset for every model."""
     tr = pd.read_csv(step_file("Step_04_TrainTestSplit", "train.csv"))
     te = pd.read_csv(step_file("Step_04_TrainTestSplit", "test.csv"))
-    return tr.drop(columns="hair_fall"), te.drop(columns="hair_fall"), tr["hair_fall"], te["hair_fall"]
+    X_train, y_train = tr.drop(columns="hair_fall"), tr["hair_fall"]
+    X_test, y_test = te.drop(columns="hair_fall"), te["hair_fall"]
+    n = test_rows()
+    if n and n < len(X_test):
+        X_test, y_test = context(X_test, y_test, n)
+    print(f"[test set] {len(X_test):,} rows (change in backend/workspace/test_rows.txt)")
+    return X_train, X_test, y_train, y_test
 
 
 def context(X_train, y_train, size):

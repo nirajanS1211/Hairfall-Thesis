@@ -8,11 +8,8 @@ from tabfm import tabfm_v1_0_0_pytorch as tabfm_v1
 
 SIZE = "2000"
 BATCH = 100        # test rows per prediction batch - lower this if the Mac runs out of memory
-TEST_ROWS = 500    # stratified test subset (same rows for every size); None = all 4,322 rows (very slow)
 X_train, X_test, y_train, y_test = load_split()
 X_ctx, y_ctx = context(X_train, y_train, SIZES[SIZE])
-if TEST_ROWS:
-    X_test, y_test = context(X_test, y_test, TEST_ROWS)
 print(f"Context rows: {len(X_ctx):,} | Test rows: {len(X_test):,}")
 
 t = time.time()
