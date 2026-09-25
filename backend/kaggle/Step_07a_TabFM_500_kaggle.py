@@ -234,7 +234,8 @@ if any(n.startswith("tabfm") for n in NEEDS):
     from tabfm import TabFMClassifier
     from tabfm import tabfm_v1_0_0_pytorch as tabfm_v1
     _chunk_predict(TabFMClassifier, 100)
-    _sdpa = torch.nn.functional.scaled_dot_product_attention
+    _sdpa = getattr(torch.nn.functional, "_orig_sdpa", None) or torch.nn.functional.scaled_dot_product_attention
+    torch.nn.functional._orig_sdpa = _sdpa
 
     def _chunked_sdpa(q, k, v, attn_mask=None, **kw):
         n, Q = q.shape[-2], 1024
@@ -262,7 +263,9 @@ if any(n.startswith("tabfm") for n in NEEDS):
 
 import builtins
 
-_LOG, _NB_STDOUT, _print = io.StringIO(), sys.stdout, builtins.print
+_print = getattr(builtins, "_orig_print", None) or builtins.print
+builtins._orig_print = _print
+_LOG, _NB_STDOUT = io.StringIO(), sys.stdout
 
 
 def _logged_print(*a, **k):
