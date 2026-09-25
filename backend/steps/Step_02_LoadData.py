@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 from lab import CLASS_NAMES, OUT, load_df
 
-df_raw = load_df("hairfall_raw")
+df_raw = load_df("hairfall_dataset")
 print("Shape:", df_raw.shape)
 print("Missing values:", int(df_raw.isna().sum().sum()))
 print("\nColumn types:\n" + df_raw.dtypes.to_string())

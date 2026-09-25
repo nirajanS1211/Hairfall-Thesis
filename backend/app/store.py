@@ -63,11 +63,11 @@ def dumps(o):
 
 
 DATA_CSV = Path(__file__).resolve().parent.parent.parent / "thesis_project" / "data" / "data.csv"
-RAW_TABLE = "hairfall_raw"
+RAW_TABLE = "hairfall_dataset"
 
 
 def load_dataset() -> str:
-    """Load thesis_project/data/data.csv into Postgres table hairfall_raw (skipped if the file is unchanged)."""
+    """Load thesis_project/data/data.csv into Postgres table hairfall_dataset (skipped if the file is unchanged)."""
     import hashlib
 
     import pandas as pd

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from lab import OUT, load_df
 
-df = load_df("hairfall_raw")
+df = load_df("hairfall_dataset")
 n0 = len(df)
 
 # 1) Sanity checks
