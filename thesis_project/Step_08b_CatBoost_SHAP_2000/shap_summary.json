@@ -1,0 +1,14 @@
+{
+  "model": "CatBoost",
+  "size": "2000",
+  "rows_explained": 1000,
+  "seconds": 0.3,
+  "top_5": [
+    "stress_level",
+    "iron",
+    "total_protein",
+    "alt_liver",
+    "vitamin_d"
+  ],
+  "explainer": "TreeExplainer"
+}

@@ -1,0 +1,10 @@
+size,comparison,test_rows,only_CatBoost_correct,only_other_correct,chi2,p_value,significant_0.05,only_TabPFN_correct
+500,CatBoost vs TabPFN,4322,272.0,597,120.8009,0.0,True,
+500,CatBoost vs TabFM,4322,280.0,603,117.4224,0.0,True,
+500,TabPFN vs TabFM,4322,,69,0.0071,0.9326,False,71.0
+2000,CatBoost vs TabPFN,4322,194.0,337,37.9736,0.0,True,
+2000,CatBoost vs TabFM,4322,196.0,346,40.9613,0.0,True,
+2000,TabPFN vs TabFM,4322,,67,0.2835,0.5944,False,60.0
+Full,CatBoost vs TabPFN,4322,111.0,129,1.2042,0.2725,False,
+Full,CatBoost vs TabFM,4322,114.0,134,1.4556,0.2276,False,
+Full,TabPFN vs TabFM,4322,,35,0.0147,0.9035,False,33.0

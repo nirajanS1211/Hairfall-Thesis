@@ -1,0 +1,16 @@
+{
+  "model": "TabPFN",
+  "size": "2000",
+  "rows_explained": 30,
+  "seconds": 193.0,
+  "top_5": [
+    "iron",
+    "stress_level",
+    "total_protein",
+    "alt_liver",
+    "calcium"
+  ],
+  "explainer": "KernelExplainer",
+  "nsamples": 100,
+  "background": 10
+}

@@ -1,0 +1,16 @@
+{
+  "model": "TabFM",
+  "size": "Full",
+  "rows_explained": 20,
+  "seconds": 8491.4,
+  "top_5": [
+    "iron",
+    "stress_level",
+    "alt_liver",
+    "total_protein",
+    "vitamin_d"
+  ],
+  "explainer": "KernelExplainer",
+  "nsamples": 100,
+  "background": 5
+}

@@ -1,0 +1,16 @@
+{
+  "model": "TabPFN",
+  "size": "500",
+  "rows_explained": 30,
+  "seconds": 65.8,
+  "top_5": [
+    "iron",
+    "stress_level",
+    "calcium",
+    "total_protein",
+    "vitamin_d"
+  ],
+  "explainer": "KernelExplainer",
+  "nsamples": 100,
+  "background": 10
+}

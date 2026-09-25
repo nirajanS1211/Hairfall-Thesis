@@ -1,0 +1,48 @@
+GPU: Tesla T4
+[test set] 4,322 rows (change in backend/workspace/test_rows.txt)
+Context rows: 17,284 | Test rows: 4,322 | device: cuda
+  predicted 500/4,322 rows | elapsed 33s | ETA 252s
+  predicted 1,000/4,322 rows | elapsed 67s | ETA 222s
+  predicted 1,500/4,322 rows | elapsed 100s | ETA 188s
+  predicted 2,000/4,322 rows | elapsed 134s | ETA 155s
+  predicted 2,500/4,322 rows | elapsed 167s | ETA 122s
+  predicted 3,000/4,322 rows | elapsed 200s | ETA 88s
+  predicted 3,500/4,322 rows | elapsed 234s | ETA 55s
+  predicted 4,000/4,322 rows | elapsed 267s | ETA 22s
+  predicted 4,322/4,322 rows | elapsed 300s | ETA 0s
+{
+  "model": "TabPFN",
+  "size": "Full",
+  "context_rows": 17284,
+  "test_rows": 4322,
+  "accuracy": 0.7862,
+  "macro_f1": 0.7785,
+  "weighted_f1": 0.7875,
+  "roc_auc_ovr": 0.9235,
+  "fit_seconds": 2.5,
+  "predict_seconds": 300.4,
+  "device": "cuda"
+}
+              precision    recall  f1-score   support
+
+         Low     0.8649    0.8488    0.8568      1945
+    Moderate     0.6796    0.7389    0.7080      1513
+        High     0.8190    0.7280    0.7708       864
+
+    accuracy                         0.7862      4322
+   macro avg     0.7878    0.7719    0.7785      4322
+weighted avg     0.7908    0.7862    0.7875      4322
+
+{'model': 'TabPFN',
+ 'size': 'Full',
+ 'context_rows': 17284,
+ 'test_rows': 4322,
+ 'accuracy': 0.7862,
+ 'macro_f1': 0.7785,
+ 'weighted_f1': 0.7875,
+ 'roc_auc_ovr': 0.9235,
+ 'fit_seconds': 2.5,
+ 'predict_seconds': 300.4,
+ 'device': 'cuda'}
+
+[finished OK | time: 303.1s | run #10]

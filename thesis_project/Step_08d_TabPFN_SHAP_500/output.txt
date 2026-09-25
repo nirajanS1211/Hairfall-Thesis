@@ -1,0 +1,50 @@
+GPU: Tesla T4
+[test set] 4,322 rows (change in backend/workspace/test_rows.txt)
+Explaining 30 rows, 100 samples each, 10 background points...
+                 feature  mean_abs_Low  mean_abs_Moderate  mean_abs_High  mean_abs_all
+                    iron        0.1831             0.1344         0.0509        0.1228
+            stress_level        0.1503             0.1036         0.0412        0.0984
+                 calcium        0.1145             0.0794         0.0359        0.0766
+           total_protein        0.1135             0.0785         0.0335        0.0752
+               vitamin_d        0.0938             0.0634         0.0260        0.0611
+               alt_liver        0.0887             0.0670         0.0270        0.0609
+               manganese        0.0852             0.0547         0.0275        0.0558
+      body_water_content        0.0791             0.0550         0.0218        0.0520
+                  stress        0.0644             0.0455         0.0194        0.0431
+                  anemia        0.0608             0.0471         0.0126        0.0402
+         chronic_illness        0.0554             0.0291         0.0258        0.0368
+            chemical_use        0.0533             0.0313         0.0146        0.0331
+       sleep_disturbance        0.0312             0.0231         0.0123        0.0222
+                     age        0.0272             0.0219         0.0137        0.0209
+family_hair_fall_history        0.0266             0.0186         0.0071        0.0174
+        late_night_sleep        0.0199             0.0145         0.0092        0.0145
+          total_keratine        0.0094             0.0094         0.0034        0.0074
+            hair_texture        0.0029             0.0091         0.0028        0.0049
+                  gender        0.0036             0.0078         0.0018        0.0044
+            water_reason        0.0032             0.0019         0.0019        0.0023
+{
+  "model": "TabPFN",
+  "size": "500",
+  "rows_explained": 30,
+  "seconds": 65.8,
+  "top_5": [
+    "iron",
+    "stress_level",
+    "calcium",
+    "total_protein",
+    "vitamin_d"
+  ],
+  "explainer": "KernelExplainer",
+  "nsamples": 100,
+  "background": 10
+}
+{'model': 'TabPFN',
+ 'size': '500',
+ 'rows_explained': 30,
+ 'seconds': 65.8,
+ 'top_5': ['iron', 'stress_level', 'calcium', 'total_protein', 'vitamin_d'],
+ 'explainer': 'KernelExplainer',
+ 'nsamples': 100,
+ 'background': 10}
+
+[finished OK | time: 69.2s | run #17]

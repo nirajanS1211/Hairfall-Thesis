@@ -1,0 +1,44 @@
+[test set] 4,322 rows (change in backend/workspace/test_rows.txt)
+                 feature  mean_abs_Low  mean_abs_Moderate  mean_abs_High  mean_abs_all
+            stress_level        0.5890             0.1362         0.4906        0.4053
+                    iron        0.4447             0.1029         0.3980        0.3152
+                 calcium        0.4482             0.0759         0.3879        0.3040
+           total_protein        0.4231             0.1169         0.3235        0.2878
+               vitamin_d        0.3698             0.0935         0.2805        0.2479
+               alt_liver        0.3593             0.0863         0.2885        0.2447
+               manganese        0.3231             0.0477         0.3161        0.2290
+      body_water_content        0.2077             0.0642         0.2640        0.1786
+                  stress        0.1759             0.0629         0.1130        0.1173
+            chemical_use        0.1183             0.0690         0.0494        0.0789
+                  anemia        0.1045             0.0172         0.1099        0.0772
+         chronic_illness        0.1048             0.0175         0.0888        0.0704
+                     age        0.0913             0.0374         0.0748        0.0679
+family_hair_fall_history        0.0778             0.0136         0.0878        0.0598
+            hair_texture        0.0321             0.0435         0.0631        0.0462
+       sleep_disturbance        0.0444             0.0110         0.0526        0.0360
+            water_reason        0.0499             0.0098         0.0446        0.0348
+          total_keratine        0.0282             0.0266         0.0373        0.0307
+        late_night_sleep        0.0260             0.0103         0.0303        0.0222
+                  gender        0.0049             0.0012         0.0042        0.0034
+{
+  "model": "CatBoost",
+  "size": "500",
+  "rows_explained": 1000,
+  "seconds": 0.3,
+  "top_5": [
+    "stress_level",
+    "iron",
+    "calcium",
+    "total_protein",
+    "vitamin_d"
+  ],
+  "explainer": "TreeExplainer"
+}
+{'model': 'CatBoost',
+ 'size': '500',
+ 'rows_explained': 1000,
+ 'seconds': 0.3,
+ 'top_5': ['stress_level', 'iron', 'calcium', 'total_protein', 'vitamin_d'],
+ 'explainer': 'TreeExplainer'}
+
+[finished OK | time: 4.2s | run #14]

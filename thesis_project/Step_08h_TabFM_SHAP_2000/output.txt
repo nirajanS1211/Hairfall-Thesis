@@ -1,0 +1,51 @@
+GPU: Tesla T4
+[test set] 4,322 rows (change in backend/workspace/test_rows.txt)
+Loading weights from local directory
+Explaining 20 rows, 100 samples each, 5 background points...
+                 feature  mean_abs_Low  mean_abs_Moderate  mean_abs_High  mean_abs_all
+                    iron        0.2000             0.1522         0.0564        0.1362
+            stress_level        0.1437             0.1041         0.0402        0.0960
+               alt_liver        0.1150             0.0858         0.0322        0.0777
+           total_protein        0.1084             0.0881         0.0233        0.0733
+                  stress        0.0954             0.0740         0.0200        0.0631
+                 calcium        0.0942             0.0646         0.0286        0.0624
+               vitamin_d        0.0863             0.0591         0.0241        0.0565
+               manganese        0.0764             0.0565         0.0251        0.0527
+                  anemia        0.0740             0.0623         0.0121        0.0495
+        late_night_sleep        0.0705             0.0601         0.0133        0.0480
+      body_water_content        0.0676             0.0542         0.0134        0.0451
+         chronic_illness        0.0521             0.0371         0.0144        0.0345
+            chemical_use        0.0489             0.0387         0.0089        0.0322
+                     age        0.0445             0.0407         0.0077        0.0310
+       sleep_disturbance        0.0354             0.0263         0.0111        0.0243
+family_hair_fall_history        0.0299             0.0267         0.0034        0.0200
+                  gender        0.0108             0.0093         0.0066        0.0089
+            water_reason        0.0054             0.0010         0.0042        0.0035
+          total_keratine        0.0032             0.0031         0.0026        0.0029
+            hair_texture        0.0014             0.0022         0.0026        0.0021
+{
+  "model": "TabFM",
+  "size": "2000",
+  "rows_explained": 20,
+  "seconds": 581.8,
+  "top_5": [
+    "iron",
+    "stress_level",
+    "alt_liver",
+    "total_protein",
+    "stress"
+  ],
+  "explainer": "KernelExplainer",
+  "nsamples": 100,
+  "background": 5
+}
+{'model': 'TabFM',
+ 'size': '2000',
+ 'rows_explained': 20,
+ 'seconds': 581.8,
+ 'top_5': ['iron', 'stress_level', 'alt_liver', 'total_protein', 'stress'],
+ 'explainer': 'KernelExplainer',
+ 'nsamples': 100,
+ 'background': 5}
+
+[finished OK | time: 597.5s | run #21]
