@@ -4,30 +4,63 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hairfall Lab</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=2">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><span class="logo">H</span> Hairfall Lab</div>
+    <div class="brand"><span class="logo">H</span>Hairfall Lab</div>
     <nav class="tabs">
       <button class="tab active" data-tab="notebook">Notebook</button>
+      <button class="tab" data-tab="compare">Compare</button>
       <button class="tab" data-tab="dataset">Dataset</button>
     </nav>
     <div class="top-actions">
       <span id="status" class="pill">connecting…</span>
-      <button id="runAll" class="btn primary">Run all steps</button>
-      <button id="stop" class="btn">Stop</button>
-      <button id="restart" class="btn ghost" title="Restart the Python kernel (clears variables)">Restart kernel</button>
+      <button id="stopAll" class="btn danger hidden" title="Stop the running step and clear the queue"><svg class="ic" viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/></svg>Stop</button>
+      <button id="runAll" class="btn" title="Run every step in order"><svg class="ic" viewBox="0 0 16 16"><path d="M3 3l6 5-6 5zM9 3l6 5-6 5z"/></svg>Run all</button>
+      <button id="restart" class="btn ghost-danger" title="Restart the Python kernel (clears variables, saved results are kept)"><svg class="ic" viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.5-3.5M13 2.5v3h-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Restart kernel</button>
     </div>
   </header>
 
   <main id="notebook" class="view">
     <aside class="sidebar" id="sidebar"></aside>
-    <section class="step" id="step"></section>
+    <section class="workspace">
+      <div class="ws-head">
+        <div class="ws-title"><h1 id="wsTitle">—</h1><span class="sub" id="wsSub"></span></div>
+        <div class="ws-actions">
+          <span class="badge" id="badge">not run yet</span>
+          <select class="btn sel" id="history" title="Previous runs of this step"><option value="">Latest run</option></select>
+          <button class="btn icon" id="toggleCode" title="Show / hide the code pane"><svg class="ic" viewBox="0 0 16 16"><path d="M5.5 4L1.5 8l4 4M10.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="btn" id="reset" title="Restore the original step code"><svg class="ic" viewBox="0 0 16 16"><path d="M3 8a5 5 0 1 0 1.5-3.5M3 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Reset</button>
+          <button class="btn primary" id="runBtn" title="Run this step (⌘/Ctrl + Enter)"></button>
+        </div>
+      </div>
+      <div class="split" id="split">
+        <div class="pane code-pane" id="codePane">
+          <div class="pane-head"><span>code.py</span><span class="tag hidden" id="modTag">● modified</span><span class="spacer"></span><span class="hint">⌘/Ctrl + Enter to run</span></div>
+          <div class="code-wrap">
+            <pre class="gutter" id="gutter" aria-hidden="true"></pre>
+            <textarea id="editor" class="editor" spellcheck="false" wrap="off"></textarea>
+          </div>
+        </div>
+        <div class="divider" id="divider" title="Drag to resize · double-click to reset"></div>
+        <div class="pane out-pane" id="outPane">
+          <div class="pane-head"><span id="outTitle">Output</span><span class="spacer"></span><span class="hint" id="savedNote"></span></div>
+          <div class="chips hidden" id="chips"></div>
+          <div class="output" id="output"></div>
+          <div class="files hidden" id="files"></div>
+          <button class="jump hidden" id="jump">↓ Jump to latest</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <main id="compare" class="view hidden">
+    <section class="page" id="cmpPage"></section>
   </main>
 
   <main id="dataset" class="view hidden">
-    <section class="dataset">
+    <section class="page">
       <div class="cards" id="dsCards"></div>
       <div class="ds-toolbar">
         <input id="dsSearch" type="search" placeholder="Search any column…">
@@ -42,6 +75,6 @@
     </section>
   </main>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2"></script>
 </body>
 </html>

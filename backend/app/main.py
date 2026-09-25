@@ -28,6 +28,14 @@ FRONTEND = Path(__file__).resolve().parent.parent.parent / "frontend"
 RUN_COLS = "id, step, code, status, outputs, files, created_at, started_at, finished_at, seconds, batch_id"
 
 app = FastAPI(title="Hairfall Lab")
+
+
+@app.middleware("http")
+async def no_cache_ui(request, call_next):  # the UI is edited often - never let the browser keep an old copy
+    resp = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        resp.headers["Cache-Control"] = "no-store"
+    return resp
 jobs: "queue.Queue[int]" = queue.Queue()
 state = {"kernel": None, "running": None, "dataset": "not loaded"}
 kernel_lock = threading.Lock()
