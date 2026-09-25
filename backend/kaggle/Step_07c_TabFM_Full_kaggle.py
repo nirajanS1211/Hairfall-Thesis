@@ -303,6 +303,15 @@ sys.stdout = _Tee(_NB_STDOUT, _LOG)
 if GPU:
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 
+_display = display
+
+
+def display(obj, *a, **k):  # show it in the notebook AND keep its text in output.txt (the lab stores the same text)
+    _display(obj, *a, **k)
+    _LOG.write(repr(obj) + "\n")
+
+
+_T0 = time.time()  # wall time of the step itself (pip installs excluded)
 # ======================= step code (unchanged from backend/steps/Step_07c_TabFM_Full.py) =======================
 # Step 7c - TabFM · Full
 # TabFM (Google foundation model, rows are given as context) | context = Full
@@ -330,7 +339,7 @@ evaluate("TabFM", SIZE, len(X_ctx), y_test, proba, fit_s, pred_s)
 
 # ======================= end of step code =======================
 sys.stdout = _NB_STDOUT
-(OUT / "output.txt").write_text(_LOG.getvalue())
+(OUT / "output.txt").write_text(_LOG.getvalue() + f"\n[finished OK | time: {round(time.time() - _T0, 1)}s]\n")
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", root_dir=PROJECT, base_dir=STEP)
 ZIP = f"/kaggle/working/{STEP}.zip"
 print(f"Done -> {ZIP}   (import on the Mac: cd backend && .venv/bin/python import_kaggle_run.py ~/Downloads/{STEP}.zip)")

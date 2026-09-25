@@ -303,6 +303,15 @@ sys.stdout = _Tee(_NB_STDOUT, _LOG)
 if GPU:
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 
+_display = display
+
+
+def display(obj, *a, **k):  # show it in the notebook AND keep its text in output.txt (the lab stores the same text)
+    _display(obj, *a, **k)
+    _LOG.write(repr(obj) + "\n")
+
+
+_T0 = time.time()  # wall time of the step itself (pip installs excluded)
 # ======================= step code (unchanged from backend/steps/Step_04_TrainTestSplit.py) =======================
 # Step 4 - Train/test split
 # 80/20 stratified train/test split + the matched training sizes used in steps 5-8
@@ -331,7 +340,7 @@ sizes.to_csv(OUT / "training_sizes.csv", index=False)
 
 # ======================= end of step code =======================
 sys.stdout = _NB_STDOUT
-(OUT / "output.txt").write_text(_LOG.getvalue())
+(OUT / "output.txt").write_text(_LOG.getvalue() + f"\n[finished OK | time: {round(time.time() - _T0, 1)}s]\n")
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", root_dir=PROJECT, base_dir=STEP)
 ZIP = f"/kaggle/working/{STEP}.zip"
 print(f"Done -> {ZIP}   (import on the Mac: cd backend && .venv/bin/python import_kaggle_run.py ~/Downloads/{STEP}.zip)")

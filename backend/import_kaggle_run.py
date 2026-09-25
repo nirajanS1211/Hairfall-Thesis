@@ -9,6 +9,7 @@ Stop any local run of the same step first (its result would overwrite this one).
 import json
 import mimetypes
 import pprint
+import re
 import shutil
 import sys
 import tempfile
@@ -23,8 +24,13 @@ def import_step(step: str, src: Path):
     assert step in project.step_ids(), f"unknown step {step}"
     summary_file = next((src / n for n in ("metrics.json", "shap_summary.json") if (src / n).exists()), None)
     summary = json.loads(summary_file.read_text()) if summary_file else {}
-    seconds = round(summary["fit_seconds"] + summary["predict_seconds"], 1) if "fit_seconds" in summary \
-        else round(summary.get("seconds", 0), 1)
+    text = (src / "output.txt").read_text()
+    took = re.search(r"\n?\[finished OK \| time: ([\d.]+)s\]\n?", text)  # wall time written by the Kaggle file
+    if took:
+        seconds, text = float(took.group(1)), text.replace(took.group(0), "")
+    else:
+        seconds = round(summary["fit_seconds"] + summary["predict_seconds"], 1) if "fit_seconds" in summary \
+            else round(summary.get("seconds", 0), 1)
     kaggle_code = KAGGLE_DIR / f"{step}_kaggle.py"
     code = (src / "code.py").read_text() if (src / "code.py").exists() else \
         (kaggle_code if kaggle_code.exists() else project.STEPS_DIR / f"{step}.py").read_text()
@@ -33,7 +39,7 @@ def import_step(step: str, src: Path):
         rid = c.execute("INSERT INTO runs (step, code, status, started_at, finished_at, seconds) "
                         "VALUES (%s,%s,'ok', now(), now(), %s) RETURNING id", (step, code, seconds)).fetchone()[0]
 
-    outputs = [{"type": "stream", "name": "stdout", "text": (src / "output.txt").read_text()}]
+    outputs = [{"type": "stream", "name": "stdout", "text": text}]
     files, n = [], 0
     for p in sorted(src.iterdir()):
         if p.name in ("code.py", "output.txt") or not p.is_file():

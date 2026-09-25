@@ -303,6 +303,15 @@ sys.stdout = _Tee(_NB_STDOUT, _LOG)
 if GPU:
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 
+_display = display
+
+
+def display(obj, *a, **k):  # show it in the notebook AND keep its text in output.txt (the lab stores the same text)
+    _display(obj, *a, **k)
+    _LOG.write(repr(obj) + "\n")
+
+
+_T0 = time.time()  # wall time of the step itself (pip installs excluded)
 # ======================= step code (unchanged from backend/steps/Step_02_LoadData.py) =======================
 # Step 2 - Load dataset
 # Load the dataset (loaded into the local Postgres automatically at startup)
@@ -329,7 +338,7 @@ df_raw.describe().T.round(3).to_csv(OUT / "data_summary.csv")
 
 # ======================= end of step code =======================
 sys.stdout = _NB_STDOUT
-(OUT / "output.txt").write_text(_LOG.getvalue())
+(OUT / "output.txt").write_text(_LOG.getvalue() + f"\n[finished OK | time: {round(time.time() - _T0, 1)}s]\n")
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", root_dir=PROJECT, base_dir=STEP)
 ZIP = f"/kaggle/working/{STEP}.zip"
 print(f"Done -> {ZIP}   (import on the Mac: cd backend && .venv/bin/python import_kaggle_run.py ~/Downloads/{STEP}.zip)")
