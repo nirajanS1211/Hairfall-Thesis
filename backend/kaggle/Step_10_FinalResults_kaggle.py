@@ -260,17 +260,18 @@ if any(n.startswith("tabfm") for n in NEEDS):
     tabfm_v1.load = _load
 
 
-class _Tee(io.TextIOBase):
-    def __init__(self, *s): self.s = s
-    def write(self, t):
-        for x in self.s: x.write(t)
-        return len(t)
-    def flush(self):
-        for x in self.s: x.flush()
+import builtins
+
+_LOG, _NB_STDOUT, _print = io.StringIO(), sys.stdout, builtins.print
 
 
-_LOG, _NB_STDOUT = io.StringIO(), sys.stdout
-sys.stdout = _Tee(_NB_STDOUT, _LOG)
+def _logged_print(*a, **k):
+    _print(*a, **k)
+    if k.get("file") is None:
+        _print(*a, **{**k, "file": _LOG, "flush": False})
+
+
+builtins.print = _logged_print
 if GPU:
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 
@@ -324,7 +325,7 @@ ax = pivot.plot.bar(figsize=(7, 4), color=[colors.get(c) for c in pivot.columns]
 ax.set_ylabel("seconds (log)"); ax.set_title("Train + predict time on this Mac")
 plt.tight_layout(); plt.savefig(OUT / "timings.png", dpi=150); plt.show()
 
-sys.stdout = _NB_STDOUT
+builtins.print = _print
 (OUT / "output.txt").write_text(_LOG.getvalue() + f"\n[finished OK | time: {round(time.time() - _T0, 1)}s]\n")
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", root_dir=PROJECT, base_dir=STEP)
 ZIP = f"/kaggle/working/{STEP}.zip"

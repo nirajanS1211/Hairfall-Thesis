@@ -28,7 +28,9 @@ if GPU:
 
 try:
     from kaggle_secrets import UserSecretsClient
-    os.environ["HF_TOKEN"] = UserSecretsClient().get_secret("HF_TOKEN")
+    _secrets = UserSecretsClient()
+    os.environ["HF_TOKEN"] = _secrets.get_secret("HF_TOKEN")
+    os.environ["TABPFN_TOKEN"] = _secrets.get_secret("TABPFN_TOKEN")
 except Exception:
     pass
 
@@ -260,17 +262,18 @@ if any(n.startswith("tabfm") for n in NEEDS):
     tabfm_v1.load = _load
 
 
-class _Tee(io.TextIOBase):
-    def __init__(self, *s): self.s = s
-    def write(self, t):
-        for x in self.s: x.write(t)
-        return len(t)
-    def flush(self):
-        for x in self.s: x.flush()
+import builtins
+
+_LOG, _NB_STDOUT, _print = io.StringIO(), sys.stdout, builtins.print
 
 
-_LOG, _NB_STDOUT = io.StringIO(), sys.stdout
-sys.stdout = _Tee(_NB_STDOUT, _LOG)
+def _logged_print(*a, **k):
+    _print(*a, **k)
+    if k.get("file") is None:
+        _print(*a, **{**k, "file": _LOG, "flush": False})
+
+
+builtins.print = _logged_print
 if GPU:
     print(f"GPU: {torch.cuda.get_device_name(0)}")
 
@@ -305,7 +308,7 @@ proba = predict_proba_batched(model, X_test, BATCH, tag=f"tabpfn_{SIZE}_{len(X_t
 pred_s = time.time() - t
 evaluate("TabPFN", SIZE, len(X_ctx), y_test, proba, fit_s, pred_s, extra={"device": dev})
 
-sys.stdout = _NB_STDOUT
+builtins.print = _print
 (OUT / "output.txt").write_text(_LOG.getvalue() + f"\n[finished OK | time: {round(time.time() - _T0, 1)}s]\n")
 shutil.make_archive(f"/kaggle/working/{STEP}", "zip", root_dir=PROJECT, base_dir=STEP)
 ZIP = f"/kaggle/working/{STEP}.zip"
