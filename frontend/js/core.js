@@ -101,8 +101,8 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") $(".lightb
 
 /* ---------------- charts ---------------- */
 /* Line chart over the three training sizes; one series per model. */
-function lineChart({ series, fmt = (v) => v.toFixed(3), height = 280, log = false, unit = "" }) {
-  const W = 600, H = height, m = { l: 56, r: 80, t: 14, b: 30 };
+function lineChart({ series, fmt = (v) => v.toFixed(3), height = 190, log = false, unit = "" }) {
+  const W = 600, H = height, m = { l: 52, r: 74, t: 10, b: 24 };
   const vals = series.flatMap((s) => s.values.filter((v) => v != null));
   let lo = Math.min(...vals), hi = Math.max(...vals);
   if (log) { lo = Math.log10(Math.max(lo, 0.01)); hi = Math.log10(Math.max(hi, 0.01)); }

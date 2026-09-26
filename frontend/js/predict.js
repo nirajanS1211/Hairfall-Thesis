@@ -10,7 +10,7 @@ const GROUP_META = {
   "About you": { icon: "user", sub: "" },
   "Blood test results": { icon: "flask", sub: "Copy the numbers from your lab report. The green band is the healthy range." },
   "Other scores": { icon: "gauge", sub: "Rate each one on its scale." },
-  "Health & lifestyle": { icon: "heart", sub: "Choose “Yes” for everything that applies to you." },
+  "Health & lifestyle": { icon: "heart", sub: "Answer each question, or use “None of these apply”." },
 };
 const GROUP_TITLE = { "Other scores": "Wellbeing scores" };
 const BOOL_TEXT = {
@@ -86,7 +86,8 @@ function buildForm() {
       : g === "Other scores" ? `<div class="fgrid">${fs.map(sliderHtml).join("")}</div>`
       : `<div class="fgrid">${g === "About you" ? nameHtml() : ""}${fs.map(fieldHtml).join("")}</div>`;
     return `<section class="card card-pad"><div class="card-head"><span class="card-icon">${icon(meta.icon)}</span>
-      <div><h2>${esc(GROUP_TITLE[g] || g)}</h2>${meta.sub ? `<p>${meta.sub}</p>` : ""}</div></div>${body}</section>`;
+      <div><h2>${esc(GROUP_TITLE[g] || g)}</h2>${meta.sub ? `<p>${meta.sub}</p>` : ""}</div>
+      ${g === "Health & lifestyle" ? `<span class="spacer"></span><button class="btn sm" id="pNone" title="Answer “No” to every question you have not answered yet">${icon("check")}None of these apply</button>` : ""}</div>${body}</section>`;
   }).join("")}</div>
     <div class="submit-bar">
       <div class="prog"><div class="prog-top"><span id="pProgText">–</span><b id="pProgPct"></b></div><div class="bar"><span id="pProgBar"></span></div></div>
@@ -95,6 +96,7 @@ function buildForm() {
     </div>`;
   $("#pName").oninput = (e) => { P.label = e.target.value; };
   P.fields.forEach(wireField);
+  $("#pNone").onclick = () => { P.fields.filter((f) => f.kind === "bool" && P.values[f.name] == null).forEach((f) => { P.values[f.name] = 0; paintField(f); }); paintProgress(); };
   $("#pClear").onclick = () => { if (confirm("Clear every answer and start again?")) { resetValues(); paintAll(); } };
   $("#pSubmit").onclick = submit;
 }
@@ -175,7 +177,7 @@ function paintProgress() {
 function paintAll() { $("#pName").value = P.label; P.fields.forEach((f) => paintField(f)); paintProgress(); }
 function resetValues() {
   P.values = {}; P.label = ""; P.showErrors = false;
-  P.fields.forEach((f) => { P.values[f.name] = f.kind === "bool" ? 0 : null; });
+  P.fields.forEach((f) => { P.values[f.name] = null; });   // nothing is pre-answered, so the progress bar starts at 0
   $("#pNote")?.classList.add("hidden");
 }
 let noteTimer;
