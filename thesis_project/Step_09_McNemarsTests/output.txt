@@ -30,6 +30,5 @@
 6                  NaN  
 7                  NaN  
 8                 33.0  
-{}
 
-[finished OK | time: 0.1s | run #23]
+[finished OK | time: 2.8s | run #25]

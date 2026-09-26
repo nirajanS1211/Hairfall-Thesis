@@ -3,9 +3,9 @@ Missing values: 0
 
 Column types:
 id                            int64
-full_name                    object
+full_name                       str
 age                           int64
-gender                       object
+gender                          str
 total_protein               float64
 calcium                     float64
 iron                          int64
@@ -25,6 +25,8 @@ chemical_use                  int64
 anemia                        int64
 stress                        int64
 hair_fall                     int64
+/Users/midas/Desktop/Hairfall-Thesis/backend/workspace/lab.py:30: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  return pd.read_sql(f'SELECT * FROM "{table}"', conn)
    id                                          full_name  age  gender  \
 0   1       4KSW4KSh4KWN4KSXIOCkluCkpOCkv+CkteCkoeCkvg==   39  Female   
 1   2           4KSc4KS/4KSk4KWH4KSoIOCkruCkueCksOCkvg==   26    Male   
@@ -59,6 +61,5 @@ Target distribution:
   0 Low        9,723  (45.0%)
   1 Moderate   7,562  (35.0%)
   2 High       4,321  (20.0%)
-{}
 
-[finished OK | time: 0.3s | run #2]
+[finished OK | time: 0.2s | run #33]

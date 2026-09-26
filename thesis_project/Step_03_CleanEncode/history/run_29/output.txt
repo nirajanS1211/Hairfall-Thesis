@@ -1,0 +1,25 @@
+Gender: {'Male': 12109, 'Female': 9485, 'Other': 12}
+Missing values: 0 | Duplicate rows: 0
+/Users/midas/Desktop/Hairfall-Thesis/backend/workspace/lab.py:30: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
+  return pd.read_sql(f'SELECT * FROM "{table}"', conn)
+              feature normal_range  below_normal  above_normal  impossible  \
+0       total_protein      6.0-8.3           406           605           0   
+1             calcium     8.5-10.5          1675           392           0   
+2                iron       60-170          2217           209           0   
+3           vitamin_d        25-80          8606             0           0   
+4           alt_liver         7-56          2300           403           0   
+5           manganese         4-15          1960           208           0   
+6  body_water_content        45-65          2225          2227           0   
+
+   pct_abnormal  
+0           4.7  
+1           9.6  
+2          11.2  
+3          39.8  
+4          12.5  
+5          10.0  
+6          20.6  
+Rows removed as physiologically impossible: 0
+Clean shape: (21606, 21) | features: 20
+
+[finished OK | time: 0.2s | run #29]
