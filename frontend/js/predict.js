@@ -263,11 +263,15 @@ function factorText(name, v) {
 function patientView(p) {
   const R = p.results, cons = R._consensus, c = cons.pred, pr = cons.proba, A = ANSWER[c], score = riskScore(pr);
   const sure = `${icon(cons.agree ? "check" : "info")}We are <b>&nbsp;${sureWord(pr[c])}&nbsp;</b>(${pct(pr[c])})${cons.n > 1 ? (cons.agree ? " — all three models agree" : " — the models did not fully agree") : ""}`;
+  const off = P.fields.filter((f) => f.normal && bioState(f, p.inputs[f.name]) && bioState(f, p.inputs[f.name]) !== "ok");
+  const offNote = off.length ? `<div class="note warn">${icon("info")}<span><b>${off.length} of your ${P.fields.filter((f) => f.normal).length} blood tests are outside the healthy range:</b> ${off.map((f) => `${esc(f.label)} <b>${bioState(f, p.inputs[f.name]) === "low" ? "low" : "high"}</b> (${fmtNum(p.inputs[f.name])} ${esc(f.unit)})`).join(", ")}.
+      This score only estimates <b>hair-fall</b> risk — in the training data, higher values of most of these go with less hair fall, but a result above the healthy range can still matter for your health, so please discuss it with a doctor.</span></div>` : "";
   let h = `<div class="stack-lg">
     <div class="hero risk${c}">
       <div><div class="eyebrow">Will I have hair fall?</div><div class="answer">${A.a}</div><div class="lead">${A.lead}</div><div class="sub">${A.sub}</div><div class="sure">${sure}</div></div>
       <div>${gauge(score)}<div class="gauge-legend"><span>Low</span><span>Risk score out of 100</span><span>High</span></div></div>
     </div>
+    ${offNote}
     <div class="chances">${pr.map((x, i) => `<div class="chance risk${i} ${i === c ? "me" : ""}"><div class="cl"><i></i>${RISK[i]} risk</div>
       <div class="cv">${pct(x)}</div><div class="bar"><span style="width:${x * 100}%"></span></div></div>`).join("")}</div>`;
 
