@@ -8,7 +8,7 @@ const P = {
 
 const GROUP_META = {
   "About you": { icon: "user", sub: "" },
-  "Blood test results": { icon: "flask", sub: "Copy the numbers from your lab report. The green band is the healthy range." },
+  "Blood test results": { icon: "flask", sub: "Copy the numbers from your lab report (green band = healthy range). In the data, LOW protein, calcium, iron, vitamin D, manganese or body water go with more hair fall — a high ALT does too. High healthy-side values lower the risk." },
   "Other scores": { icon: "gauge", sub: "Rate each one on its scale." },
   "Health & lifestyle": { icon: "heart", sub: "Answer each question, or use “None of these apply”." },
 };
@@ -109,12 +109,18 @@ function fieldHtml(f) {
   return `<div class="field" data-f="${f.name}"><span class="flabel">${esc(f.label)}<span class="tag"></span></span>
     <div class="unit-in"><input class="input" type="number" inputmode="decimal" min="${f.min}" max="${f.max}" step="${f.step}" placeholder="${f.min} – ${f.max}"><span class="u">${esc(f.unit)}</span></div>
     ${f.normal ? `<div class="rtrack">${nz}<span class="mk hidden"></span></div>` : ""}
-    <div class="fhint"><span>${f.normal ? `Healthy ${f.normal[0]}–${f.normal[1]} ${esc(f.unit)}` : `Allowed ${f.min}–${f.max}`}</span><span class="err"></span></div></div>`;
+    <div class="fhint"><span>${f.normal ? `Healthy ${f.normal[0]}–${f.normal[1]} ${esc(f.unit)}` : `Allowed ${f.min}–${f.max}`}</span>${dirHtml(f)}<span class="err"></span></div></div>`;
+}
+function dirHtml(f) {   // which direction raises the risk in the training data (nothing shown when the effect is negligible)
+  const e = f.risk_effect;
+  if (Math.abs(e) < 0.12) return `<span class="dir none" data-tip="${esc(f.label)} has almost no effect on the result in this dataset">≈ no effect</span>`;
+  const up = e > 0, strong = Math.abs(e) > 0.45;
+  return `<span class="dir ${up ? "up" : "down"}" data-tip="In this dataset ${up ? "higher" : "lower"} ${esc(f.label.toLowerCase())} goes with ${strong ? "clearly " : ""}more hair fall">${up ? "↑ raises risk" : "↓ raises risk"}</span>`;
 }
 function sliderHtml(f) {
   return `<div class="field" data-f="${f.name}"><span class="flabel">${esc(f.label)}<span class="opt">${esc(f.unit)}</span></span>
     <div class="slider-row"><input type="range" min="${f.min}" max="${f.max}" step="1"><input class="input" type="number" inputmode="numeric" min="${f.min}" max="${f.max}" step="1" placeholder="–"></div>
-    <div class="fhint"><span>${esc(f.help || "")}</span><span class="err"></span></div></div>`;
+    <div class="fhint"><span>${esc(f.help || "")}</span>${dirHtml(f)}<span class="err"></span></div></div>`;
 }
 const boolHtml = (f) => `<div class="q" data-f="${f.name}"><span class="qt">${esc(f.label)}</span>
   <div class="seg"><button type="button" data-v="0">No</button><button type="button" data-v="1">Yes</button></div></div>`;

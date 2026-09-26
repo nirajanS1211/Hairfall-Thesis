@@ -74,11 +74,14 @@ def train():
 def schema():
     X, y = train()
     fields = []
+    lo, hi = X[y == 0], X[y == 2]
     for name, label, unit, group, kind, normal, help_ in FIELDS:
         s = X[name]
         f = {"name": name, "label": label, "unit": unit, "group": group, "kind": kind, "help": help_,
              "min": float(s.min()), "max": float(s.max()), "normal": list(normal) if normal else None,
              "default": float(s.median()) if kind in ("int", "float") else int(s.mode()[0])}
+        # how strongly a higher value goes with High vs Low risk in the training data (standardised mean difference)
+        f["risk_effect"] = round(float((hi[name].mean() - lo[name].mean()) / (s.std() or 1)), 3)
         if kind == "float":
             dec = max(len(f"{v:.6g}".split(".")[1]) if "." in f"{v:.6g}" else 0 for v in s.unique()[:2000])
             f["step"] = 10 ** -min(dec, 2)

@@ -153,7 +153,7 @@ function paintStep() {
   meta.push(run ? `<span class="pill ${run.status}"><i></i>${STATUS_TEXT[run.status] || run.status}</span>` : `<span class="pill">Not run yet</span>`);
   if (run) {
     if (run.seconds != null) meta.push(`<span>${icon("history")} ${fmtTime(run.seconds)}</span>`);
-    meta.push(`<span>Run #${run.id}${run.started_at ? " · " + new Date(run.started_at).toLocaleString() : ""}</span>`);
+    meta.push(`<span>Run #${run.id}${run.started_at && run.source !== "kaggle" ? " · " + new Date(run.started_at).toLocaleString() : ""}</span>`);
     meta.push(`<span class="pill src">${run.source === "kaggle" ? "Ran on Kaggle · Tesla T4 GPU" : "Ran on this Mac"}</span>`);
   }
   $("#nbMeta").innerHTML = meta.join('<span class="sep"></span>');
@@ -241,13 +241,35 @@ function kpisHtml(d) {
   if (!d) return "";
   const k = (label, v, cls = "") => `<div class="kpi ${cls}"><span>${label}</span><b>${esc(v)}</b></div>`;
   if (d._kind === "metrics") {
-    const reused = d.predict_seconds === 0 && /TabPFN|TabFM/.test(d.model || "");
     return `<div class="kpis">${k("Accuracy", d.accuracy)}${k("Macro F1", d.macro_f1)}${k("Weighted F1", d.weighted_f1)}${k("ROC-AUC", d.roc_auc_ovr)}
-      ${k("Training rows", (d.context_rows ?? 0).toLocaleString())}${k("Test rows", (d.test_rows ?? 0).toLocaleString())}${k("Fit time", fmtTime(d.fit_seconds))}
-      ${reused ? k("Predict time", "0 s · reused", "warn") : k("Predict time", fmtTime(d.predict_seconds))}</div>`;
+      ${k("Training rows", (d.context_rows ?? 0).toLocaleString())}${k("Test rows", (d.test_rows ?? 0).toLocaleString())}</div>`;
   }
-  return `<div class="kpis">${k("Rows explained", d.rows_explained)}${k("Time", fmtTime(d.seconds))}${k("Explainer", d.explainer || "–")}
+  return `<div class="kpis">${k("Rows explained", d.rows_explained)}${k("Explainer", d.explainer || "–")}
     <div class="kpi wide"><span>Top 5 features</span><b>${(d.top_5 || []).map(esc).join(", ")}</b></div></div>`;
+}
+function timingHtml(run, d) {
+  const t = (label, v, cls = "", tipTxt = "") => `<div class="kpi ${cls}" ${tipTxt ? `data-tip="${esc(tipTxt)}"` : ""}><span>${label}</span><b>${v}</b></div>`;
+  const started = run.started_at ? new Date(run.started_at) : null, finished = run.finished_at ? new Date(run.finished_at) : null;
+  const tm = (x) => x.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  let cells = [t("Step total", run.seconds != null ? fmtTime(run.seconds) : "–", "", "Wall-clock time of the whole step, including loading data and saving files")];
+  if (d?._kind === "metrics") {
+    const per = d.predict_seconds > 0 && d.test_rows ? (d.predict_seconds / d.test_rows) * 1000 : null;
+    cells.push(t("Fit / train", fmtTime(d.fit_seconds), "", "CatBoost: hyper-parameter search + final model · TabPFN/TabFM: loading the training rows as context"));
+    cells.push(d.predict_seconds === 0 && /TabPFN|TabFM/.test(d.model || "")
+      ? t("Test prediction", "reused", "warn", "This run reused saved predictions, so its prediction time was not measured")
+      : t(`Prediction · ${(d.test_rows ?? 0).toLocaleString()} test rows`, d.predict_seconds < 0.05 ? "< 0.1 s" : fmtTime(d.predict_seconds)));
+    if (per != null) cells.push(t("Per patient", per < 1 ? `${per.toFixed(2)} ms` : per < 1000 ? `${per.toFixed(0)} ms` : fmtTime(per / 1000), "", "Average prediction time for one patient"));
+    cells.push(t("Fit + predict", fmtTime((d.fit_seconds || 0) + (d.predict_seconds || 0))));
+  } else if (d?._kind === "shap") {
+    cells.push(t("Explaining", fmtTime(d.seconds), "", "Time spent computing SHAP values"));
+    if (d.rows_explained) cells.push(t("Per explained row", fmtTime(d.seconds / d.rows_explained)));
+  }
+  if (run.source !== "kaggle") {   // for imported Kaggle runs these would only be the import time
+    if (started) cells.push(t("Started", tm(started)));
+    if (finished) cells.push(t("Finished", tm(finished)));
+  }
+  cells.push(t("Ran on", run.source === "kaggle" ? "Kaggle T4 GPU" : "This Mac", "", run.source === "kaggle" ? "Timings come from a Tesla T4 GPU on Kaggle, not this Mac" : "Timings measured on this Mac"));
+  return `<div class="kpi-h">Timing</div><div class="kpis">${cells.join("")}</div>`;
 }
 function paintOutput(run) {
   const out = $("#nbOut");
@@ -268,7 +290,7 @@ function paintOutput(run) {
 
   const imgs = run.outputs.filter((o) => o.type === "image");
   const pngNames = run.source === "kaggle" ? run.files.filter((f) => f.name.endsWith(".png")).map((f) => f.name) : [];
-  let html = `<div id="nbKpis"></div>`;
+  let html = `<div id="nbKpis">${isBusy(run) ? "" : timingHtml(run, null)}</div>`;
   run.outputs.forEach((o) => {
     if (o.type === "stream") html += `<div class="log-slot" data-i="${run.outputs.indexOf(o)}"></div>`;
     else if (o.type === "error") html += `<pre class="log err">${esc(stripAnsi(o.text))}</pre>`;
@@ -289,7 +311,7 @@ function paintOutput(run) {
     else logHtml(o, run).then((h) => { if (NB.outKey === k && slot.isConnected) slot.outerHTML = h; });
   });
   if (isBusy(run) && pinned) out.scrollTop = out.scrollHeight;
-  if (run.status === "ok") Lab.summary(run).then((d) => { const box = $("#nbKpis"); if (box && NB.outKey === k) box.innerHTML = kpisHtml(d); });
+  if (run.status === "ok") Lab.summary(run).then((d) => { const box = $("#nbKpis"); if (box && NB.outKey === k) box.innerHTML = (d ? `<div class="kpi-h">Results</div>${kpisHtml(d, true)}` : "") + timingHtml(run, d); });
 }
 $("#nbOut").addEventListener("scroll", () => {
   const o = $("#nbOut"), j = $("#nbJump");
