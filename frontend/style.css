@@ -494,3 +494,5 @@ section.sec { scroll-margin-top: 37px; }
 .fhint { flex-wrap: nowrap; }
 .fhint > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kpi-h { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); margin: 2px 0 4px; }
+.timeline { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; padding: 4px 9px; border-radius: 6px; background: var(--brand-50); color: #3730a3; font-size: 11px; }
+.timeline b { font-weight: 650; }

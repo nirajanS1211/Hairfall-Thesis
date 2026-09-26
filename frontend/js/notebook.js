@@ -183,13 +183,11 @@ async function loadRunHistory(stepId) {
 
 /* ---------------- output ---------------- */
 function cleanLog(text) {
-  // keep only the last line of a run of progress lines, and dim library noise
+  // dim library noise; every progress line ("predicted x/y rows | elapsed | ETA") is kept as printed
   // the metrics / SHAP summary JSON is shown as cards above the log, so fold it to one line here
   text = stripAnsi(text).replace(/^\{\n(?:[ \t]+"[^\n]*\n)+?[ \t]*"(?:accuracy|top_5)"[\s\S]*?^\}$/m, "\u0000");
   const lines = text.split("\n"), out = [];
-  const prog = /^\s*(predicted [\d,]+\/[\d,]+ rows|\d+%\|)/;
-  lines.forEach((l, i) => {
-    if (prog.test(l) && prog.test(lines[i + 1] || "")) return;
+  lines.forEach((l) => {
     if (l === "\u0000") { out.push(`<span class="dim">{ summary shown in the cards above }</span>`); return; }
     if (/^(Loading weights from|Fetching \d+ files|Download complete|WARNING: Skipping)/.test(l)) out.push(`<span class="dim">${esc(l)}</span>`);
     else out.push(esc(l));
@@ -247,29 +245,21 @@ function kpisHtml(d) {
   return `<div class="kpis">${k("Rows explained", d.rows_explained)}${k("Explainer", d.explainer || "–")}
     <div class="kpi wide"><span>Top 5 features</span><b>${(d.top_5 || []).map(esc).join(", ")}</b></div></div>`;
 }
-function timingHtml(run, d) {
-  const t = (label, v, cls = "", tipTxt = "") => `<div class="kpi ${cls}" ${tipTxt ? `data-tip="${esc(tipTxt)}"` : ""}><span>${label}</span><b>${v}</b></div>`;
-  const started = run.started_at ? new Date(run.started_at) : null, finished = run.finished_at ? new Date(run.finished_at) : null;
-  const tm = (x) => x.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  let cells = [t("Step total", run.seconds != null ? fmtTime(run.seconds) : "–", "", "Wall-clock time of the whole step, including loading data and saving files")];
+function timingHtml(run, d) {   // one compact line instead of a grid of cards
+  const bits = [];
   if (d?._kind === "metrics") {
-    const per = d.predict_seconds > 0 && d.test_rows ? (d.predict_seconds / d.test_rows) * 1000 : null;
-    cells.push(t("Fit / train", fmtTime(d.fit_seconds), "", "CatBoost: hyper-parameter search + final model · TabPFN/TabFM: loading the training rows as context"));
-    cells.push(d.predict_seconds === 0 && /TabPFN|TabFM/.test(d.model || "")
-      ? t("Test prediction", "reused", "warn", "This run reused saved predictions, so its prediction time was not measured")
-      : t(`Prediction · ${(d.test_rows ?? 0).toLocaleString()} test rows`, d.predict_seconds < 0.05 ? "< 0.1 s" : fmtTime(d.predict_seconds)));
-    if (per != null) cells.push(t("Per patient", per < 1 ? `${per.toFixed(2)} ms` : per < 1000 ? `${per.toFixed(0)} ms` : fmtTime(per / 1000), "", "Average prediction time for one patient"));
-    cells.push(t("Fit + predict", fmtTime((d.fit_seconds || 0) + (d.predict_seconds || 0))));
+    bits.push(`fit <b>${fmtTime(d.fit_seconds)}</b>`);
+    if (d.predict_seconds === 0 && /TabPFN|TabFM/.test(d.model || "")) bits.push(`prediction time not measured (saved predictions were reused)`);
+    else {
+      const per = d.predict_seconds > 0 && d.test_rows ? (d.predict_seconds / d.test_rows) * 1000 : null;
+      bits.push(`predicting ${(d.test_rows ?? 0).toLocaleString()} test patients <b>${d.predict_seconds < 0.05 ? "< 0.1 s" : fmtTime(d.predict_seconds)}</b>${per != null ? ` (${per < 10 ? per.toFixed(1) : Math.round(per)} ms each)` : ""}`);
+    }
   } else if (d?._kind === "shap") {
-    cells.push(t("Explaining", fmtTime(d.seconds), "", "Time spent computing SHAP values"));
-    if (d.rows_explained) cells.push(t("Per explained row", fmtTime(d.seconds / d.rows_explained)));
+    bits.push(`explaining ${d.rows_explained} rows <b>${fmtTime(d.seconds)}</b>${d.rows_explained ? ` (${fmtTime(d.seconds / d.rows_explained)} per row)` : ""}`);
   }
-  if (run.source !== "kaggle") {   // for imported Kaggle runs these would only be the import time
-    if (started) cells.push(t("Started", tm(started)));
-    if (finished) cells.push(t("Finished", tm(finished)));
-  }
-  cells.push(t("Ran on", run.source === "kaggle" ? "Kaggle T4 GPU" : "This Mac", "", run.source === "kaggle" ? "Timings come from a Tesla T4 GPU on Kaggle, not this Mac" : "Timings measured on this Mac"));
-  return `<div class="kpi-h">Timing</div><div class="kpis">${cells.join("")}</div>`;
+  if (run.seconds != null) bits.push(`step total <b>${fmtTime(run.seconds)}</b>`);
+  bits.push(run.source === "kaggle" ? "on a Kaggle Tesla T4 GPU" : "on this Mac");
+  return `<div class="timeline">${icon("history")}<span>${bits.join(" · ")}</span></div>`;
 }
 function paintOutput(run) {
   const out = $("#nbOut");
@@ -311,7 +301,7 @@ function paintOutput(run) {
     else logHtml(o, run).then((h) => { if (NB.outKey === k && slot.isConnected) slot.outerHTML = h; });
   });
   if (isBusy(run) && pinned) out.scrollTop = out.scrollHeight;
-  if (run.status === "ok") Lab.summary(run).then((d) => { const box = $("#nbKpis"); if (box && NB.outKey === k) box.innerHTML = (d ? `<div class="kpi-h">Results</div>${kpisHtml(d, true)}` : "") + timingHtml(run, d); });
+  if (run.status === "ok") Lab.summary(run).then((d) => { const box = $("#nbKpis"); if (box && NB.outKey === k) box.innerHTML = (d ? kpisHtml(d) : "") + timingHtml(run, d); });
 }
 $("#nbOut").addEventListener("scroll", () => {
   const o = $("#nbOut"), j = $("#nbJump");

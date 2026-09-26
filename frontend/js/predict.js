@@ -275,7 +275,13 @@ function patientView(p) {
   if (sh && sh.risk) {
     const top = sh.risk.filter((r) => Math.abs(r.value) > 0.02).slice(0, 8);
     const mx = Math.max(...top.map((r) => Math.abs(r.value))) || 1;
+    const upSum = sh.risk.filter((r) => r.value > 0).reduce((t, r) => t + r.value, 0), downSum = -sh.risk.filter((r) => r.value < 0).reduce((t, r) => t + r.value, 0);
+    const mixed = Math.min(upSum, downSum) / Math.max(upSum, downSum) > 0.35;
     const strength = (v) => (Math.abs(v) / mx > 0.66 ? "strong" : Math.abs(v) / mx > 0.33 ? "moderate" : "slight");
+    if (mixed) {
+      const winner = downSum > upSum ? "lowering" : "raising", names = (dir) => sh.risk.filter((r) => (dir > 0 ? r.value > 0.02 : r.value < -0.02)).slice(0, 3).map((r) => P.byName[r.feature]?.label.toLowerCase()).filter(Boolean).join(", ");
+      h += `<div class="note mixed">${icon("info")}<span><b>Mixed signals.</b> Some of your answers raise the risk (${names(1)}) and others lower it (${names(-1)}). The ${winner} factors together were stronger (${(winner === "lowering" ? downSum : upSum).toFixed(1)} vs ${(winner === "lowering" ? upSum : downSum).toFixed(1)}), so the overall result is <b>${RISK[c]}</b>. In this dataset, high iron, protein, calcium, vitamin D, manganese and body-water values lower the risk even when stress is high.</span></div>`;
+    }
     h += `<section class="card card-pad"><div class="card-head"><span class="card-icon">${icon("sparkle")}</span>
         <div><h2>Why this result?</h2><p>The factors that moved your risk the most, from strongest to weakest.</p></div><span class="spacer"></span>
         <div class="why-legend"><span><i style="background:var(--good)"></i>Lowers your risk</span><span><i style="background:var(--crit)"></i>Raises your risk</span></div></div>
