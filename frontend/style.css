@@ -499,3 +499,6 @@ section.sec { scroll-margin-top: 32px; }
 
 /* ---- use the full screen width ---- */
 .wrap, .wrap.wide { max-width: none; padding: 8px 12px 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1500px) { .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .grid-4 { grid-template-columns: 1fr; } }

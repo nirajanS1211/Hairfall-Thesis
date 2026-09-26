@@ -63,7 +63,7 @@ async function renderCompare() {
   const series = (fn) => MODEL_ORDER.filter((m) => met.some((x) => x.d.model === m)).map((m) => ({ name: m, color: MODEL_COLOR[m], values: SIZES.map((z) => { const d = cell(m, z); return d ? fn(d) : null; }) }));
   const legend = `<div class="legend">${MODEL_ORDER.map((m) => `<span><i style="background:${MODEL_COLOR[m]}"></i>${m}</span>`).join("")}</div>`;
   h += cSection("scaling", "How performance scales with training data", "Foundation models reach high accuracy with very little data; CatBoost needs the full training set to catch up.",
-    `<div class="grid-2">
+    `<div class="grid-4">
       <div class="card chart-card"><h3>Macro F1</h3><div class="sub">Higher is better · the main thesis metric</div>${lineChart({ series: series((d) => d.macro_f1) })}</div>
       <div class="card chart-card"><h3>ROC-AUC</h3><div class="sub">Higher is better · one-vs-rest, macro average</div>${lineChart({ series: series((d) => d.roc_auc_ovr) })}</div>
       <div class="card chart-card"><h3>Accuracy</h3><div class="sub">Share of the ${best.test_rows.toLocaleString()} test patients classified correctly</div>${lineChart({ series: series((d) => d.accuracy) })}</div>
