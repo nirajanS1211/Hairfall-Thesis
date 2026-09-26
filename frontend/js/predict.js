@@ -83,7 +83,7 @@ function buildForm() {
   $("#pForm").innerHTML = `<div class="note form-note hidden" id="pNote"></div><div class="stack-lg">${Object.entries(groups).map(([g, fs]) => {
     const meta = GROUP_META[g] || { icon: "info", sub: "" };
     const body = g === "Health & lifestyle" ? `<div class="qgrid">${fs.map(boolHtml).join("")}</div>`
-      : g === "Other scores" ? `<div class="fgrid">${fs.map(sliderHtml).join("")}</div>`
+      : g === "Other scores" ? `<div class="fgrid scores">${fs.map(sliderHtml).join("")}</div>`
       : `<div class="fgrid">${g === "About you" ? nameHtml() : ""}${fs.map(fieldHtml).join("")}</div>`;
     return `<section class="card card-pad"><div class="card-head"><span class="card-icon">${icon(meta.icon)}</span>
       <div><h2>${esc(GROUP_TITLE[g] || g)}</h2>${meta.sub ? `<p>${meta.sub}</p>` : ""}</div>
@@ -100,9 +100,9 @@ function buildForm() {
   $("#pClear").onclick = () => { if (confirm("Clear every answer and start again?")) { resetValues(); paintAll(); } };
   $("#pSubmit").onclick = submit;
 }
-const nameHtml = () => `<div class="field"><span class="flabel">Name <span class="opt">optional</span></span><input class="input" id="pName" maxlength="80" placeholder="Your name or patient ID"></div>`;
+const nameHtml = () => `<div class="field span2"><span class="flabel">Name <span class="opt">optional</span></span><input class="input" id="pName" maxlength="80" placeholder="Your name or patient ID"></div>`;
 function fieldHtml(f) {
-  if (f.kind === "choice") return `<div class="field" data-f="${f.name}"><span class="flabel">${esc(f.label)}</span>
+  if (f.kind === "choice") return `<div class="field span2" data-f="${f.name}"><span class="flabel">${esc(f.label)}</span>
     <div class="seg full">${f.options.map((o) => `<button type="button" data-v="${o.value}">${esc(o.label)}</button>`).join("")}</div></div>`;
   const span = f.max - f.min;
   const nz = f.normal ? `<span class="nz" style="left:${((f.normal[0] - f.min) / span) * 100}%;width:${((Math.min(f.normal[1], f.max) - f.normal[0]) / span) * 100}%"></span>` : "";
