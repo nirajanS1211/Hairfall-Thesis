@@ -12,7 +12,6 @@ import os
 import sys
 import threading
 import time
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -95,7 +94,7 @@ def schema():
 def validate(inputs: dict) -> dict:
     X, _ = train()
     clean, errors = {}, {}
-    for name, label, _, _, kind, _, _ in FIELDS:
+    for name, _label, _, _, kind, _, _ in FIELDS:
         v = inputs.get(name)
         if v is None or v == "":
             errors[name] = "required"
@@ -115,14 +114,6 @@ def validate(inputs: dict) -> dict:
     if errors:
         raise ValueError(errors)
     return clean
-
-
-def sample():
-    """A random real patient from the held-out test set (with its true class) - handy for checking the models."""
-    te = pd.read_csv(SPLIT / "test.csv")
-    r = te.sample(1).iloc[0]
-    return {"inputs": {k: (int(v) if float(v).is_integer() else float(v)) for k, v in r.drop("hair_fall").items()},
-            "true_class": int(r["hair_fall"]), "row": int(r.name)}
 
 
 # ---------- models ----------
@@ -258,7 +249,7 @@ def run(pid: int, inputs: dict, models: dict):
     with store.pg() as c:
         r = c.execute("SELECT id, label, inputs, models, results, status, created_at, seconds, true_class "
                       "FROM predictions WHERE id=%s", (pid,)).fetchone()
-    rec = dict(zip(["id", "label", "inputs", "models", "results", "status", "created_at", "seconds", "true_class"], r))
+    rec = dict(zip(["id", "label", "inputs", "models", "results", "status", "created_at", "seconds", "true_class"], r, strict=True))
     key = f"predictions/{pid}/record.json"
     store.put_bytes(key, store.dumps(rec).encode(), "application/json")
     with store.pg() as c:

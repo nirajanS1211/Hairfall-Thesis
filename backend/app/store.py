@@ -41,6 +41,7 @@ def init(retries=30):
                     seconds REAL)""")
                 c.execute("ALTER TABLE runs ADD COLUMN IF NOT EXISTS step TEXT")
                 c.execute("ALTER TABLE runs ADD COLUMN IF NOT EXISTS batch_id TEXT")
+                c.execute("ALTER TABLE runs ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'local'")
             minio()
             return
         except Exception:  # noqa: BLE001

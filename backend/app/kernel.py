@@ -74,7 +74,7 @@ def execute(kernel: Kernel, run_id: int, code: str, on_update):
         except Exception:  # noqa: BLE001  (timeout: keep waiting, unless the kernel died)
             if not kernel.km.is_alive():
                 raise KernelDied("The Python kernel crashed - most likely out of memory. "
-                                 "Lower BATCH / training size, or close other apps, then run again.")
+                                 "Lower BATCH / training size, or close other apps, then run again.") from None
             if time.time() - last_push > 5:
                 on_update(outputs)
                 last_push = time.time()

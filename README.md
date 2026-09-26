@@ -37,8 +37,31 @@ TabPFN license (one time): https://ux.priorlabs.ai → Licenses → accept **Tab
 ## Run
 
 ```bash
-./start.sh      # starts everything and opens http://127.0.0.1:8000
-./stop.sh       # stops everything (saved results are kept)
+./start.sh             # starts Postgres, MinIO and the app, opens http://127.0.0.1:8000
+./start.sh --restart   # also restarts the app server (refused while a step is running)
+./stop.sh              # stops everything cleanly - asks first if a step is still running
+./backup.sh            # database + files -> backups/<date-time>/ (safe while running)
+```
+
+`start.sh` never restarts a running app, so a long training step is never killed by accident.
+
+## The app
+
+| Tab            | What it is for                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| **Risk check** | One person enters their lab results and answers → plain-language hair-fall risk, the main reasons (SHAP) and tips. *Developer* shows every model's probabilities and the calculation. Every check is saved (Postgres `predictions` + MinIO `predictions/<id>/record.json`). |
+| **Notebook**   | The thesis pipeline, step by step: edit code, run, see output, figures and files, reopen any earlier run. |
+| **Results**    | All models × training sizes: metrics, scaling charts, McNemar tests, confusion matrices, SHAP, CatBoost tuning, data quality. |
+| **Dataset**    | The raw patient table with search, sorting and column statistics.                                |
+
+Links can be shared: `/#predict/12` opens check 12, `?view=dev#predict/12` opens its developer view, `/#notebook/Step_06a_TabPFN_500` opens a step.
+
+## Import runs made on Kaggle
+
+The files in `backend/kaggle/` are the same steps packaged for a Kaggle GPU notebook. Each run downloads `Step_xx.zip`; import it with:
+
+```bash
+cd backend && .venv/bin/python import_kaggle_run.py ~/Downloads/Step_06a_TabPFN_500.zip
 ```
 
 ## Useful
@@ -50,11 +73,12 @@ tail -f backend/data/api.log                                   # server log
 
 | What             | Where                                           |
 | ---------------- | ----------------------------------------------- |
-| UI               | http://127.0.0.1:8000                           |
+| App              | http://127.0.0.1:8000                           |
 | MinIO console    | http://127.0.0.1:9001 (minioadmin / minioadmin) |
 | Step code        | `backend/steps/`                                |
 | Results per step | `thesis_project/<Step>/`                        |
 | Database + files | `backend/data/`                                 |
+| Backups          | `backups/` (restore steps at the top of `backup.sh`) |
 
 ## Move results to another laptop
 
@@ -66,6 +90,3 @@ tar czf hairfall-results.tgz thesis_project backend/data
 # new laptop (inside the project folder, before ./start.sh)
 tar xzf hairfall-results.tgz
 ```
-
-cd ~/Desktop/Hairfall-Thesis/backend
-.venv/bin/hf download google/tabfm-1.0.0-pytorch

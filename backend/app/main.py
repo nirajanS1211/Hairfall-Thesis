@@ -10,8 +10,8 @@ import queue
 import threading
 import time
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
@@ -26,29 +26,41 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("lab")
 
 FRONTEND = Path(__file__).resolve().parent.parent.parent / "frontend"
-RUN_COLS = "id, step, code, status, outputs, files, created_at, started_at, finished_at, seconds, batch_id"
+RUN_COLS = "id, step, code, status, outputs, files, created_at, started_at, finished_at, seconds, batch_id, source"
 
-app = FastAPI(title="Hairfall Lab")
+
+
+@asynccontextmanager
+async def lifespan(_app):
+    startup()
+    yield
+
+
+app = FastAPI(title="Hairfall Lab", lifespan=lifespan)
 
 
 @app.middleware("http")
-async def no_cache_ui(request, call_next):  # the UI is edited often - never let the browser keep an old copy
+async def no_cache_ui(request, call_next):
+    """The UI is plain files served from frontend/ - always send the current version."""
     resp = await call_next(request)
     if request.url.path == "/" or request.url.path.startswith("/static/"):
-        resp.headers["Cache-Control"] = "no-store"
+        resp.headers["Cache-Control"] = "no-cache"
     return resp
+
+
 jobs: "queue.Queue[int]" = queue.Queue()
 state = {"kernel": None, "running": None, "dataset": "not loaded"}
 kernel_lock = threading.Lock()
 
 
 class RunReq(BaseModel):
-    code: Optional[str] = None  # None = the step's default code
+    code: str | None = None  # None = the step's default code
 
 
 def _row(r):
     return {"id": r[0], "step": r[1], "code": r[2], "status": r[3], "outputs": r[4], "files": r[5],
-            "created_at": r[6], "started_at": r[7], "finished_at": r[8], "seconds": r[9], "batch_id": r[10]}
+            "created_at": r[6], "started_at": r[7], "finished_at": r[8], "seconds": r[9], "batch_id": r[10],
+            "source": r[11]}
 
 
 def _kernel() -> kmod.Kernel:
@@ -70,7 +82,7 @@ def _worker():
         state["running"] = run_id
         t0 = time.time()
 
-        def push(outputs):
+        def push(outputs, t0=t0, run_id=run_id):
             with store.pg() as c:
                 c.execute("UPDATE runs SET outputs=%s, seconds=%s WHERE id=%s",
                           (store.dumps(outputs), round(time.time() - t0, 1), run_id))
@@ -100,13 +112,13 @@ def _worker():
         state["running"] = None
 
 
-@app.on_event("startup")
 def startup():
     store.init()
     pmod.init_table()
     project.ensure_steps()
     with store.pg() as c:
         c.execute("UPDATE runs SET status='interrupted' WHERE status IN ('queued','running')")
+        c.execute("UPDATE predictions SET status='error' WHERE status IN ('queued','running')")
     try:
         state["dataset"] = store.load_dataset()
     except Exception as exc:  # noqa: BLE001
@@ -115,7 +127,7 @@ def startup():
     threading.Thread(target=_worker, daemon=True).start()
 
 
-def _enqueue(step: str, code: str, batch: Optional[str] = None) -> int:
+def _enqueue(step: str, code: str, batch: str | None = None) -> int:
     with store.pg() as c:
         rid = c.execute("INSERT INTO runs (step, code, batch_id) VALUES (%s,%s,%s) RETURNING id",
                         (step, code, batch)).fetchone()[0]
@@ -157,7 +169,7 @@ def run_step(step: str, body: RunReq):
 
 
 @app.post("/api/run-all")
-def run_all(from_step: Optional[str] = None, to_step: Optional[str] = None):
+def run_all(from_step: str | None = None, to_step: str | None = None):
     """Queue steps in order (optionally a range); stops at the first failure."""
     steps = project.steps()
     ids = [s["id"] for s in steps]
@@ -215,8 +227,8 @@ def history(step: str):
 
 
 @app.get("/api/dataset")
-def dataset(offset: int = 0, limit: int = 50, sort: Optional[str] = None, desc: bool = False,
-            q: Optional[str] = None):
+def dataset(offset: int = 0, limit: int = 50, sort: str | None = None, desc: bool = False,
+            q: str | None = None):
     limit = max(1, min(limit, 500))
     with store.pg() as c:
         cols = [r[0] for r in c.execute(
@@ -253,7 +265,7 @@ def get_file(key: str, download: bool = False):
         obj = store.minio().get_object(store.BUCKET, key)
         data, ctype = obj.read(), obj.headers.get("Content-Type", "application/octet-stream")
     except Exception:  # noqa: BLE001
-        raise HTTPException(404, "file not found")
+        raise HTTPException(404, "file not found") from None
     headers = {"Content-Disposition": f'attachment; filename="{key.split("/")[-1]}"'} if download else {}
     return Response(data, media_type=ctype, headers=headers)
 
@@ -264,14 +276,13 @@ PRED_COLS = "id, created_at, label, inputs, models, results, status, pred, secon
 
 
 def _prow(r):
-    return dict(zip(PRED_COLS.split(", "), r))
+    return dict(zip(PRED_COLS.split(", "), r, strict=True))
 
 
 class PredictReq(BaseModel):
-    label: Optional[str] = None
+    label: str | None = None
     inputs: dict
     models: dict                    # {"catboost": "Full", "tabpfn": "2000", "tabfm": "2000"}
-    true_class: Optional[int] = None  # known class when the patient came from the test set
 
 
 @app.get("/api/predict/schema")
@@ -280,30 +291,24 @@ def predict_schema():
     return {**pmod.schema(), "loaded": pmod.loaded(), "default_models": pmod.DEFAULT_MODELS}
 
 
-@app.get("/api/predict/sample")
-def predict_sample():
-    return pmod.sample()
-
-
 @app.post("/api/predict")
 def predict_create(body: PredictReq):
     try:
         inputs = pmod.validate(body.inputs)
     except ValueError as exc:
-        raise HTTPException(422, {"fields": exc.args[0]})
+        raise HTTPException(422, {"fields": exc.args[0]}) from None
     models = {k: v for k, v in body.models.items() if k in pmod.MODELS and v in pmod.MODELS[k]}
     if not models:
         raise HTTPException(422, "choose at least one model")
     with store.pg() as c:
-        pid = c.execute("INSERT INTO predictions (label, inputs, models, true_class) VALUES (%s,%s,%s,%s) RETURNING id",
-                        ((body.label or "").strip() or None, store.dumps(inputs), store.dumps(models),
-                         body.true_class)).fetchone()[0]
+        pid = c.execute("INSERT INTO predictions (label, inputs, models) VALUES (%s,%s,%s) RETURNING id",
+                        ((body.label or "").strip() or None, store.dumps(inputs), store.dumps(models))).fetchone()[0]
     threading.Thread(target=pmod.run, args=(pid, inputs, models), daemon=True).start()
     return {"id": pid}
 
 
 @app.get("/api/predictions")
-def predictions_list(q: Optional[str] = None, limit: int = 300):
+def predictions_list(q: str | None = None, limit: int = 300):
     where, params = "", []
     if q:
         where, params = "WHERE label ILIKE %s OR CAST(id AS TEXT) = %s", [f"%{q}%", q.lstrip("#")]

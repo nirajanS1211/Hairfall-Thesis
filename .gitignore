@@ -30,3 +30,6 @@ backend/workspace/outputs/
 node_modules/
 dist/
 npm-debug.log*
+
+# --- local backups (./backup.sh) ---
+backups/
