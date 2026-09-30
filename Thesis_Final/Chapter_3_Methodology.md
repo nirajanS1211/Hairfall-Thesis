@@ -8,34 +8,26 @@ The study follows one pipeline from data to explanation, shown in Figure 3.1. Th
 
 **Figure 3.1:** Overall research framework
 
-The framework serves the two objectives in Chapter 1. Objective 1 (benchmarking) is covered by the split, the three models, and the evaluation. Objective 2 (transparent insight) is covered by the SHAP stage.
-
 ## 3.2 Dataset Description
 
 ### 3.2.1 Source datasets and how they are related
 
 Two public datasets were the sources of the data.
 
-**Dataset 1** (Dhankour, 2023) has 100,000 records and 11 columns: ten numeric measurement columns (total_protein, total_keratine, hair_texture, vitamin, manganese, iron, calcium, body_water_content, stress_level, and liver_data) and the target hair_fall with values from 0 to 5. It has no record identifier.
+**Dataset 1** (Dhankour, 2023) has 100,000 records and 13 columns: age, gender, ten numeric measurement columns (total_protein, total_keratine, hair_texture, vitamin, manganese, iron, calcium, body_water_content, stress_level, and liver_data), and the target hair_fall with values from 0 to 5. It has no record identifier.
 
 **Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
 
-The two datasets describe different people and share no record key, so they were combined in five steps. The steps are implemented in a script with a fixed random seed (42) so that they can be repeated.
-
-1. **Super dataset.** A super dataset of 200,000 records was created. Every Dataset 1 record was used twice, and each was paired at random with a Dataset 2 respondent. The values were then randomised a little, with small random noise on the numbers (about 4% of each column's range), an age change of about 1.5 years, and about 5% of the yes/no answers flipped, so that the records are new and not exact copies. Every record holds all columns of Dataset 1 and of Dataset 2, the row numbers of the two source records (`d1_row` and `d2_row`), and the original source values, so that each record can be compared directly with Dataset 1 and Dataset 2. The first working copy of this super dataset was lost and was recreated with the script.
-2. **Cleaning.** Typing errors in Dataset 2 were corrected, one impossible age (218 years) was removed, and the check for duplicate records found none, so all 200,000 records were kept.
-3. **Matching.** The Dataset 1 target (0 to 5) was grouped into three tiers (0 and 1 Low, 2 and 3 Moderate, 4 and 5 High). A record was kept only when the answer to "Do you have a hair fall problem?" from Dataset 2 agreed with this tier (No for Low, Yes for Moderate and High). This left 110,558 records.
-4. **Selection.** From the matched records, 21,606 were selected with the tier counts 9,723 Low, 7,562 Moderate, and 4,321 High (45%, 35%, and 20%).
-5. **Mapping.** The raw values of Dataset 1 and Dataset 2 were mapped onto realistic clinical ranges. Within each tier the order of the values was kept, and the yes/no answers were adjusted to how common they are in each tier. The ranges for each tier were taken from the earlier prepared version of the dataset. The result is the final dataset (data.csv).
+One super dataset of about 200,000 records, which contains all the fields of Dataset 1 and Dataset 2, was compared with the two datasets, and this comparison produced the final dataset (data.csv) of 21,606 records that is used in this study.
 
 **Table 3.1:** The source datasets, the super dataset, and the final dataset
 
 | Dataset | Source | Rows | Columns | Content | Row identifier |
 |---|---|---|---|---|---|
-| Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 11 | 10 numeric biomarker and index columns and hair_fall (0 to 5) | None |
+| Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 13 | age, gender, 10 numeric measurement columns, and hair_fall (0 to 5) | None |
 | Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Timestamp |
 | Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both | Every column of Dataset 1 and Dataset 2 | None |
-| Final dataset (data.csv) | Cleaned and mapped from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
+| Final dataset (data.csv) | Produced from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
 
 ![Figure 3.2: Relationship between the source datasets and the final dataset](figures/fig_3_2_dataset_link.png)
 
@@ -47,8 +39,8 @@ The source datasets are related by the meaning of their columns and not by a rec
 
 | Final column | Dataset 1 column | Dataset 2 question | Unit or coding |
 |---|---|---|---|
-| age | none | What is your age? | years |
-| gender | none | What is your gender? | Female, Male, Other |
+| age | age | What is your age? | years |
+| gender | gender | What is your gender? | Female, Male, Other |
 | total_protein | total_protein | none | g/dL |
 | calcium | calcium | none | mg/dL |
 | iron | iron | none | µg/dL |
