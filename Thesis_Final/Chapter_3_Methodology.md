@@ -14,7 +14,13 @@ The framework serves the two objectives in Chapter 1. Objective 1 (benchmarking)
 
 ### 3.2.1 Source datasets and how they are related
 
-Two public datasets were the sources of the data: Dataset 1, with 100,000 records of blood and body measurements (Dhankour, 2023), and Dataset 2, a survey of 716 people on their health and lifestyle (Arnob et al., 2024). Because they describe different people, the two were first combined into one super dataset of about 2 lakh (200,000) records that contains every column of Dataset 1 and of Dataset 2. [CONFIRM: how the two datasets were combined into about 200,000 records.] The super dataset was then cleaned, which left 21,606 records. Finally, these records were compared and mapped against Dataset 1 and Dataset 2, so that their values follow the ranges and relationships found in the two sources, and the result is the final dataset (data.csv) used in this study. [CONFIRM: the rule used for the mapping.] Table 3.1 lists the datasets, and Figure 3.2 shows how they are related.
+Two public datasets were the sources of the data: Dataset 1, with 100,000 records of blood and body measurements (Dhankour, 2023), and Dataset 2, a survey of 716 people on their health and lifestyle (Arnob et al., 2024). Because they describe different people and share no record key, they were combined in five steps, which are implemented in a script with a fixed random seed (42) so that they can be repeated.
+
+1. **Super dataset.** A super dataset of 200,000 records was created. Every Dataset 1 record was used twice, and each was paired at random with a Dataset 2 respondent, so every record holds all columns of Dataset 1 and of Dataset 2 together with the row numbers of the two source records. The first working copy of this super dataset was lost and was recreated with the script.
+2. **Cleaning.** Typing errors in Dataset 2 were corrected, one impossible age (218 years) was removed, and 145 duplicate records were removed, leaving 199,855 records.
+3. **Matching.** The Dataset 1 target (0 to 5) was grouped into three tiers (0 and 1 Low, 2 and 3 Moderate, 4 and 5 High). A record was kept only when the answer to "Do you have a hair fall problem?" from Dataset 2 agreed with this tier (No for Low, Yes for Moderate and High). This left 111,599 records.
+4. **Selection.** From the matched records, 21,606 were selected with the tier counts 9,723 Low, 7,562 Moderate, and 4,321 High (45%, 35%, and 20%).
+5. **Mapping.** The raw values of Dataset 1 and Dataset 2 were mapped onto realistic clinical ranges. Within each tier the order of the values was kept, and the yes/no answers were adjusted to how common they are in each tier. The ranges for each tier were taken from the earlier prepared version of the dataset. The result is the final dataset (data.csv).
 
 **Table 3.1:** The source datasets, the super dataset, and the final dataset
 
