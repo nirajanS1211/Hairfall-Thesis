@@ -134,38 +134,23 @@ where f(x) is the model output for a patient x, φ₀ is the average prediction 
 
 ## 3.6 Tools and Technologies
 
-**Table 3.3:** Software tools
+This research will be implemented using the following Python-based software stack:
 
-| Purpose | Tool | Version |
-|---|---|---|
-| Language | Python | 3.12.14 |
-| Data handling | pandas, NumPy | 3.0.6, 2.5.3 |
-| Split, metrics, cross-validation | scikit-learn | 1.9.1 |
-| Statistical tests | statsmodels (McNemar's test, Wilson intervals) | 0.15.0 |
-| Gradient boosting model | CatBoost | 1.2.10 |
-| Foundation model 1 | TabPFN | 9.0.0 |
-| Foundation model 2 | TabFM (weights from Hugging Face: google/tabfm-1.0.0-pytorch) | 1.0.1 |
-| Explainability | SHAP | 0.52.0 |
-| Deep learning backend | PyTorch | 2.14.0 |
-| Charts | Matplotlib | 3.11.2 |
-| Workflow | Local lab application (notebook-style steps) with PostgreSQL and MinIO | — |
-| GPU runs | Kaggle notebooks | — |
-
-Package versions used on Kaggle are recorded at the start of each notebook and reported with the results.
+- **Data manipulation and preprocessing:** Pandas and NumPy for data handling, and Scikit-learn for the stratified train-test split, stratified 5-fold cross-validation, and the standard evaluation metrics.
+- **Tabular AI engines:** the official CatBoost framework for gradient-boosted tree training, the TabPFN Python package for zero-shot tabular foundation model inference, and Google Research's TabFM package for the second zero-shot tabular foundation model. PyTorch will be used as the deep learning backend for TabPFN and TabFM.
+- **Explainable AI:** the official SHAP library, which will be used to compute feature attributions for all three models, using TreeExplainer for CatBoost and KernelExplainer for TabPFN and TabFM.
+- **Statistical analysis:** Statsmodels, which will be used to compute McNemar's test for pairwise significance testing between model predictions and Wilson score confidence intervals for the reported accuracy figures.
+- **Visualisation:** Matplotlib for the confusion matrices, SHAP plots, and result charts.
 
 ## 3.7 Experimental Environment
 
-The work is divided between two environments (Figure 3.7).
+The experiments will be carried out in two environments (Figure 3.7). CatBoost tuning and training, the statistical tests, and the result tables and figures will be run on an Apple-silicon Mac with Python. TabPFN and TabFM will be run in Kaggle notebooks with a GPU accelerator, because they need a GPU to make their predictions in reasonable time, and Kaggle offers more GPU capacity than Google Colab. The train and test files will be uploaded to the notebook, and the predictions and metrics will be downloaded back for comparison.
 
 ![Figure 3.7: Experimental environment](figures/fig_3_7_environment.png)
 
 **Figure 3.7:** Experimental environment
 
-**Local machine.** Data preparation and the split have already been done on an Apple-silicon Mac (macOS, 17.2 GB memory, Apple GPU) with Python 3.12, and CatBoost tuning and training, the statistical tests, and the result tables and figures will be run there as well. The steps are run one by one in a local lab application that stores the data in PostgreSQL and the outputs in MinIO, so every run is saved and can be reopened.
-
-**Kaggle notebooks.** TabFM and TabPFN need a GPU to make their predictions in reasonable time, and TabFM is the largest model (about 6.5 GB of weights). These runs will therefore be done in Kaggle notebooks, which offer more GPU capacity than Google Colab. The train and test files created on the local machine are uploaded to the notebook, and the metrics and predictions are downloaded back for comparison. SHAP for the two foundation models will also be run there.
-
-To keep the comparison fair, all three models use the same split and the same random seed (42), and the environment of every session (Python, GPU, memory, package versions) is recorded and reported.
+To keep the comparison fair, all three models will use the same split and the same random seed (42). The Python version, GPU model, available memory, and package versions of every session will be recorded and reported with the results.
 
 ## 3.8 Performance Evaluation Metrics
 

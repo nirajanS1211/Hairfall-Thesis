@@ -80,8 +80,6 @@ Table 3.1: The source datasets, the super dataset, and the final dataset
 
 Table 3.2: Columns of the final dataset and where they come from
 
-Table 3.3: Software tools
-
 ---
 
 # List of Abbreviations
