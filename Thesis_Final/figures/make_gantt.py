@@ -32,7 +32,7 @@ rows = [("done",) + t for t in done_tasks] + [("plan",) + t for t in plan_tasks]
 n = len(rows)
 gap = 0.8  # extra space between the two groups
 
-fig, ax = plt.subplots(figsize=(11, 6.2))
+fig, ax = plt.subplots(figsize=(9.2, 5.6))
 ylab, y = [], 0
 ypos = []
 for i, r in enumerate(rows):
@@ -50,9 +50,9 @@ for (kind, name, s, e), yy in zip(rows, ypos):
         ax.add_patch(Rectangle((s, yc - 0.3), e - s, 0.6, fc="white", ec="black", hatch="////", lw=1.2))
     ylab.append((yc, f"{rows.index((kind, name, s, e)) + 1}. {name}"))
 
-ax.set_yticks([a for a, _ in ylab]); ax.set_yticklabels([b for _, b in ylab], fontsize=11)
+ax.set_yticks([a for a, _ in ylab]); ax.set_yticklabels([b for _, b in ylab], fontsize=10)
 ax.set_xlim(0, MONTHS); ax.set_ylim(0, total_h + 0.3)
-ax.set_xticks([i + 0.5 for i in range(MONTHS)]); ax.set_xticklabels([f"Month {i+1}" for i in range(MONTHS)], fontsize=11)
+ax.set_xticks([i + 0.5 for i in range(MONTHS)]); ax.set_xticklabels([f"Month {i+1}" for i in range(MONTHS)], fontsize=10)
 ax.xaxis.tick_top()
 for i in range(MONTHS + 1):
     ax.axvline(i, color="#999999", lw=0.8)
@@ -70,8 +70,8 @@ ax.tick_params(length=0)
 # legend below
 lx = 0.3
 ax.add_patch(Rectangle((lx, -1.1), 0.5, 0.4, fc="black", ec="black", clip_on=False))
-ax.text(lx + 0.6, -0.9, "Completed up to the proposal", fontsize=10, va="center")
+ax.text(lx + 0.6, -0.9, "Completed up to the proposal", fontsize=9.5, va="center")
 ax.add_patch(Rectangle((lx + 2.9, -1.1), 0.5, 0.4, fc="white", ec="black", hatch="////", clip_on=False))
-ax.text(lx + 3.5, -0.9, "Planned after proposal approval", fontsize=10, va="center")
+ax.text(lx + 3.5, -0.9, "Planned after proposal approval", fontsize=9.5, va="center")
 fig.savefig("fig_4_1_gantt.png", dpi=220, bbox_inches="tight", facecolor="white")
 print("ok")

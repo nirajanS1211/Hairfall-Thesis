@@ -16,7 +16,7 @@ The biological factors that disturb the hair cycle are well documented, and they
 
 **Psychological stress.** Stress is thought to push follicles out of the growth phase too early, which leads to increased shedding some weeks later (Bai et al., 2026). Stress can also make an existing condition worse, so it is both a cause and a consequence of hair loss.
 
-**Infection and physical illness.** A sudden illness, fever, or major physical strain can trigger telogen effluvium. Cline et al. (2021) documented a surge in telogen effluvium in communities heavily affected by COVID-19, showing how a large health event can raise the number of people who present with hair loss.
+**Infection and physical illness.** A sudden illness, fever, or major physical strain can trigger telogen effluvium. Cline et al. (2021) documented a surge in telogen effluvium in communities heavily affected by coronavirus disease 2019 (COVID-19), showing how a large health event can raise the number of people who present with hair loss.
 
 **How people are affected in real life.** Hair loss is rarely only a cosmetic matter. It is linked with lower self-confidence, anxiety, and a poorer quality of life, and in many cases the person does not know which of the factors above is responsible. Survey evidence shows that young people are affected too. In a survey of 610 participants in Bangladesh, most respondents were aged 18 to 24, and stress, allergies, dandruff, and family history were the main causes they reported (Khatun et al., 2022). Worldwide, the burden of alopecia areata has been analysed over three decades using the Global Burden of Disease data, including differences in lifetime risk between women and men (Sun et al., 2025).
 
@@ -26,9 +26,9 @@ The biological factors that disturb the hair cycle are well documented, and they
 
 ## 2.2 Literature Review
 
-This section reviews the published research that is closest to the present study. For each study it states what data was used, which models were tested, what was found, and what was left open. The studies are grouped by topic, and Table 2.1 at the end of the section summarises them. Longer notes on each paper are kept in the Literature_Summary folder.
+This section reviews the published research that is closest to the present study. For each study it states what data was used, which models were tested, what was found, and what was left open. The studies are grouped by topic, and Table 2.1 at the end of the section summarises them.
 
-**Hair loss prediction from survey and lifestyle data.** Khatun et al. (2022) surveyed 610 people in Bangladesh and trained SVM, KNN, Logistic Regression, Random Forest, and XGBoost to diagnose hair fall disorder. XGBoost gave the best accuracy of 92.62%. The study shows that questionnaire data can carry a useful signal, but it tested only classical models and did not explain individual predictions.
+**Hair loss prediction from survey and lifestyle data.** Khatun et al. (2022) surveyed 610 people in Bangladesh and trained a Support Vector Machine (SVM), k-Nearest Neighbours (KNN), Logistic Regression, Random Forest, and XGBoost to diagnose hair fall disorder. XGBoost gave the best accuracy of 92.62%. The study shows that questionnaire data can carry a useful signal, but it tested only classical models and did not explain individual predictions.
 
 Sai et al. (2023) compared SVM, KNN, decision tree, random forest, and logistic regression with an ensemble method for hair fall prediction. The ensemble was better than every single algorithm in accuracy, precision, and recall. The study did not include boosting models designed for categorical data or any explanation method.
 
@@ -36,17 +36,17 @@ Kumar et al. (2025) built a Random Forest hair loss predictor on a dataset of 2,
 
 Siami and Azis (2025) compared Logistic Regression, Decision Tree, Random Forest, Gradient Boosting, XGBoost, and a voting ensemble on a balanced dataset of genetic, hormonal, lifestyle, and environmental indicators. Accuracy and F1-score stayed at about 50% at best, although age, stress, and nutritional deficiency were identified as important factors. The authors concluded that richer clinical inputs were needed.
 
-Leema et al. (2025) collected questionnaire data from 750 university students and community members and proposed HairSentinel, which forecasts hair fall trends and flags unusual episodes using a Temporal Fusion Transformer. It reached 97.5% accuracy and was compared with LSTM, Random Forest, and ARIMAX. Their dataset is not public, which makes the result impossible to reproduce, and it rests on self-reported data rather than blood test values.
+Leema et al. (2025) collected questionnaire data from 750 university students and community members and proposed HairSentinel, which forecasts hair fall trends and flags unusual episodes using a Temporal Fusion Transformer (TFT). It reached 97.5% accuracy and was compared with a Long Short-Term Memory network (LSTM), Random Forest, and an Autoregressive Integrated Moving Average with Exogenous Variables model (ARIMAX). Their dataset is not public, which makes the result impossible to reproduce, and it rests on self-reported data rather than blood test values.
 
-**Hair loss detection from images and deep learning.** Shakeel et al. (2021) proposed a framework that classifies healthy hair and alopecia areata from hair images using colour, texture, and shape features with SVM and KNN, with accuracies of 91.4% and 88.9%. Sayyad et al. (2022) used a VGG network with an SVM classifier and reported 98.31% accuracy on 200 healthy-hair images (Figaro1k) and 68 alopecia areata images (DermNet). Pandikumar et al. (2024) proposed a deep learning framework that combines CNNs on scalp images with LSTM networks on lifestyle sequences. These studies need images or specialised equipment, address alopecia areata or scalp condition rather than risk from routine health indicators, and use small image sets.
+**Hair loss detection from images and deep learning.** Shakeel et al. (2021) proposed a framework that classifies healthy hair and alopecia areata from hair images using colour, texture, and shape features with SVM and KNN, with accuracies of 91.4% and 88.9%. Sayyad et al. (2022) used a VGG network with an SVM classifier and reported 98.31% accuracy on 200 healthy-hair images (Figaro1k) and 68 alopecia areata images (DermNet). Pandikumar et al. (2024) proposed a deep learning framework that combines convolutional neural networks (CNNs) on scalp images with LSTM networks on lifestyle sequences. These studies need images or specialised equipment, address alopecia areata or scalp condition rather than risk from routine health indicators, and use small image sets.
 
 **Gradient boosting and CatBoost.** Prokhorenkova et al. (2018) introduced CatBoost, which handles categorical features with ordered target statistics and ordered boosting to avoid target leakage. This design makes CatBoost a strong choice for survey-style data with many categorical answers. In hair loss research, however, CatBoost appears only as a side comparison and was not tuned (Kumar et al., 2025).
 
-**Tabular foundation models.** Hollmann et al. (2025) presented TabPFN, a transformer pretrained on millions of synthetic datasets that predicts on a new table in a single forward pass without task-specific training. It performed best on small datasets of up to about 10,000 rows. Kong et al. (2026) introduced TabFM, a 400-million-parameter model trained on synthetic tables, which ranked first among default tabular foundation models on the 51 datasets of the TabArena benchmark and outperformed tuned AutoML pipelines. An independent reproduction on three machines and 13 TabArena datasets confirmed competitive accuracy against XGBoost, Random Forest, and TabPFN, but reported four upstream software defects and memory failures above about 10,000 rows on a 24 GB GPU (Pandey, 2026). None of these studies used medical or hair loss data.
+**Tabular foundation models.** Hollmann et al. (2025) presented TabPFN, a transformer pretrained on millions of synthetic datasets that predicts on a new table in a single forward pass without task-specific training. It performed best on small datasets of up to about 10,000 rows. Kong et al. (2026) introduced TabFM, a 400-million-parameter model trained on synthetic tables, which ranked first among default tabular foundation models on the 51 datasets of the TabArena benchmark and outperformed tuned automated machine learning (AutoML) pipelines. An independent reproduction on three machines and 13 TabArena datasets confirmed competitive accuracy against XGBoost, Random Forest, and TabPFN, but reported four upstream software defects and memory failures above about 10,000 rows on a 24 GB graphics processing unit (GPU) (Pandey, 2026). None of these studies used medical or hair loss data.
 
 **Explainability.** Lundberg and Lee (2017) proposed SHAP, which assigns each feature a contribution to a prediction using Shapley values from game theory. Because SHAP works with any model, it can be used to compare explanations from architecturally different models on the same data. Among the hair loss studies above, the emphasis is on accuracy, and none compares explanations across a boosted-tree model and foundation models.
 
-**Table 2.1: Summary of reviewed studies**
+**Table 2.1:** Summary of reviewed studies
 
 | Study | Data | Models | Main result | Limitation |
 |---|---|---|---|---|
@@ -63,6 +63,8 @@ Leema et al. (2025) collected questionnaire data from 750 university students an
 | Kong et al. (2026) | TabArena, 51 datasets | TabFM | First among default foundation models | No health data |
 | Pandey (2026) | 13 TabArena datasets | TabFM vs XGBoost, RF, TabPFN | Confirmed competitive | Four defects, memory limit |
 
+*LR = Logistic Regression, DT = Decision Tree, RF = Random Forest, GB = Gradient Boosting.*
+
 ### 2.2.1 Research Gap
 
 Reading the studies together shows five gaps, and each one explains a choice made in this project.
@@ -78,6 +80,3 @@ Reading the studies together shows five gaps, and each one explains a choice mad
 5. **Explanations are not compared across models.** The hair loss studies report accuracy and rarely explain individual predictions, and none explains a boosted-tree model and foundation models side by side. This project applies SHAP (Lundberg & Lee, 2017) to all three models so the clinical plausibility of their explanations can be compared.
 
 Taken together, the gaps lead to the two objectives of this study: to benchmark CatBoost, TabPFN, and TabFM on the same hair fall risk dataset (Objective 1), and to explain every model with SHAP (Objective 2). Chapter 3 describes the dataset and methods that will be used to do this.
-
-## References
-

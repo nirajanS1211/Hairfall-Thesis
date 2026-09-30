@@ -88,7 +88,7 @@ The survey shows stronger gaps than the final dataset because survey respondents
 The final dataset has 21,606 records with 20 features and one target, in four groups.
 
 1. **Demographics and heredity:** age (20 to 55 years), gender, family_hair_fall_history.
-2. **Blood and body measurements:** total_protein, calcium, iron, vitamin_d, alt_liver (liver enzyme ALT), manganese, body_water_content, stress_level (0 to 40 scale), and two 0 to 100 hair condition scores, total_keratine and hair_texture.
+2. **Blood and body measurements:** total_protein, calcium, iron, vitamin_d, alt_liver (alanine aminotransferase, ALT), manganese, body_water_content, stress_level (0 to 40 scale), and two 0 to 100 hair condition scores, total_keratine and hair_texture.
 3. **Clinical conditions (0/1):** chronic_illness, anemia, stress.
 4. **Lifestyle and environment (0/1):** late_night_sleep, sleep_disturbance, water_reason, chemical_use.
 
@@ -230,7 +230,7 @@ $$\text{Recall}_k=\frac{TP_k}{TP_k+FN_k},\qquad \text{Macro-Recall}=\frac{1}{3}\
 
 $$F1_k=\frac{2\,\text{Precision}_k\,\text{Recall}_k}{\text{Precision}_k+\text{Recall}_k},\qquad \text{Macro-F1}=\frac{1}{3}\sum_{k=1}^{3}F1_k\tag{viii}$$
 
-**ROC-AUC** is the area under the ROC curve of each tier against the other two (one-versus-rest), averaged over the three tiers. It measures how well the predicted probabilities rank patients, independent of any cut-off:
+**ROC-AUC** is the area under the receiver operating characteristic (ROC) curve of each tier against the other two (one-versus-rest), averaged over the three tiers. It measures how well the predicted probabilities rank patients, independent of any cut-off:
 
 $$\text{Macro ROC-AUC}=\frac{1}{3}\sum_{k=1}^{3}AUC_k\tag{ix}$$
 
