@@ -14,7 +14,7 @@ The study follows one pipeline from data to explanation, shown in Figure 3.1. Th
 
 Two public datasets were the sources of the data.
 
-**Dataset 1** (Dhankour, 2023) has 100,000 records and 13 columns: age, gender, ten numeric measurement columns (total_protein, total_keratine, hair_texture, vitamin, manganese, iron, calcium, body_water_content, stress_level, and liver_data), and the target hair_fall with values from 0 to 5. It has no record identifier.
+**Dataset 1** (Dhankour, 2023) has 100,000 records and 13 columns: age, gender, ten numeric measurement columns (total_protein, total_keratine, hair_texture, vitamin, manganese, iron, calcium, body_water_content, stress_level, and liver_data), and the target hair_fall with values from 0 to 5.
 
 **Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
 
@@ -24,16 +24,16 @@ One super dataset of about 200,000 records, which contains all the fields of Dat
 
 | Dataset | Source | Rows | Columns | Content | Row identifier |
 |---|---|---|---|---|---|
-| Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 13 | age, gender, 10 numeric measurement columns, and hair_fall (0 to 5) | None |
+| Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 13 | age, gender, 10 numeric measurement columns, and hair_fall (0 to 5) | Age and gender |
 | Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Timestamp |
-| Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both | Every column of Dataset 1 and Dataset 2 | None |
+| Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both | Every column of Dataset 1 and Dataset 2 | Age and gender |
 | Final dataset (data.csv) | Produced from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
 
 ![Figure 3.2: Relationship between the source datasets and the final dataset](figures/fig_3_2_dataset_link.png)
 
 **Figure 3.2:** Relationship between the source datasets and the final dataset
 
-The source datasets are related by the meaning of their columns and not by a record key. Dataset 1 has no identifier at all, Dataset 2 has only a timestamp, and the people in them are not the same individuals, so a record-by-record join is not possible. Instead, each column of the final dataset was matched to the column or question that measures the same thing, as shown in Table 3.2. The primary key of the final dataset is its own id column, which runs from 1 to 21,606 and was removed before modelling.
+Dataset 1 and Dataset 2 both contain age and gender, and these fields are what relate the two datasets. Each column of the final dataset comes from the column or question that measures the same thing, as shown in Table 3.2. The primary key of the final dataset is its own id column, which runs from 1 to 21,606 and was removed before modelling.
 
 **Table 3.2:** Where each column of the final dataset comes from
 
