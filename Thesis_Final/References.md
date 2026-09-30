@@ -10,6 +10,8 @@ Bai, Y., McMullen, E., Sibbald, R. G., Dumont, N., Mainville, L., Julanon, N., &
 
 Cline, A., Kazemi, A., Moy, J., Safai, B., & Marmon, S. (2021). A surge in the incidence of telogen effluvium in minority predominant communities heavily impacted by COVID-19. *Journal of the American Academy of Dermatology, 84*(3), 773–775. https://doi.org/10.1016/j.jaad.2020.11.032
 
+Dhankour, B. (2023). *Hair loss dataset* [Data set]. Kaggle. https://www.kaggle.com/datasets/brijlaldhankour/hair-loss-dataset
+
 Guo, E. L., & Katta, R. (2017). Diet and hair loss: Effects of nutrient deficiency and supplement use. *Dermatology Practical & Conceptual, 7*(1), 1–10. https://doi.org/10.5826/dpc.0701a01
 
 Hollmann, N., Müller, S., Purucker, L., Krishnakumar, A., Körfer, M., Hoo, S. B., Schirrmeister, R. T., & Hutter, F. (2025). Accurate predictions on small data with a tabular foundation model. *Nature, 637*(8045), 319–326. https://doi.org/10.1038/s41586-024-08328-6
