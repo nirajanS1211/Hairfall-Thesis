@@ -1,0 +1,55 @@
+[test set] 4,322 rows (change in backend/workspace/test_rows.txt)
+Training rows: 2,000 | Test rows: 4,322
+depth=4 lr=0.01  CV macro-F1 = 0.7076 +/- 0.0267
+depth=4 lr=0.03  CV macro-F1 = 0.7403 +/- 0.0126
+depth=4 lr=0.1   CV macro-F1 = 0.7378 +/- 0.0157
+depth=6 lr=0.01  CV macro-F1 = 0.7066 +/- 0.0203
+depth=6 lr=0.03  CV macro-F1 = 0.7268 +/- 0.0103
+depth=6 lr=0.1   CV macro-F1 = 0.7213 +/- 0.0210
+depth=8 lr=0.01  CV macro-F1 = 0.6888 +/- 0.0157
+depth=8 lr=0.03  CV macro-F1 = 0.7071 +/- 0.0172
+depth=8 lr=0.1   CV macro-F1 = 0.7097 +/- 0.0085
+
+Best: depth=4 lr=0.03 iterations=999 (CV macro-F1 0.7403) | grid search took 231s
+{
+  "model": "CatBoost",
+  "size": "2000",
+  "context_rows": 2000,
+  "test_rows": 4322,
+  "accuracy": 0.7497,
+  "macro_f1": 0.7377,
+  "weighted_f1": 0.7496,
+  "roc_auc_ovr": 0.9029,
+  "fit_seconds": 1.9,
+  "predict_seconds": 0.0,
+  "depth": 4,
+  "learning_rate": 0.03,
+  "iterations": 999,
+  "cv_macro_f1": 0.7403
+}
+              precision    recall  f1-score   support
+
+         Low     0.8185    0.8483    0.8331      1945
+    Moderate     0.6349    0.6827    0.6580      1513
+        High     0.8203    0.6447    0.7220       864
+
+    accuracy                         0.7497      4322
+   macro avg     0.7579    0.7253    0.7377      4322
+weighted avg     0.7546    0.7497    0.7496      4322
+
+{'model': 'CatBoost',
+ 'size': '2000',
+ 'context_rows': 2000,
+ 'test_rows': 4322,
+ 'accuracy': 0.7497,
+ 'macro_f1': 0.7377,
+ 'weighted_f1': 0.7496,
+ 'roc_auc_ovr': 0.9029,
+ 'fit_seconds': 1.9,
+ 'predict_seconds': 0.0,
+ 'depth': 4,
+ 'learning_rate': 0.03,
+ 'iterations': 999,
+ 'cv_macro_f1': 0.7403}
+
+[finished OK | time: 232.9s | run #6]

@@ -1,5 +1,5 @@
-# Step 5b - CatBoost · 2000
-# CatBoost | training size = 2000
+# Step 5a - CatBoost · 500
+# CatBoost | training size = 500
 import itertools
 import time
 
@@ -10,7 +10,7 @@ from lab import OUT, SEED, SIZES, context, evaluate, load_split
 from sklearn.metrics import f1_score
 from sklearn.model_selection import StratifiedKFold
 
-SIZE = "2000"
+SIZE = "500"
 X_train, X_test, y_train, y_test = load_split()
 X_ctx, y_ctx = context(X_train, y_train, SIZES[SIZE])
 print(f"Training rows: {len(X_ctx):,} | Test rows: {len(X_test):,}")

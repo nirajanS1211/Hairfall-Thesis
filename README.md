@@ -58,7 +58,7 @@ Links can be shared: `/#predict/12` opens check 12, `?view=dev#predict/12` opens
 
 ## Import runs made on Kaggle
 
-The files in `backend/kaggle/` are the same steps packaged for a Kaggle GPU notebook. Each run downloads `Step_xx.zip`; import it with:
+The files in `backend/kaggle/` are the same steps packaged for a Kaggle GPU notebook (`backend/colab/` has the Google Colab versions — see its README). Each run downloads `Step_xx.zip`; import it with:
 
 ```bash
 cd backend && .venv/bin/python import_kaggle_run.py ~/Downloads/Step_06a_TabPFN_500.zip
