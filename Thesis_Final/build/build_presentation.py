@@ -18,7 +18,7 @@ GREY = RGBColor(0x59, 0x59, 0x59)
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 BLANK = prs.slide_layouts[6]
-TOTAL = 14
+TOTAL = 15
 COUNT = [1]
 
 
@@ -103,9 +103,9 @@ table(s, 2.2, 1.7, 8.9, [
     ["1.  Project at a glance", "3"],
     ["2.  Problem and objectives", "4 - 5"],
     ["3.  Background and literature", "6 - 8"],
-    ["4.  Research gap", "9"],
-    ["5.  Data and methods", "10 - 12"],
-    ["6.  Expected outcomes", "13"],
+    ["4.  Research gap and choice of models", "9 - 10"],
+    ["5.  Data and methods", "11 - 13"],
+    ["6.  Expected outcomes", "14"],
 ], [7.0, 1.9], size=20, row_h=0.65)
 
 # 3 At a glance ------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ table(s, 0.65, 1.7, 12.0, [
     ["Problem", "Hair fall risk is hard to judge, and prediction models are hard to explain."],
     ["Objectives", "Benchmark CatBoost, TabPFN, and TabFM, and explain every model with SHAP."],
     ["Research gap", "Foundation models were never tested on hair fall data, and CatBoost was never tuned."],
-    ["Data and method", "21,606 records, 3 risk tiers; same split for all models; accuracy, macro-F1, ROC-AUC."],
+    ["Data and method", "21,606 records, 3 risk tiers; same split for all models; accuracy, F1-score, and area under the ROC curve."],
     ["Expected outcome", "A fair comparison and explanations that agree with known causes."],
 ], [2.6, 9.4], size=18, header=False, row_h=0.85)
 
@@ -147,11 +147,10 @@ table(s, 0.65, 1.8, 12.0, [
 s = new_slide("Literature: what others did", 7, "These are the closest studies. They use classical models on survey data, the results differ a lot, and none compared explanations.")
 table(s, 0.65, 1.8, 12.0, [
     ["Study", "Models", "Main result"],
-    ["Khatun et al. (2022)", "SVM, KNN, LR, RF, XGBoost", "XGBoost 92.62%"],
-    ["Kumar et al. (2025)", "RF, XGBoost, CatBoost, LightGBM", "RF 100%, CatBoost 49.5%"],
-    ["Siami & Azis (2025)", "LR, DT, RF, GB, XGBoost", "About 50% at best"],
-], [3.8, 5.0, 3.2], size=20, row_h=0.8)
-text(s, 0.65, 5.5, 12, 0.6, "LR = Logistic Regression, DT = Decision Tree, RF = Random Forest, GB = Gradient Boosting", size=12, color=GREY)
+    ["Khatun et al. (2022)", "Support Vector Machine, Random Forest, XGBoost", "XGBoost 92.62%"],
+    ["Kumar et al. (2025)", "Random Forest, XGBoost, CatBoost", "Random Forest 100%, CatBoost 49.5%"],
+    ["Siami & Azis (2025)", "Logistic Regression, Random Forest, XGBoost", "About 50% at best"],
+], [3.2, 5.6, 3.2], size=20, row_h=0.8)
 
 # 8 Model families ---------------------------------------------------------------------------------
 s = new_slide("Literature: the three models", 8, "CatBoost is a strong boosted-tree model. TabPFN and TabFM are new foundation models: pretrained once, then they predict in one pass without training.")
@@ -169,8 +168,17 @@ text(s, 0.8, 1.9, 11.7, 4.5, [
     "No study explains boosted trees and foundation models side by side.",
 ], size=28, bullet=True, space=28)
 
+# 10 Why these three models -----------------------------------------------------------------------
+s = new_slide("Why these three models", 10, "CatBoost is the strong standard baseline for survey-style tables. TabPFN is the established foundation model. TabFM is the newest, independent foundation model, so the comparison shows whether foundation-model results hold across different designs.")
+table(s, 0.65, 1.8, 12.0, [
+    ["Model", "Why it was chosen"],
+    ["CatBoost", "Strong boosted-tree model built for categorical answers, which dominate survey data; a fair tuned baseline"],
+    ["TabPFN", "Established foundation model; predicts without training and works well on small tables"],
+    ["TabFM", "Newest foundation model (2026), built independently of TabPFN; tests if the results hold across designs"],
+], [2.6, 9.4], size=18, row_h=1.0)
+
 # 10 Data ------------------------------------------------------------------------------------------
-s = new_slide("Data", 10, "Two public datasets feed a super dataset of 200,000 records. Comparing it with them gives the final dataset of 21,606 records used for modelling.")
+s = new_slide("Data", 11, "Two public datasets feed a super dataset of 200,000 records. Comparing it with them gives the final dataset of 21,606 records used for modelling.")
 text(s, 0.6, 1.8, 5.0, 4.5, [
     "Two public datasets: Kaggle and Mendeley.",
     "Super dataset: 200,000 records.",
@@ -179,21 +187,21 @@ text(s, 0.6, 1.8, 5.0, 4.5, [
 picture(s, "fig_3_2_dataset_link.png", 5.7, 2.4, w=7.3)
 
 # 11 Framework -------------------------------------------------------------------------------------
-s = new_slide("Research framework", 11, "One pipeline: clean and split once, give the same rows to the three models, evaluate them the same way, and explain each with SHAP.")
+s = new_slide("Research framework", 12, "One pipeline: clean and split once, give the same rows to the three models, evaluate them the same way, and explain each with SHAP.")
 picture(s, "fig_3_1_framework.png", 1.9, 1.6, w=9.5)
 text(s, 0.9, 6.3, 11.5, 0.6, "Same split and seed for all models.", size=18, align=PP_ALIGN.CENTER)
 
 # 12 Models ----------------------------------------------------------------------------------------
-s = new_slide("Models", 12, "CatBoost needs training and tuning. TabPFN and TabFM only read the training rows as context and predict, so they need no tuning.")
-table(s, 0.65, 1.8, 12.0, [
-    ["Model", "Tuning"],
-    ["CatBoost", "Trained and tuned (grid search, 5-fold cross-validation)"],
-    ["TabPFN", "None"],
-    ["TabFM", "None"],
-], [3.8, 8.2], size=22, row_h=0.9)
+s = new_slide("Models", 13, "CatBoost needs training and tuning. TabPFN and TabFM only read the training rows as context and predict, so they need no tuning.")
+table(s, 0.65, 1.7, 12.0, [
+    ["Model", "Training and tuning"],
+    ["CatBoost (Categorical Boosting)", "Trained on the training data and tuned: grid search with 5-fold cross-validation"],
+    ["TabPFN (Tabular Prior-Data Fitted Network)", "No training or tuning: pretrained once, weights fixed; the training rows are given as context and it predicts in one pass"],
+    ["TabFM (Tabular Foundation Model)", "No training or tuning: pretrained once, weights fixed; the training rows are given as context and it predicts in one pass"],
+], [4.4, 7.6], size=18, row_h=1.15)
 
 # 13 Expected outcomes ------------------------------------------------------------------------------
-s = new_slide("Expected outcomes", 13, "These are expectations to test, not results. The study can also show the opposite.")
+s = new_slide("Expected outcomes", 14, "These are expectations to test, not results. The study can also show the opposite.")
 text(s, 0.8, 1.9, 11.7, 4.5, [
     "A fair comparison of the three models on the same data.",
     "TabPFN and TabFM competitive without tuning (to be tested).",
@@ -203,11 +211,8 @@ text(s, 0.8, 1.9, 11.7, 4.5, [
 # Thank you -----------------------------------------------------------------------------------------
 s = prs.slides.add_slide(BLANK)
 COUNT[0] += 1
-text(s, 0.8, 2.3, 11.7, 1.4, "Thank you", size=54, bold=True, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-line(s, 4.2, 3.9, 5.0)
-text(s, 0.8, 4.1, 11.7, 1.2, ["Questions are welcome", "Nirajan Shahi  |  Supervisor: Asst. Prof. Jagadish Bhatta"], size=20, align=PP_ALIGN.CENTER, space=8)
-text(s, 11.7, 7.0, 1.0, 0.35, f"{COUNT[0]} / {TOTAL}", size=11, color=GREY, align=PP_ALIGN.RIGHT)
-s.notes_slide.notes_text_frame.text = "Thank the panel and invite questions."
+text(s, 0.8, 2.8, 11.7, 1.6, "Thank you", size=60, bold=True, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+s.notes_slide.notes_text_frame.text = "Thank the panel."
 
 prs.save(OUT / "Hairfall_Presentation.pptx")
 subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", str(OUT), str(OUT / "Hairfall_Presentation.pptx")], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
