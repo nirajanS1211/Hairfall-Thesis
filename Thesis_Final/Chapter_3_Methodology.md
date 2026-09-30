@@ -132,11 +132,6 @@ $$f(x)=\phi_0+\sum_{j=1}^{20}\phi_j\tag{iv}$$
 
 where f(x) is the model output for a patient x, φ₀ is the average prediction and φⱼ is the contribution of feature j (for example iron or stress_level) to the predicted risk tier.
 
-- **CatBoost:** TreeExplainer, which uses the tree structure to compute exact values, will be applied to a sample of 1,000 test records.
-- **TabPFN and TabFM:** KernelExplainer, which estimates the values by repeatedly changing the inputs and predicting again. Because every repeat is a full forward pass of a large model, it will be applied to a small sample of test records (a few tens) with a small k-means background set.
-
-The results will be a global ranking of the features (which matter most overall) and per-patient explanations (why this person received this tier). The rankings of the three models will be compared with each other and with the known biology from Chapter 2.
-
 ## 3.6 Tools and Technologies
 
 **Table 3.3:** Software tools
