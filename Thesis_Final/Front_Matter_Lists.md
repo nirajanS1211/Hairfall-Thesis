@@ -24,9 +24,7 @@
 
 3.2.1 Source datasets and how they are related
 
-3.2.2 What the comparison showed
-
-3.2.3 The final dataset
+3.2.2 The final dataset
 
 3.3 Data Preprocessing
 
@@ -80,13 +78,9 @@ Figure 4.1: Working schedule (Gantt chart)
 
 Table 3.1: The source datasets, the super dataset, and the final dataset
 
-Table 3.2: Source of each column of the final dataset in Dataset 1, Dataset 2, and the super dataset
+Table 3.2: Columns of the final dataset and where they come from
 
-Table 3.3: Risk factors in Dataset 2 and in the final dataset
-
-Table 3.4: Clinical range check of the final dataset
-
-Table 3.5: Software tools
+Table 3.3: Software tools
 
 ---
 

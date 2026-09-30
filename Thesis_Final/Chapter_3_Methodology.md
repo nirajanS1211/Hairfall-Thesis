@@ -33,52 +33,33 @@ A super dataset of 200,000 records was taken. It contains all the fields of Data
 
 **Figure 3.2:** Relationship between the source datasets and the final dataset
 
-**Table 3.2:** Source of each column of the final dataset in Dataset 1, Dataset 2, and the super dataset
+**Table 3.2:** Columns of the final dataset and where they come from
 
-| Final dataset column | Dataset 1 | Dataset 2 | Super dataset field | Unit or coding |
-|---|---|---|---|---|
-| age | age | age | d1_age, d2_age | years |
-| gender | gender | gender | d1_gender, d2_gender | Female, Male, Other |
-| total_protein | total_protein | none | d1_total_protein | g/dL |
-| calcium | calcium | none | d1_calcium | mg/dL |
-| iron | iron | none | d1_iron | µg/dL |
-| vitamin_d | vitamin | none | d1_vitamin | ng/mL |
-| alt_liver | liver_data | none | d1_liver_data | U/L |
-| manganese | manganese | none | d1_manganese | µg/L |
-| body_water_content | body_water_content | none | d1_body_water_content | % |
-| stress_level | stress_level | none | d1_stress_level | 0 to 40 |
-| total_keratine | total_keratine | none | d1_total_keratine | 0 to 100 score |
-| hair_texture | hair_texture | none | d1_hair_texture | 0 to 100 score |
-| family_hair_fall_history | none | Family history | d2_family_hair_fall_history | 0 = No, 1 = Yes |
-| chronic_illness | none | Chronic illness | d2_chronic_illness | 0 = No, 1 = Yes |
-| late_night_sleep | none | Stay up late | d2_late_night_sleep | 0 = No, 1 = Yes |
-| sleep_disturbance | none | Sleep disturbance | d2_sleep_disturbance | 0 = No, 1 = Yes |
-| water_reason | none | Water as a reason | d2_water_reason | 0 = No, 1 = Yes |
-| chemical_use | none | Chemical use | d2_chemical_use | 0 = No, 1 = Yes |
-| anemia | none | Anemia | d2_anemia | 0 = No, 1 = Yes |
-| stress | none | Stress | d2_stress | 0 = No, 1 = Yes |
-| hair_fall (target) | hair_fall (0 to 5) | Hair fall problem | d1_hair_fall, d2_hair_fall_problem | 0 Low, 1 Moderate, 2 High |
+| Final dataset column | Meaning | Unit or coding | Dataset 1 | Dataset 2 | Super dataset |
+|---|---|---|---|---|---|
+| age | Age of the person | Years | age | age | Both |
+| gender | Sex of the person | Female, Male, Other | gender | gender | Both |
+| total_protein | Serum total protein | g/dL | total_protein | none | Dataset 1 |
+| calcium | Serum calcium | mg/dL | calcium | none | Dataset 1 |
+| iron | Serum iron | µg/dL | iron | none | Dataset 1 |
+| vitamin_d | Serum 25-hydroxy vitamin D | ng/mL | vitamin | none | Dataset 1 |
+| alt_liver | Liver enzyme ALT | U/L | liver_data | none | Dataset 1 |
+| manganese | Whole blood manganese | µg/L | manganese | none | Dataset 1 |
+| body_water_content | Body water content | % | body_water_content | none | Dataset 1 |
+| stress_level | Stress score | 0 to 40 | stress_level | none | Dataset 1 |
+| total_keratine | Hair keratin score | 0 to 100 | total_keratine | none | Dataset 1 |
+| hair_texture | Hair texture score | 0 to 100 | hair_texture | none | Dataset 1 |
+| family_hair_fall_history | Family member with hair fall or baldness | 0 = No, 1 = Yes | none | Family history | Dataset 2 |
+| chronic_illness | Chronic illness in the past | 0 = No, 1 = Yes | none | Chronic illness | Dataset 2 |
+| late_night_sleep | Stays up late at night | 0 = No, 1 = Yes | none | Stay up late | Dataset 2 |
+| sleep_disturbance | Any sleep disturbance | 0 = No, 1 = Yes | none | Sleep disturbance | Dataset 2 |
+| water_reason | Water in the area seen as a reason | 0 = No, 1 = Yes | none | Water as a reason | Dataset 2 |
+| chemical_use | Uses chemicals, gel, or colour on hair | 0 = No, 1 = Yes | none | Chemical use | Dataset 2 |
+| anemia | Has anemia | 0 = No, 1 = Yes | none | Anemia | Dataset 2 |
+| stress | Feels too much stress | 0 = No, 1 = Yes | none | Stress | Dataset 2 |
+| hair_fall (target) | Hair fall risk tier | 0 Low, 1 Moderate, 2 High | hair_fall (0 to 5) | Hair fall problem | Both |
 
-### 3.2.2 Use of the datasets
-
-Dataset 1 and Dataset 2 were the two source datasets. The super dataset holds all their fields. The final dataset was made using all three (Dataset 1, Dataset 2, and the super dataset), and only the final dataset is used for modelling.
-
-Dataset 1 supplied the blood and body measurements. In the final dataset they lie in real clinical ranges (for example iron 10 to 217 µg/dL) and most of them are related to the target (for example iron ρ = −0.31 and stress_level ρ = +0.33). Dataset 2 supplied the survey answers. As Table 3.3 shows, the risk factors point the same way in both: people with a hair fall problem report each factor more often than people without.
-
-**Table 3.3:** Risk factors in Dataset 2 and in the final dataset
-
-| Risk factor | Dataset 2 (% of respondents) | Final dataset (% of records) | More common with hair fall in both |
-|---|---|---|---|
-| Family history | 72.7 | 34.5 | Yes |
-| Chronic illness | 45.7 | 29.9 | Yes |
-| Late-night sleep | 65.3 | 40.2 | Yes |
-| Sleep disturbance | 55.4 | 35.2 | Yes |
-| Water as a reason | 60.0 | 29.8 | Yes |
-| Chemical use | 63.9 | 39.9 | Yes |
-| Anemia | 28.7 | 24.6 | Yes |
-| Stress | 72.0 | 40.3 | Yes |
-
-### 3.2.3 The final dataset
+### 3.2.2 The final dataset
 
 The final dataset has 21,606 records with 20 features and one target.
 
@@ -94,22 +75,10 @@ The following steps were applied to the final dataset before any model was run.
 
 1. **Removal of identifiers.** The id column and the full_name column (which holds personal names in encoded form) were removed, because they do not describe health and could create false patterns. After removal, 20 features remain.
 2. **Quality checks.** The dataset has no missing values and no duplicate records (ignoring id).
-3. **Clinical range check.** Each blood and body measurement was compared with its normal reference range and with limits that are physiologically impossible (Table 3.4). No values were impossible, so no record was removed. Values outside the normal range were kept on purpose, because they are the information that indicates risk.
+3. **Clinical range check.** Each blood and body measurement was compared with its normal reference range and with limits that are physiologically impossible. No values were impossible, so no record was removed. Values outside the normal range were kept on purpose, because they are the information that indicates risk.
 4. **Encoding.** Gender was coded 0 = Female, 1 = Male, 2 = Other. The yes/no columns were already 0/1, and the target was already coded 0, 1, 2.
 5. **Stratified split.** The records were split 80% to 20% with the class shares kept equal (random seed 42): 17,284 training records and 4,322 test records, with 45% Low, 35% Moderate, and 20% High in both parts.
 6. **Training sizes.** Three training sizes were prepared from the 17,284 training records: 500 records, 2,000 records, and all 17,284. The smaller sets were drawn with the class shares kept equal (45% Low, 35% Moderate, 20% High). The same 4,322 test records are used for every size and every model.
-
-**Table 3.4:** Clinical range check of the final dataset
-
-| Measurement | Normal range | Below normal | Above normal | % outside normal | Impossible values |
-|---|---|---|---|---|---|
-| total_protein (g/dL) | 6.0 to 8.3 | 406 | 605 | 4.7 | 0 |
-| calcium (mg/dL) | 8.5 to 10.5 | 1,675 | 392 | 9.6 | 0 |
-| iron (µg/dL) | 60 to 170 | 2,217 | 209 | 11.2 | 0 |
-| vitamin_d (ng/mL) | 25 to 80 | 8,606 | 0 | 39.8 | 0 |
-| alt_liver (U/L) | 7 to 56 | 2,300 | 403 | 12.5 | 0 |
-| manganese (µg/L) | 4 to 15 | 1,960 | 208 | 10.0 | 0 |
-| body_water_content (%) | 45 to 65 | 2,225 | 2,227 | 20.6 | 0 |
 
 ## 3.4 Model Selection
 
@@ -170,7 +139,7 @@ The results will be a global ranking of the features (which matter most overall)
 
 ## 3.6 Tools and Technologies
 
-**Table 3.5:** Software tools
+**Table 3.3:** Software tools
 
 | Purpose | Tool | Version |
 |---|---|---|

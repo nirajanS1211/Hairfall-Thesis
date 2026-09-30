@@ -188,6 +188,9 @@ class Builder:
         t = self.doc.add_table(rows=len(rows), cols=ncol); t.style = "Table Grid"; t.alignment = WD_TABLE_ALIGNMENT.CENTER
         t.autofit = False
         weights = [min(max(max(len(r[c]) for r in rows[1:]), len(rows[0][c]) // 2), 30) + 4 for c in range(ncol)]
+        weights = [w * 1.12 if any(len(r[c]) >= 14 and " " not in r[c] for r in rows[1:]) else w for c, w in enumerate(weights)]
+        weights = [max(w, 15) for w in weights]
+        if ncol >= 5: weights[-1] = max(weights[-1], 20)
         widths = [TEXT_W * w / sum(weights) for w in weights]
         for col, wd in zip(t.columns, widths): col.width = Inches(wd)
         for i, row in enumerate(rows):
