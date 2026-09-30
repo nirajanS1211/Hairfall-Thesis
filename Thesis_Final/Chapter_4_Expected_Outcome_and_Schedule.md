@@ -8,7 +8,7 @@ SHAP is expected to show which measurements and habits drive each model's predic
 
 ## 4.2 Working Schedule
 
-After the proposal is approved, the work will be completed in three months, as shown in the Gantt chart in Figure 4.1. The proposal is the only task completed so far (black bar), and the remaining tasks (hatched bars) follow the order of the methodology in Chapter 3.
+The work is planned over four months, as shown in the Gantt chart in Figure 4.1. Months 1 and 2 are for the proposal work (black bars), and months 3 and 4 are for the final work after the proposal is approved (hatched bars), in the order of the methodology in Chapter 3.
 
 ![Figure 4.1: Working schedule (Gantt chart)](figures/fig_4_1_gantt.png)
 
