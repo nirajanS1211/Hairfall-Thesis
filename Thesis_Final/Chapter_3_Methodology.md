@@ -76,7 +76,7 @@ The following steps will be applied to the final dataset before any model is run
 1. **Removal of identifiers.** The id column and the full_name column (which holds personal names in encoded form) will be removed, because they do not describe health and could create false patterns. This leaves 20 features.
 2. **Quality checks.** The dataset will be checked for missing values and duplicate records (ignoring id).
 3. **Clinical range check.** Each blood and body measurement will be compared with its normal reference range and with limits that are physiologically impossible. Only impossible values will be removed. Values outside the normal range will be kept on purpose, because they are the information that indicates risk.
-4. **Encoding.** Gender will be coded 0 = Female, 1 = Male, 2 = Other. The yes/no columns are already 0/1, and the target is already coded 0, 1, 2.
+4. **Encoding.** Gender will be coded 0 = Female, 1 = Male, 2 = Other. The yes/no columns are coded 0/1, and the target is coded 0, 1, 2.
 5. **Stratified split.** The records will be split 80% to 20% with the class shares kept equal (random seed 42), giving 17,284 training records and 4,322 test records, with 45% Low, 35% Moderate, and 20% High in both parts.
 6. **Training sizes.** Three training sizes will be prepared from the 17,284 training records: 500 records, 2,000 records, and all 17,284. The smaller sets will be drawn with the class shares kept equal (45% Low, 35% Moderate, 20% High). The same 4,322 test records will be used for every size and every model.
 

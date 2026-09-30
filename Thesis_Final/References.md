@@ -24,7 +24,7 @@ Kong, W., Ilan, E. L., Nie, S., Narayan, T., Sen, R., Zhou, Y., Fu, D., Oymak, S
 
 Kumar, M. S., Reddy, P. L. K., Reddy, G. D., Kumar, A. S., & Nagendra, P. (2025). Predictive modeling of hair fall using random forest algorithms. In *Proceedings of ICITSM-Part II 2025*. European Alliance for Innovation. https://doi.org/10.4108/eai.28-4-2025.2358120
 
-Leema, A. A., Saktheshwaran, T., Sri, G. R., & Balakrishnan, P. (2025). HairSentinel: A time-aware anomaly detection framework for forecasting hairfall trends using temporal fusion transformers. *Frontiers in Artificial Intelligence, 8*. https://doi.org/10.3389/frai.2025.1649740
+Leema, A. A., Saktheshwaran, T., Sri, G. R., & Balakrishnan, P. (2025). HairSentinel: A time-aware anomaly detection framework for forecasting hairfall trends using temporal fusion transformers. *Frontiers in Artificial Intelligence, 8*, Article 1649740. https://doi.org/10.3389/frai.2025.1649740
 
 Lin, C.-S., Chan, L.-Y., Wang, J.-H., & Chang, C.-H. (2023). Diagnosis and treatment of female alopecia: Focusing on the iron deficiency-related alopecia. *Tzu Chi Medical Journal, 35*(4), 322–328. https://doi.org/10.4103/tcmj.tcmj_95_23
 
