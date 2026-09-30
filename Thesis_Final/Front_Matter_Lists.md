@@ -88,8 +88,6 @@ Table 3.4: Clinical range check of the final dataset
 
 Table 3.5: Software tools
 
-Table 4.1: Expected outcomes and how they will be checked
-
 ---
 
 # List of Abbreviations
