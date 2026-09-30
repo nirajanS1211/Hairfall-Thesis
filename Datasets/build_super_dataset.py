@@ -5,8 +5,14 @@ Outputs (folder generated/):  super_dataset.csv, final_dataset_regenerated.csv, 
 The existing Final_data.csv is only READ (as the reference for realistic per-tier value ranges); it is never changed.
 
 Steps
+ 0. Link fields   : Dataset 1 has no age or gender, so `age` and `gender` columns are added to it (Dataset1.csv is rewritten, the
+                    original is kept in backup/Dataset1_original.csv). Each Dataset 1 record gets the age and gender of a
+                    randomly chosen Dataset 2 respondent. Age and gender are the fields that link the two datasets.
  1. Super dataset : 200,000 rows. Every Dataset 1 record is used twice, and each is paired with a randomly chosen
-                    Dataset 2 respondent, so the row keeps ALL columns of Dataset 1 and of Dataset 2 plus the two row keys.
+                    Dataset 2 respondent OF THE SAME AGE AND GENDER (link_age, link_gender). The values are then RANDOMISED a little (small noise on numbers, a few yes/no
+                    answers flipped), so the rows are new records and not exact copies. Each row keeps the row numbers
+                    d1_row and d2_row (the row in Dataset1.csv / Dataset2.csv it came from) and, in the columns
+                    d1src_* and d2src_*, the ORIGINAL source values, so the two can be compared directly.
  2. Cleaning      : Dataset 2 typing errors fixed, impossible ages removed, duplicate rows removed.
  3. Matching      : Dataset 1 hair_fall (0-5) is turned into 3 tiers; a row is kept only when the Dataset 2 answer
                     "Do you have hair fall problem?" agrees with that tier (Low = No, Moderate/High = Yes).
@@ -25,7 +31,7 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "generated"; OUT.mkdir(exist_ok=True)
 rng = np.random.default_rng(SEED)
 
-d1 = pd.read_csv(ROOT / "Dataset1.csv")
+d1 = pd.read_csv(ROOT / "backup" / "Dataset1_original.csv")   # original Kaggle file (Dataset1.csv is rewritten below with age and gender added)
 d2 = pd.read_csv(ROOT / "Dataset2.csv")
 ref = pd.read_csv(ROOT / "Final_data.csv")
 
@@ -49,20 +55,72 @@ n_age = int((d2c.age > 60).sum())
 d2c = d2c[d2c.age <= 60].reset_index(drop=True)
 assert d2c.isna().sum().sum() == 0
 
-# ------------------------------------------------ Step 1: super dataset
+# ------------------------------------------------ Step 1: super dataset (randomised copies with source keys)
+NOISE_SD = 0.04      # standard deviation of the noise on Dataset 1 numbers, as a share of each column's range
+HAIRFALL_SHIFT = 0.10  # chance that the Dataset 1 hair_fall value moves by one step
+AGE_SD = 1.5         # noise on age in years
+FLIP_YN = 0.05       # chance that a yes/no answer is flipped
+FLIP_GENDER = 0.03   # chance that the gender is flipped
+FLIP_FOOD = 0.05     # chance that the food habit is replaced by a random category
+# link fields: Dataset 1 has no age or gender, so both are added, taken together from a random Dataset 2 respondent
+d1 = d1.copy()
+pick = rng.integers(0, len(d2c), len(d1))
+d1.insert(0, "age", d2c.age.values[pick])
+d1.insert(1, "gender", d2c.gender.values[pick])
+d1.to_csv(ROOT / "Dataset1.csv", index=False)
 d1_rows = np.concatenate([rng.permutation(len(d1)), rng.permutation(len(d1))])
 rng.shuffle(d1_rows)
-d2_idx = rng.integers(0, len(d2c), N_SUPER)
+s1 = d1.iloc[d1_rows].reset_index(drop=True)
+# pair every Dataset 1 record with a random Dataset 2 respondent of the same age and gender
+d2_idx = np.empty(N_SUPER, dtype=int)
+key1 = s1["age"].astype(str) + "|" + s1["gender"]
+key2 = d2c["age"].astype(str) + "|" + d2c["gender"]
+for k in key1.unique():
+    m = np.where(key1.values == k)[0]
+    d2_idx[m] = rng.choice(np.where(key2.values == k)[0], len(m))
+s2 = d2c.iloc[d2_idx].reset_index(drop=True)
+D1_NUM = [c for c in d1.columns if c not in ("hair_fall", "age", "gender")]
+r1 = pd.DataFrame(index=range(N_SUPER))
+r1["age"] = np.clip(np.round(s1["age"] + rng.normal(0, AGE_SD, N_SUPER)), 15, 60).astype(int)
+g1 = s1["gender"].values.copy(); f1 = rng.uniform(size=N_SUPER) < FLIP_GENDER
+g1[f1] = np.where(g1[f1] == "Male", "Female", "Male"); r1["gender"] = g1
+for c in D1_NUM:
+    lo, hi = d1[c].min(), d1[c].max()
+    r1[c] = np.clip(np.round(s1[c] + rng.normal(0, NOISE_SD * (hi - lo), N_SUPER)), lo, hi).astype(int)
+shift = rng.choice([-1, 0, 1], N_SUPER, p=[HAIRFALL_SHIFT / 2, 1 - HAIRFALL_SHIFT, HAIRFALL_SHIFT / 2])
+r1["hair_fall"] = np.clip(s1["hair_fall"] + shift, 0, 5)
+BINC = ["hair_fall_problem", "family_hair_fall_history", "chronic_illness", "late_night_sleep", "sleep_disturbance", "water_reason", "chemical_use", "anemia", "stress"]
+r2 = pd.DataFrame(index=range(N_SUPER))
+r2["age"] = np.clip(np.round(s2["age"] + rng.normal(0, AGE_SD, N_SUPER)), 15, 60).astype(int)
+g = s2["gender"].values.copy(); f = rng.uniform(size=N_SUPER) < FLIP_GENDER
+g[f] = np.where(g[f] == "Male", "Female", "Male"); r2["gender"] = g
+for c in BINC:
+    r2[c] = np.where(rng.uniform(size=N_SUPER) < FLIP_YN, 1 - s2[c].values, s2[c].values)
+fh = s2["food_habit"].values.copy(); f = rng.uniform(size=N_SUPER) < FLIP_FOOD
+fh[f] = rng.choice(np.array(sorted(set(d2c.food_habit))), f.sum()); r2["food_habit"] = fh
 sup = pd.concat([
-    pd.DataFrame({"super_id": np.arange(1, N_SUPER + 1), "d1_row": d1_rows + 1}),
-    d1.iloc[d1_rows].reset_index(drop=True).add_prefix("d1_"),
-    d2c.iloc[d2_idx].reset_index(drop=True).rename(columns=lambda c: c if c == "d2_row" else "d2_" + c),
+    pd.DataFrame({"super_id": np.arange(1, N_SUPER + 1), "d1_row": d1_rows + 1, "d2_row": s2["d2_row"].values, "link_age": s1["age"].values, "link_gender": s1["gender"].values}),
+    r1.add_prefix("d1_"), r2.add_prefix("d2_"),
+    s1.add_prefix("d1src_"), s2.drop(columns="d2_row").add_prefix("d2src_"),
 ], axis=1)
 sup.to_csv(OUT / "super_dataset.csv", index=False)
+# how much the randomised values differ from the source values (Dataset 1 / Dataset 2)
+cmp_rows = []
+for c in ["age"] + D1_NUM + ["hair_fall"]:
+    a, b = sup["d1_" + c], sup["d1src_" + c]
+    cmp_rows.append({"column": "d1_" + c, "compared_with": f"Dataset1.csv row d1_row, column {c}", "share_changed_%": round(100 * (a != b).mean(), 1),
+                     "mean_abs_difference": round((a - b).abs().mean(), 2), "correlation_with_source": round(a.corr(b), 3)})
+cmp_rows.append({"column": "d2_age", "compared_with": "Dataset2.csv row d2_row, age", "share_changed_%": round(100 * (sup.d2_age != sup.d2src_age).mean(), 1),
+                 "mean_abs_difference": round((sup.d2_age - sup.d2src_age).abs().mean(), 2), "correlation_with_source": round(sup.d2_age.corr(sup.d2src_age), 3)})
+cmp_rows.append({"column": "d1_gender", "compared_with": "Dataset1.csv row d1_row, gender", "share_changed_%": round(100 * (sup.d1_gender != sup.d1src_gender).mean(), 1), "mean_abs_difference": None, "correlation_with_source": None})
+for c in ["gender"] + BINC + ["food_habit"]:
+    cmp_rows.append({"column": "d2_" + c, "compared_with": f"Dataset2.csv row d2_row, {c}", "share_changed_%": round(100 * (sup["d2_" + c] != sup["d2src_" + c]).mean(), 1),
+                     "mean_abs_difference": None, "correlation_with_source": None})
+pd.DataFrame(cmp_rows).to_csv(OUT / "super_vs_sources_comparison.csv", index=False)
 
 # ------------------------------------------------ Step 2: cleaning of the super dataset
 n0 = len(sup)
-sup = sup.drop_duplicates(subset=[c for c in sup.columns if c != "super_id"]).copy()
+sup = sup.drop_duplicates(subset=[c for c in sup.columns if c.startswith(("d1_", "d2_")) and "src" not in c]).copy()
 n_dup = n0 - len(sup)
 
 # ------------------------------------------------ Step 3: matching Dataset 1 and Dataset 2

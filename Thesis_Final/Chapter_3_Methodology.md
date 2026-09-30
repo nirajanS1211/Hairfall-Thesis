@@ -14,11 +14,11 @@ The framework serves the two objectives in Chapter 1. Objective 1 (benchmarking)
 
 ### 3.2.1 Source datasets and how they are related
 
-Two public datasets were the sources of the data: Dataset 1, with 100,000 records of blood and body measurements (Dhankour, 2023), and Dataset 2, a survey of 716 people on their health and lifestyle (Arnob et al., 2024). Because they describe different people and share no record key, they were combined in five steps, which are implemented in a script with a fixed random seed (42) so that they can be repeated.
+Two public datasets were the sources of the data: Dataset 1, with 100,000 records of blood and body measurements (Dhankour, 2023), and Dataset 2, a survey of 716 people on their health and lifestyle (Arnob et al., 2024). Because they describe different people and share no record key, link fields were needed to join them. Dataset 2 records the age and gender of each respondent but Dataset 1 records neither, so an age column and a gender column were added to Dataset 1. Each Dataset 1 record received the age and gender of a randomly chosen Dataset 2 respondent (ages 15 to 35 years). Age and gender then served as the link between the two datasets. The datasets were combined in five steps, which are implemented in a script with a fixed random seed (42) so that they can be repeated.
 
-1. **Super dataset.** A super dataset of 200,000 records was created. Every Dataset 1 record was used twice, and each was paired at random with a Dataset 2 respondent, so every record holds all columns of Dataset 1 and of Dataset 2 together with the row numbers of the two source records. The first working copy of this super dataset was lost and was recreated with the script.
-2. **Cleaning.** Typing errors in Dataset 2 were corrected, one impossible age (218 years) was removed, and 145 duplicate records were removed, leaving 199,855 records.
-3. **Matching.** The Dataset 1 target (0 to 5) was grouped into three tiers (0 and 1 Low, 2 and 3 Moderate, 4 and 5 High). A record was kept only when the answer to "Do you have a hair fall problem?" from Dataset 2 agreed with this tier (No for Low, Yes for Moderate and High). This left 111,599 records.
+1. **Super dataset.** A super dataset of 200,000 records was created. Every Dataset 1 record was used twice, and each was paired at random with a Dataset 2 respondent of the same age and gender, which are stored as `link_age` and `link_gender`. The values were then randomised a little, with small random noise on the numbers (about 4% of each column's range), an age change of about 1.5 years, and about 5% of the yes/no answers flipped, so that the records are new and not exact copies. Every record holds all columns of Dataset 1 and of Dataset 2, the row numbers of the two source records (`d1_row` and `d2_row`), and the original source values, so that each record can be compared directly with Dataset 1 and Dataset 2. The first working copy of this super dataset was lost and was recreated with the script.
+2. **Cleaning.** Typing errors in Dataset 2 were corrected, one impossible age (218 years) was removed, and the check for duplicate records found none, so all 200,000 records were kept.
+3. **Matching.** The Dataset 1 target (0 to 5) was grouped into three tiers (0 and 1 Low, 2 and 3 Moderate, 4 and 5 High). A record was kept only when the answer to "Do you have a hair fall problem?" from Dataset 2 agreed with this tier (No for Low, Yes for Moderate and High). This left 110,558 records.
 4. **Selection.** From the matched records, 21,606 were selected with the tier counts 9,723 Low, 7,562 Moderate, and 4,321 High (45%, 35%, and 20%).
 5. **Mapping.** The raw values of Dataset 1 and Dataset 2 were mapped onto realistic clinical ranges. Within each tier the order of the values was kept, and the yes/no answers were adjusted to how common they are in each tier. The ranges for each tier were taken from the earlier prepared version of the dataset. The result is the final dataset (data.csv).
 
@@ -26,7 +26,7 @@ Two public datasets were the sources of the data: Dataset 1, with 100,000 record
 
 | Dataset | Source | Rows | Columns | Content | Row identifier |
 |---|---|---|---|---|---|
-| Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 11 | 10 numeric biomarker and index columns and hair_fall (0 to 5) | None |
+| Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 11, plus added age and gender columns | 10 numeric biomarker and index columns and hair_fall (0 to 5) | None |
 | Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Timestamp |
 | Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both | Every column of Dataset 1 and Dataset 2 | None |
 | Final dataset (data.csv) | Cleaned and mapped from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
@@ -41,8 +41,8 @@ The source datasets are related by the meaning of their columns and not by a rec
 
 | Final column | Dataset 1 column | Dataset 2 question | Unit or coding |
 |---|---|---|---|
-| age | none | What is your age? | years |
-| gender | none | What is your gender? | Female, Male, Other |
+| age | age (added, taken from Dataset 2 respondents) | What is your age? | years |
+| gender | gender (added, taken from Dataset 2 respondents) | What is your gender? | Female, Male, Other |
 | total_protein | total_protein | none | g/dL |
 | calcium | calcium | none | mg/dL |
 | iron | iron | none | µg/dL |

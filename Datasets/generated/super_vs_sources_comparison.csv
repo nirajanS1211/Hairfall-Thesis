@@ -1,0 +1,26 @@
+column,compared_with,share_changed_%,mean_abs_difference,correlation_with_source
+d1_age,"Dataset1.csv row d1_row, column age",72.5,1.14,0.943
+d1_total_protein,"Dataset1.csv row d1_row, column total_protein",97.8,15.49,0.991
+d1_total_keratine,"Dataset1.csv row d1_row, column total_keratine",97.8,15.5,0.991
+d1_hair_texture,"Dataset1.csv row d1_row, column hair_texture",89.0,3.05,0.991
+d1_vitamin,"Dataset1.csv row d1_row, column vitamin",97.8,15.53,0.991
+d1_manganese,"Dataset1.csv row d1_row, column manganese",97.7,15.51,0.991
+d1_iron,"Dataset1.csv row d1_row, column iron",97.8,15.46,0.991
+d1_calcium,"Dataset1.csv row d1_row, column calcium",97.8,15.56,0.991
+d1_body_water_content,"Dataset1.csv row d1_row, column body_water_content",89.1,3.05,0.991
+d1_stress_level,"Dataset1.csv row d1_row, column stress_level",89.0,3.05,0.991
+d1_liver_data,"Dataset1.csv row d1_row, column liver_data",97.8,15.5,0.991
+d1_hair_fall,"Dataset1.csv row d1_row, column hair_fall",8.4,0.08,0.986
+d2_age,"Dataset2.csv row d2_row, age",72.4,1.14,0.943
+d1_gender,"Dataset1.csv row d1_row, gender",3.0,,
+d2_gender,"Dataset2.csv row d2_row, gender",3.0,,
+d2_hair_fall_problem,"Dataset2.csv row d2_row, hair_fall_problem",5.0,,
+d2_family_hair_fall_history,"Dataset2.csv row d2_row, family_hair_fall_history",5.1,,
+d2_chronic_illness,"Dataset2.csv row d2_row, chronic_illness",5.0,,
+d2_late_night_sleep,"Dataset2.csv row d2_row, late_night_sleep",5.1,,
+d2_sleep_disturbance,"Dataset2.csv row d2_row, sleep_disturbance",5.0,,
+d2_water_reason,"Dataset2.csv row d2_row, water_reason",5.0,,
+d2_chemical_use,"Dataset2.csv row d2_row, chemical_use",5.0,,
+d2_anemia,"Dataset2.csv row d2_row, anemia",5.0,,
+d2_stress,"Dataset2.csv row d2_row, stress",5.0,,
+d2_food_habit,"Dataset2.csv row d2_row, food_habit",3.3,,
