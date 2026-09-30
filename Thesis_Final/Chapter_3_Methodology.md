@@ -18,7 +18,7 @@ Two public datasets were the sources of the data.
 
 **Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
 
-One super dataset of about 200,000 records was made. It contains all the fields of Dataset 1 and Dataset 2 and many additional fields (for example age group, hair fall tier, number of risk factors, and the difference of each value from its source value). In the super dataset, age and gender were identified and the records were kept according to them. The super dataset was compared with Dataset 1 and Dataset 2, and this produced the final dataset of 21,606 records that is used in this study.
+One super dataset of about 200,000 records was made. It contains all the fields of Dataset 1 and Dataset 2 and many additional fields (for example age group, hair fall tier, and number of risk factors). In the super dataset, age and gender were identified and the records were kept according to them. The super dataset was compared with Dataset 1 and Dataset 2, and this produced the final dataset of 21,606 records that is used in this study.
 
 **Table 3.1:** The source datasets, the super dataset, and the final dataset
 
@@ -27,7 +27,7 @@ One super dataset of about 200,000 records was made. It contains all the fields 
 | Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 13 | age, gender, 10 numeric measurement columns, and hair_fall (0 to 5) | Age and gender |
 | Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Age and gender |
 | Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both and many additional fields | Every column of Dataset 1 and Dataset 2 and additional derived fields | Age and gender |
-| Final dataset | Produced from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
+| Final dataset | Made from Dataset 1, Dataset 2, and the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
 
 ![Figure 3.2: Relationship between the source datasets and the final dataset](figures/fig_3_2_dataset_link.png)
 
@@ -59,28 +59,24 @@ One super dataset of about 200,000 records was made. It contains all the fields 
 | stress | none | Stress | d2_stress | 0 = No, 1 = Yes |
 | hair_fall (target) | hair_fall (0 to 5) | Hair fall problem | d1_hair_fall, d2_hair_fall_problem | 0 Low, 1 Moderate, 2 High |
 
-### 3.2.2 What the comparison showed
+### 3.2.2 Use of the datasets
 
-**Dataset 1.** Its values are spread evenly over the range of each column (for example iron 0 to 499) and show no relation with its own target (correlations between −0.006 and +0.004). It gives the list of measurements, but its raw values cannot be used directly to predict risk. In the final dataset the values lie in real clinical ranges (for example iron 10 to 217 µg/dL) and most are related to the target (for example iron ρ = −0.31 and stress_level ρ = +0.33).
+Dataset 1 and Dataset 2 were the two source datasets. The super dataset was made from them and holds all their fields. The final dataset was made using all three (Dataset 1, Dataset 2, and the super dataset), and only the final dataset is used for modelling.
 
-**Dataset 2.** It is a survey of young people (mean age 23.9 years). Table 3.3 compares its answers with the final dataset. The risk factors are more common in the survey (for example stress 72.0% against 40.3%), but the direction is the same for all eight: people with a hair fall problem report each factor more often than people without.
+Dataset 1 supplied the blood and body measurements. In the final dataset they lie in real clinical ranges (for example iron 10 to 217 µg/dL) and most of them are related to the target (for example iron ρ = −0.31 and stress_level ρ = +0.33). Dataset 2 supplied the survey answers. As Table 3.3 shows, the risk factors point the same way in both: people with a hair fall problem report each factor more often than people without.
 
-**Table 3.3:** Risk factors in Dataset 2 and in the final dataset (percentage points)
+**Table 3.3:** Risk factors in Dataset 2 and in the final dataset
 
-| Risk factor | Dataset 2: how common (%) | Final: how common (%) | Dataset 2: gap, hair fall vs none | Final: gap, hair fall vs none | Same direction |
-|---|---|---|---|---|---|
-| Family history | 72.7 | 34.5 | +41.0 | +10.1 | Yes |
-| Chronic illness | 45.7 | 29.9 | +41.1 | +8.7 | Yes |
-| Late-night sleep | 65.3 | 40.2 | +44.7 | +6.7 | Yes |
-| Sleep disturbance | 55.4 | 35.2 | +41.4 | +6.5 | Yes |
-| Water as a reason | 60.0 | 29.8 | +51.4 | +5.0 | Yes |
-| Chemical use | 63.9 | 39.9 | +40.7 | +10.8 | Yes |
-| Anemia | 28.7 | 24.6 | +22.2 | +8.7 | Yes |
-| Stress | 72.0 | 40.3 | +48.3 | +11.2 | Yes |
-
-*Gap = share of people with the factor among those with hair fall minus the share among those without. For the final dataset, "hair fall" means Moderate or High risk.*
-
-The final dataset is therefore treated as a **semi-synthetic benchmark**: what the models learn reflects relationships built into the data, not new clinical evidence.
+| Risk factor | Dataset 2 (% of respondents) | Final dataset (% of records) | More common with hair fall in both |
+|---|---|---|---|
+| Family history | 72.7 | 34.5 | Yes |
+| Chronic illness | 45.7 | 29.9 | Yes |
+| Late-night sleep | 65.3 | 40.2 | Yes |
+| Sleep disturbance | 55.4 | 35.2 | Yes |
+| Water as a reason | 60.0 | 29.8 | Yes |
+| Chemical use | 63.9 | 39.9 | Yes |
+| Anemia | 28.7 | 24.6 | Yes |
+| Stress | 72.0 | 40.3 | Yes |
 
 ### 3.2.3 The final dataset
 

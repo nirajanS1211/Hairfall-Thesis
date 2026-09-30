@@ -58,14 +58,15 @@ arrow(ax, 10.9, 3.1, 10.9, 4.1); arrow(ax, 10.9, 2.1, 10.9, 1.1)
 save(fig, "fig_3_1_framework.png")
 
 # ---------------- Figure 3.2: dataset linkage ----------------
-fig, ax = canvas(11.6, 4.4)
-box(ax, 0.2, 2.6, 2.7, 1.5, "Dataset 1 (Kaggle)\n100,000 rows\n13 columns", MID, fs=FS - 1)
-box(ax, 0.2, 0.3, 2.7, 1.5, "Dataset 2 (Mendeley)\n716 survey answers\n14 columns", MID, fs=FS - 1)
-box(ax, 3.6, 1.45, 2.6, 1.6, "Super dataset\nabout 200,000 rows\nmany fields; age and\ngender identified", LIGHT, bold=True, fs=FS - 1)
-box(ax, 6.9, 1.45, 2.3, 1.6, "Comparison\nwith Dataset 1\nand Dataset 2", "white", fs=FS - 1)
-box(ax, 9.9, 1.45, 1.5, 1.6, "Final\ndataset\n21,606\nrecords", MID, bold=True, fs=FS - 1)
-arrow(ax, 2.9, 3.3, 3.6, 2.7); arrow(ax, 2.9, 1.3, 3.6, 1.9)
-arrow(ax, 6.2, 2.25, 6.9, 2.25); arrow(ax, 9.2, 2.25, 9.9, 2.25)
+fig, ax = canvas(11.6, 4.8)
+box(ax, 0.2, 3.1, 2.7, 1.4, "Dataset 1 (Kaggle)\n100,000 rows\n13 columns", MID, fs=FS - 1)
+box(ax, 0.2, 0.3, 2.7, 1.4, "Dataset 2 (Mendeley)\n716 survey answers\n14 columns", MID, fs=FS - 1)
+box(ax, 4.3, 1.6, 2.7, 1.6, "Super dataset\nabout 200,000 rows\nmany fields; age and\ngender identified", LIGHT, bold=True, fs=FS - 1)
+box(ax, 8.6, 1.6, 2.6, 1.6, "Final dataset\n21,606 records", MID, bold=True, fs=FS - 1)
+arrow(ax, 2.9, 3.4, 4.3, 2.8); arrow(ax, 2.9, 1.5, 4.3, 2.0)
+arrow(ax, 7.0, 2.4, 8.6, 2.4)
+arrow(ax, 2.9, 4.1, 9.9, 4.1, ls="--", rad=0.0); arrow(ax, 9.9, 4.1, 9.9, 3.2, ls="--")
+arrow(ax, 2.9, 0.6, 9.9, 0.6, ls="--", rad=0.0); arrow(ax, 9.9, 0.6, 9.9, 1.6, ls="--")
 save(fig, "fig_3_2_dataset_link.png")
 
 # ---------------- Figure 3.3: CatBoost ----------------

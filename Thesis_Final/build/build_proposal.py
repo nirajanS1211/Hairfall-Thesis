@@ -149,7 +149,7 @@ class Builder:
         p = self.doc.add_paragraph()
         m = re.match(r"\*\*(Figure|Table) (\d\.\d):\*\*\s*(.*)", text)
         add_text(p, f"**{m.group(1)} {m.group(2)}:** {m.group(3)}")
-        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=12 if not above else 6, spacing=1.5, keep_next=above)
+        fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=12 if not above else 6, spacing=1.5, keep_next=above)
         return p
 
     def image(self, path):
@@ -160,22 +160,24 @@ class Builder:
         fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=6, spacing=1.0, keep_next=True)
 
     def equation(self, latex):
-        """Equation centred; a dotted leader runs from the equation to its number (i), (ii), ... at the right edge."""
+        """Equation slightly left of centre; a dotted leader starts where the equation ends and runs to the number (i), (ii), ..."""
         from docx.enum.table import WD_ALIGN_VERTICAL
         tag = re.search(r"\\tag\{([^}]*)\}", latex).group(1)
         self.eq_n += 1
         path, w, h = render_equation(latex, self.eq_n)
-        widths = [0.15, TEXT_W - 1.45, 1.3]
-        t = self.doc.add_table(rows=1, cols=3); t.autofit = False; t.alignment = WD_TABLE_ALIGNMENT.CENTER
+        total, numw = 5.5, 1.1
+        w = min(w, total - numw - 0.5)
+        spacer = max(0.1, (total - numw - w) / 2)
+        widths = [spacer, w + 0.3, total - spacer - w - 0.3]
+        t = self.doc.add_table(rows=1, cols=3); t.autofit = False; t.alignment = WD_TABLE_ALIGNMENT.LEFT
         for col, wd in zip(t.columns, widths): col.width = Inches(wd)
         for c, wd in zip(t.rows[0].cells, widths):
             c.width = Inches(wd); c.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        maxw = widths[1] - 0.1
         pm = t.rows[0].cells[1].paragraphs[0]
-        pm.add_run().add_picture(str(path), width=Inches(min(w, maxw)))
-        fmt(pm, WD_ALIGN_PARAGRAPH.CENTER, space_after=0, spacing=1.0)
+        pm.add_run().add_picture(str(path), width=Inches(w))
+        fmt(pm, WD_ALIGN_PARAGRAPH.LEFT, space_after=0, spacing=1.0)
         pn = t.rows[0].cells[2].paragraphs[0]
-        pn.paragraph_format.tab_stops.add_tab_stop(Inches(widths[2] - 0.2), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        pn.paragraph_format.tab_stops.add_tab_stop(Inches(widths[2] - 0.15), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
         r = pn.add_run("\t(" + tag + ")"); set_font(r, 12)
         fmt(pn, WD_ALIGN_PARAGRAPH.LEFT, space_after=0, spacing=1.0)
         fmt(t.rows[0].cells[0].paragraphs[0], None, space_after=0, spacing=1.0)
@@ -185,7 +187,7 @@ class Builder:
         ncol = len(rows[0]); size = 12 if ncol <= 4 else 9.5
         t = self.doc.add_table(rows=len(rows), cols=ncol); t.style = "Table Grid"; t.alignment = WD_TABLE_ALIGNMENT.CENTER
         t.autofit = False
-        weights = [min(max(len(r[c]) for r in rows), 30) + 1 for c in range(ncol)]
+        weights = [min(max(max(len(r[c]) for r in rows[1:]), len(rows[0][c]) // 2), 30) + 4 for c in range(ncol)]
         widths = [TEXT_W * w / sum(weights) for w in weights]
         for col, wd in zip(t.columns, widths): col.width = Inches(wd)
         for i, row in enumerate(rows):

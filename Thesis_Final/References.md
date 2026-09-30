@@ -48,8 +48,4 @@ Siami, M. I., & Azis, H. (2025). Predicting hair loss with machine learning: A m
 
 Sun, J., Li, Y., Ye, Z., Wang, S., & Wang, W. (2025). Global sex disparities in lifetime risk of alopecia areata: A systematic analysis from the Global Burden of Disease Study, 1990 to 2021. *Biology of Sex Differences, 16*, Article 68. https://doi.org/10.1186/s13293-025-00749-w
 
-Todorova, L., & Kluger, N. (2026). Hair loss treatments: A Google Trends analysis worldwide of the past 5 years (2018–2023). *Skin Appendage Disorders, 12*, 46–49. https://doi.org/10.1159/000547418
-
 Treister-Goltzman, Y., Yarza, S., & Peleg, R. (2022). Iron deficiency and nonscarring alopecia in women: Systematic review and meta-analysis. *Skin Appendage Disorders, 8*(2), 83–92. https://doi.org/10.1159/000519952
-
-Wang, Y., Li, D., Hu, N., Qi, H., & Wang, Y. (2026). A comprehensive bibliometric analysis of global research trends in hair loss treatment: Key contributions, emerging hotspots, and future directions. *Aesthetic Surgery Journal Open Forum, 8*, Article ojag036. https://doi.org/10.1093/asjof/ojag036

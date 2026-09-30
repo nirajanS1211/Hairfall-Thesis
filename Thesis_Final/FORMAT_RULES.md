@@ -31,7 +31,7 @@ Applies to every chapter file in this folder. Based on the M.Sc. CSIT Dissertati
 ## Figures and tables
 - Numbered by chapter: Figure 3.1, Table 4.2
 - Every one is referred to in the text
-- Figure caption below the figure, table caption above the table, both left-aligned
+- Figure caption below the figure, table caption above the table, both centred
 - Gantt chart (working schedule) is drawn as a figure, not a table
 
 ## Report structure (syllabus)
