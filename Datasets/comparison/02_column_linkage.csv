@@ -1,0 +1,22 @@
+final_column,dataset1_column,dataset2_question,concept_comes_from,unit_or_coding
+age,-,What is your age ?,Dataset 2,years
+gender,-,What is your gender ?,Dataset 2,Female / Male / Other
+total_protein,total_protein,-,Dataset 1,g/dL
+calcium,calcium,-,Dataset 1,mg/dL
+iron,iron,-,Dataset 1,ug/dL
+vitamin_d,vitamin,-,Dataset 1,ng/mL
+alt_liver,liver_data,-,Dataset 1,U/L
+manganese,manganese,-,Dataset 1,ug/L
+body_water_content,body_water_content,-,Dataset 1,%
+stress_level,stress_level,-,Dataset 1,0-40 scale
+total_keratine,total_keratine,-,Dataset 1,0-100 score
+hair_texture,hair_texture,-,Dataset 1,0-100 score
+family_hair_fall_history,-,Is there anyone in your family having a hair fall problem or a baldness issue?,Dataset 2,0/1
+chronic_illness,-,Did you face any type of chronic illness in the past?,Dataset 2,0/1
+late_night_sleep,-,Do you stay up late at night?,Dataset 2,0/1
+sleep_disturbance,-,Do you have any type of sleep disturbance?,Dataset 2,0/1
+water_reason,-,Do you think that in your area water is a reason behind hair fall problems?,Dataset 2,0/1
+chemical_use,-,"Do you use chemicals, hair gel, or color in your hair?",Dataset 2,0/1
+anemia,-,Do you have anemia?,Dataset 2,0/1
+stress,-,Do you have too much stress,Dataset 2,0/1
+hair_fall (target),hair_fall (0-5),Do you have hair fall problem ?,Both (re-scaled to 3 tiers),"0 Low, 1 Moderate, 2 High"

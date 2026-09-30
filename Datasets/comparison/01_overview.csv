@@ -1,0 +1,4 @@
+dataset,what_it_is,rows,columns,content,row_identifier
+Dataset 1,Kaggle hair loss table,100000,11,10 numeric biomarker / index columns + hair_fall (0-5),none
+Dataset 2,Mendeley hair fall survey,716,14,"13 questionnaire answers (Yes/No, age, gender, food habit)",Timestamp (respondent name removed before use)
+Final data.csv,Dataset used in this thesis,21606,23,20 features + hair_fall (0-2),"id (1 to 21,606)"

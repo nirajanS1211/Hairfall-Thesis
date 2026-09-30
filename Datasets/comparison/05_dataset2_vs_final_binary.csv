@@ -1,0 +1,11 @@
+feature,d2_prevalence_%,final_prevalence_%,final_minus_d2_pts,d2_gap_hairfall_yes_minus_no_pts,final_gap_hairfall_yes_minus_no_pts,same_direction
+family_hair_fall_history,72.7,34.5,-38.3,41.0,10.1,1
+chronic_illness,45.7,29.9,-15.9,41.1,8.7,1
+late_night_sleep,65.3,40.2,-25.1,44.7,6.7,1
+sleep_disturbance,55.4,35.2,-20.2,41.4,6.5,1
+water_reason,60.0,29.8,-30.2,51.4,5.0,1
+chemical_use,63.9,39.9,-24.0,40.7,10.8,1
+anemia,28.7,24.6,-4.1,22.2,8.7,1
+stress,72.0,40.3,-31.7,48.3,11.2,1
+male_share,64.2,56.0,,,,
+hair_fall_any,67.4,55.0,,,,

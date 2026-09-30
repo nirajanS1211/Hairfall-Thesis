@@ -1,0 +1,11 @@
+,value
+rows_raw,716.0
+age_outliers_over_60,1.0
+typo_labels_fixed,2.0
+rows_after_cleaning,715.0
+age_mean_d2,23.9
+age_min_d2,15.0
+age_max_d2,35.0
+age_mean_final,32.8
+age_min_final,20.0
+age_max_final,55.0
