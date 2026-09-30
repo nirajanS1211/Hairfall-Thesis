@@ -18,15 +18,15 @@ Two public datasets were the sources of the data.
 
 **Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
 
-One super dataset of about 200,000 records, which contains all the fields of Dataset 1 and Dataset 2, was made. In the super dataset, age and gender were identified and the records were kept according to them. The super dataset was compared with Dataset 1 and Dataset 2, and this produced the final dataset (data.csv) of 21,606 records that is used in this study.
+One super dataset of about 200,000 records was made. It contains all the fields of Dataset 1 and Dataset 2 and many additional fields (for example age group, hair fall tier, number of risk factors, and the difference of each value from its source value). In the super dataset, age and gender were identified and the records were kept according to them. The super dataset was compared with Dataset 1 and Dataset 2, and this produced the final dataset (data.csv) of 21,606 records that is used in this study.
 
 **Table 3.1:** The source datasets, the super dataset, and the final dataset
 
 | Dataset | Source | Rows | Columns | Content | Row identifier |
 |---|---|---|---|---|---|
 | Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 13 | age, gender, 10 numeric measurement columns, and hair_fall (0 to 5) | Age and gender |
-| Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Timestamp |
-| Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both | Every column of Dataset 1 and Dataset 2 | Age and gender |
+| Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Age and gender |
+| Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both and many additional fields | Every column of Dataset 1 and Dataset 2 and additional derived fields | Age and gender |
 | Final dataset (data.csv) | Produced from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
 
 ![Figure 3.2: Relationship between the source datasets and the final dataset](figures/fig_3_2_dataset_link.png)

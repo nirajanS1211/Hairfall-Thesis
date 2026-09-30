@@ -105,6 +105,20 @@ sup = pd.concat([
 ], axis=1)
 # the file shows the Dataset 2 answers as Yes / No (like Dataset 2 itself); the pipeline below uses 1 / 0
 sup_out = sup.copy()
+# additional fields derived from the values above (no new measurements are invented)
+sup_out["pair_key"] = sup_out["link_age"].astype(str) + "|" + sup_out["link_gender"]
+sup_out["age_group"] = pd.cut(sup_out["d2_age"], [0, 19, 24, 29, 200], labels=["15-19", "20-24", "25-29", "30+"]).astype(str)
+sup_out["d1_hair_fall_tier"] = sup_out["d1_hair_fall"].map({0: "Low", 1: "Low", 2: "Moderate", 3: "Moderate", 4: "High", 5: "High"})
+sup_out["risk_factor_count"] = sup_out[["d2_" + c for c in BINC[1:]]].sum(axis=1)
+sup_out["gender_agrees"] = np.where(sup_out["d1_gender"] == sup_out["d2_gender"], "Yes", "No")
+sup_out["age_gap_years"] = (sup_out["d1_age"] - sup_out["d2_age"]).abs()
+for c in D1_NUM:      # tertile band of each Dataset 1 measurement and its difference from the source value
+    lo, hi = d1[c].min(), d1[c].max()
+    sup_out["d1_" + c + "_band"] = pd.cut(sup_out["d1_" + c], [lo - 1, lo + (hi - lo) / 3, lo + 2 * (hi - lo) / 3, hi + 1], labels=["Low", "Mid", "High"]).astype(str)
+    sup_out["d1_" + c + "_diff"] = sup_out["d1_" + c] - sup_out["d1src_" + c]
+sup_out["d1_age_diff"] = sup_out["d1_age"] - sup_out["d1src_age"]
+sup_out["d2_age_diff"] = sup_out["d2_age"] - sup_out["d2src_age"]
+sup_out["d1_hair_fall_diff"] = sup_out["d1_hair_fall"] - sup_out["d1src_hair_fall"]
 for c in BINC:
     for pre in ("d2_", "d2src_"):
         sup_out[pre + c] = sup_out[pre + c].map({1: "Yes", 0: "No"})
