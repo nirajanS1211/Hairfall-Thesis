@@ -59,9 +59,9 @@ save(fig, "fig_3_1_framework.png")
 
 # ---------------- Figure 3.2: dataset linkage ----------------
 fig, ax = canvas(14.4, 4.6)
-box(ax, 0.2, 2.6, 2.6, 1.5, "Dataset 1 (Kaggle)\n100,000 rows,\nage and gender added\nblood and body values", MID, fs=FS - 1)
+box(ax, 0.2, 2.6, 2.6, 1.5, "Dataset 1 (Kaggle)\n100,000 rows\nblood and body values", MID, fs=FS - 1)
 box(ax, 0.2, 0.3, 2.6, 1.5, "Dataset 2 (Mendeley)\n716 survey answers\nhealth and lifestyle", MID, fs=FS - 1)
-box(ax, 3.4, 1.45, 2.2, 1.6, "Super dataset\n200,000 rows, linked\nby age and gender,\nrandomised, row keys", LIGHT, bold=True, fs=FS - 1)
+box(ax, 3.4, 1.45, 2.2, 1.6, "Super dataset\n200,000 rows,\nrandomised, with\nsource row keys", LIGHT, bold=True, fs=FS - 1)
 box(ax, 6.0, 1.45, 1.8, 1.6, "Cleaning\n\n200,000 rows", "white", fs=FS - 1)
 box(ax, 8.2, 1.45, 2.0, 1.6, "Matching\nDataset 1 and 2\nagree\n110,558 rows", "white", fs=FS - 1)
 box(ax, 10.6, 1.45, 1.8, 1.6, "Selection\nand mapping\n21,606 rows", "white", fs=FS - 1)

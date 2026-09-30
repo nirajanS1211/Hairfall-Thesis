@@ -59,8 +59,6 @@ Leema et al. (2025) collected questionnaire data from 750 university students an
 | Kong et al. (2026) | TabArena, 51 datasets | TabFM | First among default foundation models | No health data |
 | Pandey (2026) | 13 TabArena datasets | TabFM vs XGBoost, RF, TabPFN | Confirmed competitive | Four defects, memory limit |
 
-*LR = Logistic Regression, DT = Decision Tree, RF = Random Forest, GB = Gradient Boosting.*
-
 ### 2.2.1 Research Gap
 
 Reading the studies together shows five gaps, and each one explains a choice made in this project.
