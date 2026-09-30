@@ -1,10 +1,8 @@
 # Chapter 4: Expected Outcome and Working Schedule
 
-Chapter 3 described the methods that will be used. This chapter states what those methods are expected to show (Section 4.1) and when each part of the work will be done (Section 4.2).
-
 ## 4.1 Expected Outcomes
 
-The expected outcomes follow directly from the research gaps found in the literature review (Section 2.2.1) and from the two objectives in Section 1.3. Each gap is matched below with what this study expects to deliver. The expectations are stated as aims to be tested, not as findings, because the experiments are still to be carried out.
+The expected outcomes follow from the research gaps found in the literature review (Section 2.2.1) and from the two objectives in Section 1.3. They are stated as aims to be tested, not as findings, because the experiments are still to be carried out.
 
 **1. A fair benchmark of different model families on hair fall data (gap 1, Objective 1).** Earlier hair fall studies compared only classical algorithms, on different datasets, with accuracies ranging from about 50% to 100% (Khatun et al., 2022; Kumar et al., 2025; Siami & Azis, 2025). This study is expected to give a comparison that can be trusted, because CatBoost, TabPFN, and TabFM use the same 21,606 records, the same train and test split, the same random seed, and the same metrics.
 
@@ -15,8 +13,6 @@ The expected outcomes follow directly from the research gaps found in the litera
 **4. A record of the practical limits of TabFM (gap 4, Objective 1).** An independent reproduction reported software defects and memory failures on larger tables (Pandey, 2026). The study is expected to document how TabFM behaves on a real health dataset, including how much training data it can take, how long it runs, and what problems appear, so that later researchers know what to expect.
 
 **5. A side-by-side comparison of explanations (gap 5, Objective 2).** SHAP is expected to show which measurements and habits drive each model's predicted tier, and to show whether the three models agree. The factors that the models rely on are expected to match what Chapter 2 describes as the biological causes of hair loss, such as iron level, stress, and family history. Agreement would support the use of the models as decision support. Disagreement would be reported as a finding and not hidden.
-
-Table 4.1 summarises how each expected outcome will be checked.
 
 **Table 4.1:** Expected outcomes and how they will be checked
 
@@ -37,5 +33,3 @@ The work is planned over six months, with the schedule shown as a Gantt chart in
 ![Figure 4.1: Working schedule (Gantt chart)](figures/fig_4_1_gantt.png)
 
 **Figure 4.1:** Working schedule (Gantt chart)
-
-After the proposal is approved, the planned tasks will be carried out in this order, and the results will be reported and discussed against the expected outcomes of Section 4.1 in the final dissertation.

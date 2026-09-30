@@ -58,12 +58,17 @@ arrow(ax, 10.9, 3.1, 10.9, 4.1); arrow(ax, 10.9, 2.1, 10.9, 1.1)
 save(fig, "fig_3_1_framework.png")
 
 # ---------------- Figure 3.2: dataset linkage ----------------
-fig, ax = canvas(12, 6)
-box(ax, 0.2, 3.7, 3.6, 1.7, "Dataset 1  (Kaggle)\n100,000 rows, 11 columns\n10 biomarker / index columns\n+ hair_fall (0 to 5)\nno row identifier", MID)
-box(ax, 0.2, 0.6, 3.6, 1.7, "Dataset 2  (Mendeley survey)\n716 rows, 14 columns\nage, gender, Yes/No answers\nidentifier: timestamp", MID)
-box(ax, 4.7, 1.9, 3.0, 2.2, "Comparison\nby feature meaning\n(no shared key)\n\nranges and units\nhow common each answer is\ndirection of each risk factor", LIGHT, fs=FS - 1)
-box(ax, 8.6, 1.9, 3.2, 2.2, "Final data.csv\n21,606 records, 23 columns\nprimary key: id\ntarget hair_fall:\n0 Low, 1 Moderate, 2 High", MID, bold=True, fs=FS - 0.5)
-arrow(ax, 3.8, 4.4, 4.7, 3.6); arrow(ax, 3.8, 1.5, 4.7, 2.4); arrow(ax, 7.7, 3.0, 8.6, 3.0)
+fig, ax = canvas(13.2, 4.6)
+box(ax, 0.2, 2.6, 2.7, 1.5, "Dataset 1 (Kaggle)\n100,000 rows\nblood and body values", MID, fs=FS - 1)
+box(ax, 0.2, 0.3, 2.7, 1.5, "Dataset 2 (Mendeley)\n716 survey answers\nhealth and lifestyle", MID, fs=FS - 1)
+box(ax, 3.5, 1.45, 2.3, 1.6, "Super dataset\nabout 200,000 rows\nall columns of\nDataset 1 and 2", LIGHT, bold=True, fs=FS - 1)
+box(ax, 6.3, 1.45, 1.7, 1.6, "Cleaning\n\n21,606\nrecords left", "white", fs=FS - 1)
+box(ax, 8.5, 1.45, 2.3, 1.6, "Compare and map\nagainst Dataset 1\nand Dataset 2", "white", fs=FS - 1)
+box(ax, 11.3, 1.45, 1.7, 1.6, "Final data.csv\n21,606 records\n23 columns\nkey: id", MID, bold=True, fs=FS - 1)
+arrow(ax, 2.9, 3.3, 3.5, 2.7); arrow(ax, 2.9, 1.3, 3.5, 1.9)
+arrow(ax, 5.8, 2.25, 6.3, 2.25); arrow(ax, 8.0, 2.25, 8.5, 2.25); arrow(ax, 10.8, 2.25, 11.3, 2.25)
+arrow(ax, 2.9, 3.6, 9.6, 3.6, ls="--", rad=0.0); arrow(ax, 9.6, 3.6, 9.6, 3.05, ls="--")
+arrow(ax, 2.9, 0.7, 9.6, 0.7, ls="--", rad=0.0); arrow(ax, 9.6, 0.7, 9.6, 1.45, ls="--")
 save(fig, "fig_3_2_dataset_link.png")
 
 # ---------------- Figure 3.3: CatBoost ----------------

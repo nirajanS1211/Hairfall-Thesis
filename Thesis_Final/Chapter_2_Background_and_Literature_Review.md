@@ -1,7 +1,5 @@
 # Chapter 2: Background Study and Literature Review
 
-This chapter builds the case for the study. Section 2.1 explains what causes hair loss and how it affects people, which is the reason a risk model needs both blood measurements and lifestyle information. Section 2.2 reviews the earlier studies that tried to predict hair loss and the machine learning methods this study uses, and Section 2.2.1 ends with the research gaps that the objectives in Chapter 1 respond to.
-
 ## 2.1 Background Study
 
 Human hair grows in a repeating cycle of three phases: a growth phase (anagen), a short regression phase (catagen), and a resting phase (telogen) after which the hair is shed. Losing some hair every day is therefore normal. Hair loss becomes a medical problem when this cycle is disturbed, so that too many follicles enter the resting phase early or the follicles shrink and stop producing thick hair. Clinically, the most common forms are androgenetic alopecia (pattern hair loss driven by hormones and inheritance), telogen effluvium (a temporary but heavy shedding that follows a physical or emotional trigger), and alopecia areata (patchy loss caused by an autoimmune reaction).
@@ -22,11 +20,9 @@ The biological factors that disturb the hair cycle are well documented, and they
 
 **Current trend.** Reports suggest that hair loss is being seen more often and at a younger age. Early-onset androgenetic alopecia has been linked to lifestyle and dietary habits (Agaoglu et al., 2021), and post-infection shedding rose sharply during the COVID-19 period (Cline et al., 2021). Research and public interest have followed the same direction: bibliometric work has mapped global research trends and emerging topics in hair loss treatment (Wang et al., 2026), and Google search patterns have been used to track worldwide interest in hair loss treatments (Todorova & Kluger, 2026).
 
-**From biology to machine learning.** Because the causes above overlap and interact, no single test can predict hair loss risk. Diagnosis today relies mostly on clinical examination and the patient's own history, which is slow, subjective, and hard to reach in rural areas. This has led researchers to apply machine learning to hair loss. Earlier work mainly used scalp or hair images (Shakeel et al., 2021; Sayyad et al., 2022), and more recent work uses survey and clinical tables with classical algorithms such as Random Forest and XGBoost (Khatun et al., 2022; Kumar et al., 2025; Sai et al., 2023). The newest direction is tabular foundation models such as TabPFN (Hollmann et al., 2025) and TabFM (Kong et al., 2026), which have not yet been tested on hair loss. Section 2.2 reviews this work in detail.
+**From biology to machine learning.** Because the causes above overlap and interact, no single test can predict hair loss risk. Diagnosis today relies mostly on clinical examination and the patient's own history, which is slow, subjective, and hard to reach in rural areas. This has led researchers to apply machine learning to hair loss. Earlier work mainly used scalp or hair images (Shakeel et al., 2021; Sayyad et al., 2022), and more recent work uses survey and clinical tables with classical algorithms such as Random Forest and XGBoost (Khatun et al., 2022; Kumar et al., 2025; Sai et al., 2023). The newest direction is tabular foundation models such as TabPFN (Hollmann et al., 2025) and TabFM (Kong et al., 2026), which have not yet been tested on hair loss.
 
 ## 2.2 Literature Review
-
-This section reviews the published research that is closest to the present study. For each study it states what data was used, which models were tested, what was found, and what was left open. The studies are grouped by topic, and Table 2.1 at the end of the section summarises them.
 
 **Hair loss prediction from survey and lifestyle data.** Khatun et al. (2022) surveyed 610 people in Bangladesh and trained a Support Vector Machine (SVM), k-Nearest Neighbours (KNN), Logistic Regression, Random Forest, and XGBoost to diagnose hair fall disorder. XGBoost gave the best accuracy of 92.62%. The study shows that questionnaire data can carry a useful signal, but it tested only classical models and did not explain individual predictions.
 
@@ -78,5 +74,3 @@ Reading the studies together shows five gaps, and each one explains a choice mad
 4. **TabFM is very new and its practical limits are unclear.** The independent reproduction found software defects and memory failures on larger tables (Pandey, 2026). Running TabFM on a real dataset and reporting its cost and limitations is a contribution in itself.
 
 5. **Explanations are not compared across models.** The hair loss studies report accuracy and rarely explain individual predictions, and none explains a boosted-tree model and foundation models side by side. This project applies SHAP (Lundberg & Lee, 2017) to all three models so the clinical plausibility of their explanations can be compared.
-
-Taken together, the gaps lead to the two objectives of this study: to benchmark CatBoost, TabPFN, and TabFM on the same hair fall risk dataset (Objective 1), and to explain every model with SHAP (Objective 2). Chapter 3 describes the dataset and methods that will be used to do this.

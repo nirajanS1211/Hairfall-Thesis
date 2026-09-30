@@ -138,7 +138,7 @@ class Builder:
     def heading(self, text, level, page_break=False):
         p = self.doc.add_paragraph(style=f"Heading {level}")
         r = p.add_run(text); set_font(r, {1: 16, 2: 14, 3: 12}[level], True)
-        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=12 if level > 1 else 18, spacing=1.5, before=6 if level > 1 else 0, keep_next=True)
+        fmt(p, WD_ALIGN_PARAGRAPH.CENTER if level == 1 else WD_ALIGN_PARAGRAPH.LEFT, space_after=12 if level > 1 else 18, spacing=1.5, before=6 if level > 1 else 0, keep_next=True)
         if page_break: p.paragraph_format.page_break_before = True
         return p
 
@@ -149,7 +149,7 @@ class Builder:
         p = self.doc.add_paragraph()
         m = re.match(r"\*\*(Figure|Table) (\d\.\d):\*\*\s*(.*)", text)
         add_text(p, f"**{m.group(1)} {m.group(2)}:** {m.group(3)}")
-        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=12 if not above else 6, spacing=1.15, keep_next=above)
+        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=12 if not above else 6, spacing=1.5, keep_next=above)
         return p
 
     def image(self, path):
@@ -241,22 +241,23 @@ class Builder:
 
 # ---------------------------------------------------------------- document parts
 def title_page(doc):
-    def line(text, size=14, bold=False, after=10, italic=False):
-        p = doc.add_paragraph(); r = p.add_run(text); set_font(r, size, bold, italic)
-        fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=after, spacing=1.15)
-    line("Tribhuvan University", 20, True, 4)
-    line("Institute of Science and Technology", 16, True, 40)
-    line("A Dissertation Proposal on", 14, False, 14)
-    line("\u201cComparative Benchmarking of CatBoost, TabPFN, and TabFM for Explainable Multi-Tier Hair Fall Risk Stratification\u201d", 18, True, 40)
-    line("Supervised by", 14, False, 4); line("Asst. Prof. Jagadish Bhatta", 14, True, 24)
-    line("Submitted by", 14, False, 4); line("Nirajan Shahi", 14, True, 2); line("Roll no. 49/079", 14, False, 24)
-    line("Submitted to", 14, False, 4)
-    line("Central Department of Computer Science and Information Technology", 14, True, 2)
-    line("Tribhuvan University, Kirtipur", 14, False, 2); line("Kathmandu, Nepal", 14, False, 24)
-    line("In partial fulfillment of the requirement for Master\u2019s Degree in Computer Science and Information Technology (M.Sc. CSIT)", 12, False, 0)
+    """Same first page as 'Hair fall Proposal Revised (Updated)': 14 pt bold, centred, TU logo."""
+    def line(text="", after=6):
+        p = doc.add_paragraph(); r = p.add_run(text if text else " "); set_font(r, 14, True)
+        fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=after, spacing=1.08)
+    line("Tribhuvan University"); line("Institute of Science and Technology"); line(); line()
+    p = doc.add_paragraph(); p.add_run().add_picture(str(ROOT / "figures" / "tu_logo.jpg"), width=Inches(1.39))
+    fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=3, spacing=1.08)
+    line(); line(); line("A Dissertation Proposal on", 6)
+    line("\u201cComparing CatBoost, TabPFN, and TabFM for Explainable Hair Fall Risk Prediction\u201d", 6)
+    line(); line("Supervised by", 6); line("Asst. Prof. Jagadish Bhatta", 6); line()
+    line("Submitted by", 6); line("Nirajan Shahi", 6); line("Roll no. 49/079", 6); line(); line()
+    line("Submitted to", 6); line("Central Department of Computer Science and Information Technology", 6)
+    line("Tribhuvan University, Kirtipur", 6); line("Kathmandu, Nepal", 6); line()
+    line("In partial fulfillment of the requirement for Master\u2019s Degree in Computer Science and Information technology (M.Sc. CSIT)", 6)
 
 def front_title(doc, text, first=False):
-    p = doc.add_paragraph(); r = p.add_run(text); set_font(r, 14, True)
+    p = doc.add_paragraph(); r = p.add_run(text); set_font(r, 16, True)
     fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=14, spacing=1.5, keep_next=True)
     if not first: p.paragraph_format.page_break_before = True
 
@@ -265,7 +266,7 @@ def leader_line(doc, text, page, indent=0.0, bold=False, after=3):
     p.paragraph_format.tab_stops.add_tab_stop(Inches(TEXT_W), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
     r = p.add_run(text); set_font(r, 12, bold)
     r = p.add_run("\t" + str(page)); set_font(r, 12, bold)
-    fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=after, spacing=1.15, left=indent)
+    fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=after, spacing=1.5, left=indent)
     p.paragraph_format.right_indent = Inches(0.0)
 
 def parse_front():
@@ -310,7 +311,7 @@ def build(pages):
     for a, b in parse_front():
         p = doc.add_paragraph(); p.paragraph_format.tab_stops.add_tab_stop(Inches(1.4))
         r = p.add_run(a + "\t" + b); set_font(r, 12)
-        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=4, spacing=1.15, hanging=1.4)
+        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=4, spacing=1.5, hanging=1.4)
     # body section
     s3 = doc.add_section(WD_SECTION.NEW_PAGE); set_pgnum(s3, "decimal", 1)
     s3.footer.is_linked_to_previous = False
@@ -324,7 +325,7 @@ def build(pages):
     for l in ref:
         if not l.strip() or l.startswith("#") or l.startswith("*(APA"): continue
         p = doc.add_paragraph(); add_text(p, l)
-        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=8, spacing=1.15, hanging=0.5)
+        fmt(p, WD_ALIGN_PARAGRAPH.LEFT, space_after=8, spacing=1.5, hanging=0.5)
     doc.save(OUT_DOCX)
 
 def to_pdf():

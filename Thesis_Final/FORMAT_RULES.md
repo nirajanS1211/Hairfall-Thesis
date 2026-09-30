@@ -5,13 +5,14 @@ Applies to every chapter file in this folder. Based on the M.Sc. CSIT Dissertati
 ## Headings (all bold)
 | Level | Example | Size |
 |---|---|---|
-| Chapter title | Chapter 1: Introduction | 16 pt |
+| Chapter title (centred) | Chapter 1: Introduction | 16 pt |
+| Front-matter title (Table of Contents, List of Figures, List of Tables, List of Abbreviations; centred) | List of Tables | 16 pt |
 | Section | 1.1 Overview | 14 pt |
 | Sub-section | 1.1.1 Theoretical Foundations | 12 pt |
 
 ## Body text
 - Font: Times New Roman, 12 pt
-- Line spacing: 1.5
+- Line spacing: 1.5 for all text, including contents lists, captions and references (tables and figures are single-spaced)
 - Margins: 1 inch on all sides
 - One blank line (space) after every paragraph
 - Justified alignment

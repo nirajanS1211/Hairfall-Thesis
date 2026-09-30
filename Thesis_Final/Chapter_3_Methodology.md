@@ -1,7 +1,5 @@
 # Chapter 3: Methodology
 
-Chapter 2 ended with five research gaps, and Chapter 1 set two objectives: to benchmark three models and to explain them. This chapter describes the data and the methods that answer them. It starts with the overall framework (Section 3.1), then the dataset and its preparation (Sections 3.2 and 3.3), the three models (3.4), the explainability method (3.5), the tools and environment (3.6 and 3.7), and the evaluation metrics (3.8). The dataset work and preprocessing have already been done, and the experiments will be carried out after the proposal is approved.
-
 ## 3.1 Research Framework
 
 The study follows one pipeline from data to explanation, shown in Figure 3.1. The final dataset is cleaned and split once. The same training and test rows are then given to three models, CatBoost, TabPFN, and TabFM. To see how each model behaves when little data is available, each will also be given two smaller stratified subsets of the training rows (500 and 2,000 records) in addition to all 17,284. Their predictions are compared with the same metrics and statistical tests, and SHAP is applied to all three so that each predicted risk tier can be traced to its features.
@@ -16,21 +14,22 @@ The framework serves the two objectives in Chapter 1. Objective 1 (benchmarking)
 
 ### 3.2.1 Source datasets and how they are related
 
-Three datasets were involved. The main dataset used for modelling contains all 21,606 records and all columns needed for the study. To check that this dataset is realistic and that the findings do not depend on one source only, it was compared with two public datasets. Table 3.1 lists the three datasets, and Figure 3.2 shows how they are related.
+Two public datasets were the sources of the data: Dataset 1, with 100,000 records of blood and body measurements (Dhankour, 2023), and Dataset 2, a survey of 716 people on their health and lifestyle (Arnob et al., 2024). Because they describe different people, the two were first combined into one super dataset of about 2 lakh (200,000) records that contains every column of Dataset 1 and of Dataset 2. [CONFIRM: how the two datasets were combined into about 200,000 records.] The super dataset was then cleaned, which left 21,606 records. Finally, these records were compared and mapped against Dataset 1 and Dataset 2, so that their values follow the ranges and relationships found in the two sources, and the result is the final dataset (data.csv) used in this study. [CONFIRM: the rule used for the mapping.] Table 3.1 lists the datasets, and Figure 3.2 shows how they are related.
 
-**Table 3.1:** The three datasets
+**Table 3.1:** The source datasets, the super dataset, and the final dataset
 
 | Dataset | Source | Rows | Columns | Content | Row identifier |
 |---|---|---|---|---|---|
 | Dataset 1 | Kaggle "Hair Loss Dataset" (Dhankour, 2023) | 100,000 | 11 | 10 numeric biomarker and index columns and hair_fall (0 to 5) | None |
 | Dataset 2 | Mendeley "Dataset for evaluating hair fall causes" (Arnob et al., 2024) | 716 | 14 | Questionnaire: age, gender, 8 Yes/No health and lifestyle answers, hair fall problem, food habit | Timestamp |
-| Final dataset (data.csv) | Prepared for this study | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
+| Super dataset | Dataset 1 and Dataset 2 combined | About 200,000 | All columns of both | Every column of Dataset 1 and Dataset 2 | None |
+| Final dataset (data.csv) | Cleaned and mapped from the super dataset | 21,606 | 23 | 20 features and the 3-tier target hair_fall | id (1 to 21,606) |
 
 ![Figure 3.2: Relationship between the source datasets and the final dataset](figures/fig_3_2_dataset_link.png)
 
 **Figure 3.2:** Relationship between the source datasets and the final dataset
 
-The datasets are related by the meaning of their columns and not by a record key. Dataset 1 has no identifier at all, and Dataset 2 has only a timestamp, and the people in the three datasets are not the same individuals. A record-by-record join is therefore not possible. Instead, each column of the final dataset was matched to the column or question that measures the same thing, as shown in Table 3.2. The primary key of the final dataset is its own id column, which runs from 1 to 21,606 and was removed before modelling.
+The source datasets are related by the meaning of their columns and not by a record key. Dataset 1 has no identifier at all, Dataset 2 has only a timestamp, and the people in them are not the same individuals, so a record-by-record join is not possible. Instead, each column of the final dataset was matched to the column or question that measures the same thing, as shown in Table 3.2. The primary key of the final dataset is its own id column, which runs from 1 to 21,606 and was removed before modelling.
 
 **Table 3.2:** Where each column of the final dataset comes from
 
@@ -81,7 +80,7 @@ The comparison was done with a script (Datasets/comparison/dataset_comparison.py
 
 *Gap = share of people with the factor among those with hair fall minus the share among those without. For the final dataset, "hair fall" means Moderate or High risk.*
 
-The survey shows stronger gaps than the final dataset because survey respondents answered about a problem they already knew they had, while the final dataset describes graded risk. Because of these differences the final dataset is treated as a **semi-synthetic benchmark**: the associations learned by the models reflect relationships built into the data from the dermatology literature and the survey, and they are not new clinical evidence. [CONFIRM: add one sentence on how the 21,606 records were first generated.] This limitation is stated again when the results are discussed.
+The survey shows stronger gaps than the final dataset because survey respondents answered about a problem they already knew they had, while the final dataset describes graded risk. Because of these differences the final dataset is treated as a **semi-synthetic benchmark**: the associations learned by the models reflect relationships built into the data from the dermatology literature and the survey, and they are not new clinical evidence. This limitation is stated again when the results are discussed.
 
 ### 3.2.3 The final dataset
 
@@ -118,7 +117,7 @@ The following steps were applied to the final dataset before any model was run.
 
 ## 3.4 Model Selection
 
-Three models from different families are compared: a tuned gradient boosting model (CatBoost) and two tabular foundation models that predict without training (TabPFN and TabFM). Each is shown as a block diagram with a short explanation of how it works.
+Three models from different families are compared: a tuned gradient boosting model (CatBoost) and two tabular foundation models that predict without training (TabPFN and TabFM).
 
 ### 3.4.1 CatBoost
 
@@ -174,8 +173,6 @@ where f(x) is the model output for a patient x, φ₀ is the average prediction 
 The results will be a global ranking of the features (which matter most overall) and per-patient explanations (why this person received this tier). The rankings of the three models will be compared with each other and with the known biology from Chapter 2.
 
 ## 3.6 Tools and Technologies
-
-Table 3.5 lists the tools used for the work, with the versions recorded in the local environment.
 
 **Table 3.5:** Software tools
 
@@ -242,5 +239,3 @@ $$\chi^2=\frac{(|b-c|-1)^2}{b+c}\tag{x}$$
 with one degree of freedom (the −1 is the continuity correction). The accuracy of each model is also given with a 95% Wilson confidence interval, where p̂ is the accuracy, n is the number of test records, and z = 1.96:
 
 $$\frac{\hat p+\dfrac{z^2}{2n}\pm z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}}\tag{xi}$$
-
-The next chapter states what this study expects these methods to show and sets out the schedule for carrying them out.

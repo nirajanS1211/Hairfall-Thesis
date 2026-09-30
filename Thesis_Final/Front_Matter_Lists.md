@@ -80,7 +80,7 @@ Figure 4.1: Working schedule (Gantt chart)
 
 Table 2.1: Summary of reviewed studies
 
-Table 3.1: The three datasets
+Table 3.1: The source datasets, the super dataset, and the final dataset
 
 Table 3.2: Where each column of the final dataset comes from
 
