@@ -18,7 +18,7 @@ GREY = RGBColor(0x59, 0x59, 0x59)
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 BLANK = prs.slide_layouts[6]
-TOTAL = 16
+TOTAL = 14
 COUNT = [1]
 
 
@@ -97,146 +97,108 @@ text(s, 0.8, 5.25, 11.7, 1.6, ["Dissertation Proposal", "Submitted by: Nirajan S
 s.notes_slide.notes_text_frame.text = "Introduce the topic: we compare three models for predicting hair fall risk and explain each prediction."
 
 # Contents ------------------------------------------------------------------------------------------
-s = new_slide("Contents", 2, "This is the outline of the talk: the problem, what is known, the gap, the data and methods, what we expect, and the schedule.")
-table(s, 2.2, 1.6, 8.9, [
+s = new_slide("Contents", 2, "Outline of the talk: the project in one slide, the problem, what is known, the gap, the data and methods, and what we expect.")
+table(s, 2.2, 1.7, 8.9, [
     ["Topic", "Slides"],
     ["1.  Project at a glance", "3"],
-    ["2.  Problem statement and objectives", "4 - 5"],
+    ["2.  Problem and objectives", "4 - 5"],
     ["3.  Background and literature", "6 - 8"],
     ["4.  Research gap", "9"],
-    ["5.  Data, framework, models, and evaluation", "10 - 13"],
-    ["6.  Expected outcomes", "14"],
-    ["7.  Schedule", "15"],
-], [7.0, 1.9], size=20, row_h=0.6)
+    ["5.  Data and methods", "10 - 12"],
+    ["6.  Expected outcomes", "13"],
+], [7.0, 1.9], size=20, row_h=0.65)
 
-# 2 At a glance ------------------------------------------------------------------------------------
-s = new_slide("Project at a glance", 2, "One-slide summary. Problem, aim, data, method, expected result and time. Each point is explained on the next slides.")
-table(s, 0.65, 1.5, 12.0, [
-    ["Problem", "Hair fall risk is hard to judge, and most prediction models cannot explain their answers."],
-    ["Objectives", "1. Benchmark CatBoost, TabPFN, and TabFM.   2. Explain every model with SHAP."],
-    ["Research gap", "Foundation models were never tested on hair fall data; CatBoost was never tuned; no side-by-side explanations."],
-    ["Data", "21,606 records, 20 features (blood and body measurements, lifestyle, clinical), 3 risk tiers: Low, Moderate, High."],
-    ["Method", "Same split for all models; CatBoost tuned, TabPFN and TabFM without tuning; SHAP; accuracy, macro-F1, ROC-AUC, McNemar's test."],
-    ["Expected outcome", "A fair comparison, a strong tuned baseline, TabFM limits recorded, and explanations checked against known biology."],
-    ["Time", "4 months: proposal work (Months 1 and 2) and final work (Months 3 and 4)."],
-], [2.4, 9.6], size=16, header=False, row_h=0.72)
+# 3 At a glance ------------------------------------------------------------------------------------
+s = new_slide("Project at a glance", 3, "One-slide summary. The problem, the aim, what is missing in earlier work, the data and method, and what we expect.")
+table(s, 0.65, 1.7, 12.0, [
+    ["Problem", "Hair fall risk is hard to judge, and prediction models are hard to explain."],
+    ["Objectives", "Benchmark CatBoost, TabPFN, and TabFM, and explain every model with SHAP."],
+    ["Research gap", "Foundation models were never tested on hair fall data, and CatBoost was never tuned."],
+    ["Data and method", "21,606 records, 3 risk tiers; same split for all models; accuracy, macro-F1, ROC-AUC."],
+    ["Expected outcome", "A fair comparison and explanations that agree with known causes."],
+], [2.6, 9.4], size=18, header=False, row_h=0.85)
 
-# 3 Problem ---------------------------------------------------------------------------------------
-s = new_slide("Problem statement", 3, "Hair loss has many causes that act together, so one test cannot predict it. Doctors rely on history and self-reports. ML can help but is a black box, which is a problem in health care.")
-text(s, 0.8, 1.7, 11.7, 4.8, [
-    "Hair loss risk is hard to judge: hormones, nutrition, stress, illness, and habits act together.",
-    "Assessment often relies on self-reporting or late clinical checks, which are subjective and hard to reach in rural areas.",
-    "Earlier prediction studies used classical algorithms and report very different accuracies (about 50% to 100%).",
-    "Newer tabular foundation models (TabPFN, TabFM) have not been tested on hair fall data.",
-    "Both gradient boosting and foundation models are hard to explain.",
-], size=22, bullet=True, space=16)
-
-# 4 Objectives ------------------------------------------------------------------------------------
-s = new_slide("Objectives", 4, "Two objectives: compare the three models, and explain them. Everything in the project serves one of these two.")
+# 4 Problem ----------------------------------------------------------------------------------------
+s = new_slide("Problem statement", 4, "Hair loss has many causes that act together, so no single test predicts it. Earlier studies used classical models, and new foundation models are untested and hard to explain.")
 text(s, 0.8, 1.9, 11.7, 4.5, [
-    "1.  To implement and benchmark CatBoost, TabPFN, and TabFM for predicting multi-tier hair fall risk from structured clinical and lifestyle data.",
-    "2.  To provide transparent, feature-level decision-support insights for every model through SHAP-based explainability, so that each predicted risk tier can be traced to specific indicators.",
-], size=24, space=26)
+    "Hair loss risk is hard to judge: hormones, nutrition, stress, and habits act together.",
+    "Earlier studies used classical algorithms, with accuracies from about 50% to 100%.",
+    "Newer foundation models (TabPFN, TabFM) are untested on hair fall data and hard to explain.",
+], size=26, bullet=True, space=26)
 
-# 5 Background ------------------------------------------------------------------------------------
-s = new_slide("Background: what causes hair loss", 5, "Hair grows in cycles. Anything that pushes follicles out of the growth phase early causes shedding. These factors overlap, which is why a model that combines many indicators is useful.")
-table(s, 0.65, 1.5, 12.0, [
-    ["Factor", "What it does", "Source"],
-    ["Hormones and heredity", "Inherited sensitivity to androgens; family history is a key indicator", "Agaoglu et al. (2021)"],
-    ["Nutrition and iron", "Shortage of iron, zinc, and vitamins weakens follicles", "Guo & Katta (2017); Lin et al. (2023)"],
-    ["Thyroid function", "Thyroid hormones regulate the hair cycle", "Hussein et al. (2023)"],
-    ["Psychological stress", "Pushes follicles into the resting phase early", "Bai et al. (2026)"],
-    ["Illness and infection", "Can trigger heavy shedding (telogen effluvium)", "Cline et al. (2021)"],
-], [3.2, 5.6, 3.2], size=16, row_h=0.6)
-text(s, 0.65, 5.3, 12, 1.2, "Trend: hair loss is reported more often and at a younger age, and it affects self-confidence and quality of life.", size=18)
+# 5 Objectives -------------------------------------------------------------------------------------
+s = new_slide("Objectives", 5, "Two objectives: compare the three models, and explain them.")
+text(s, 0.8, 2.1, 11.7, 4.0, [
+    "1.  Implement and benchmark CatBoost, TabPFN, and TabFM for multi-tier hair fall risk.",
+    "2.  Explain every model with SHAP so each predicted risk tier can be traced to specific indicators.",
+], size=28, space=30)
 
-# 6 Literature -------------------------------------------------------------------------------------
-s = new_slide("Literature: what others did", 6, "These are the closest studies. Most use classical models on survey data, or images. Results differ a lot between studies, and explanations were not compared.")
-table(s, 0.5, 1.45, 12.3, [
-    ["Study", "Data", "Models", "Main result"],
-    ["Khatun et al. (2022)", "Survey, 610 people", "SVM, KNN, LR, RF, XGBoost", "XGBoost 92.62%"],
-    ["Sai et al. (2023)", "Hair fall data", "SVM, KNN, DT, RF, LR, ensemble", "Ensemble best"],
-    ["Kumar et al. (2025)", "2,000 records", "RF, XGBoost, CatBoost, LightGBM", "RF 100%, CatBoost 49.5%"],
-    ["Siami & Azis (2025)", "Multi-factor data", "LR, DT, RF, GB, XGBoost, voting", "About 50% at best"],
-    ["Leema et al. (2025)", "Survey, 750 people", "LSTM, RF, TFT, ARIMAX", "TFT 97.5%"],
-    ["Shakeel et al. (2021); Sayyad et al. (2022)", "Hair images", "SVM, KNN, VGG with SVM", "91.4% and 98.31%"],
-], [3.9, 2.6, 3.6, 2.2], size=14, row_h=0.62)
-text(s, 0.5, 6.0, 12.3, 0.8, "LR = Logistic Regression, DT = Decision Tree, RF = Random Forest, GB = Gradient Boosting", size=12, color=GREY)
+# 6 Background -------------------------------------------------------------------------------------
+s = new_slide("Background: what causes hair loss", 6, "Hair grows in cycles. Anything that pushes follicles into the resting phase early causes shedding. These factors overlap, so a model that combines many indicators is useful.")
+table(s, 0.65, 1.8, 12.0, [
+    ["Factor", "What it does"],
+    ["Hormones and heredity", "Inherited sensitivity to androgens; family history matters"],
+    ["Nutrition and iron", "Shortage of iron, zinc, and vitamins weakens follicles"],
+    ["Thyroid function", "Thyroid hormones regulate the hair cycle"],
+    ["Psychological stress", "Pushes follicles into the resting phase early"],
+], [3.8, 8.2], size=20, row_h=0.8)
 
-# 7 Models literature -----------------------------------------------------------------------------
-s = new_slide("Literature: the three model families", 7, "CatBoost is a strong boosted-tree model for categorical data. TabPFN and TabFM are new foundation models: pretrained once, then they predict in one pass without training.")
-text(s, 0.8, 1.6, 11.7, 5.0, [
-    "CatBoost (Prokhorenkova et al., 2018): gradient boosted trees with ordered encoding of categorical answers.",
-    "TabPFN (Hollmann et al., 2025): transformer pretrained on synthetic tables; predicts in one forward pass; best on small tables.",
-    "TabFM (Kong et al., 2026): 400-million-parameter foundation model; first among default foundation models on 51 TabArena datasets.",
-    "An independent check of TabFM reported software defects and memory limits on larger tables (Pandey, 2026).",
-    "SHAP (Lundberg & Lee, 2017): explains any model by the contribution of each feature.",
-], size=21, bullet=True, space=16)
+# 7 Literature -------------------------------------------------------------------------------------
+s = new_slide("Literature: what others did", 7, "These are the closest studies. They use classical models on survey data, the results differ a lot, and none compared explanations.")
+table(s, 0.65, 1.8, 12.0, [
+    ["Study", "Models", "Main result"],
+    ["Khatun et al. (2022)", "SVM, KNN, LR, RF, XGBoost", "XGBoost 92.62%"],
+    ["Kumar et al. (2025)", "RF, XGBoost, CatBoost, LightGBM", "RF 100%, CatBoost 49.5%"],
+    ["Siami & Azis (2025)", "LR, DT, RF, GB, XGBoost", "About 50% at best"],
+], [3.8, 5.0, 3.2], size=20, row_h=0.8)
+text(s, 0.65, 5.5, 12, 0.6, "LR = Logistic Regression, DT = Decision Tree, RF = Random Forest, GB = Gradient Boosting", size=12, color=GREY)
 
-# 8 Research gap ----------------------------------------------------------------------------------
-s = new_slide("Research gap", 8, "This is what we found missing in the literature. It is why the project compares these three models and explains them.")
-text(s, 0.8, 1.7, 11.7, 4.8, [
-    "Hair loss prediction studies used only classical algorithms, and accuracies differ widely.",
-    "CatBoost was compared only once, and it was not tuned.",
-    "TabPFN and TabFM have not been tested on hair loss data.",
-    "TabFM has only one independent check, which reported defects and memory limits.",
-    "No study explains a boosted-tree model and foundation models side by side.",
-], size=24, bullet=True, space=20)
+# 8 Model families ---------------------------------------------------------------------------------
+s = new_slide("Literature: the three models", 8, "CatBoost is a strong boosted-tree model. TabPFN and TabFM are new foundation models: pretrained once, then they predict in one pass without training.")
+text(s, 0.8, 1.9, 11.7, 4.5, [
+    "CatBoost (Prokhorenkova et al., 2018): boosted trees for categorical data.",
+    "TabPFN (Hollmann et al., 2025): pretrained transformer, best on small tables.",
+    "TabFM (Kong et al., 2026): 400-million-parameter foundation model.",
+], size=26, bullet=True, space=26)
 
-# 9 Data -------------------------------------------------------------------------------------------
-s = new_slide("Data", 9, "Two public datasets are the sources. A super dataset of 200,000 records holds all their fields plus extra fields. Age and gender are identified in it. Comparing it with the two datasets gives the final dataset of 21,606 records used for modelling.")
-text(s, 0.6, 1.5, 5.0, 5.3, [
-    "Dataset 1 (Kaggle): 100,000 records, 13 columns of measurements and hair fall (0 to 5).",
-    "Dataset 2 (Mendeley): survey of 716 people, 14 columns.",
-    "Super dataset: 200,000 records with all fields of both and extra fields.",
-    "Final dataset: 21,606 records, 20 features, target Low 45%, Moderate 35%, High 20%.",
-], size=17, bullet=True, space=12)
+# 9 Research gap -----------------------------------------------------------------------------------
+s = new_slide("Research gap", 9, "This is what we found missing. It is why the project compares these three models and explains them.")
+text(s, 0.8, 1.9, 11.7, 4.5, [
+    "Only classical algorithms were used, and CatBoost was never tuned.",
+    "TabPFN and TabFM were never tested on hair loss data.",
+    "No study explains boosted trees and foundation models side by side.",
+], size=28, bullet=True, space=28)
+
+# 10 Data ------------------------------------------------------------------------------------------
+s = new_slide("Data", 10, "Two public datasets feed a super dataset of 200,000 records. Comparing it with them gives the final dataset of 21,606 records used for modelling.")
+text(s, 0.6, 1.8, 5.0, 4.5, [
+    "Two public datasets: Kaggle and Mendeley.",
+    "Super dataset: 200,000 records.",
+    "Final dataset: 21,606 records, 20 features, 3 risk tiers.",
+], size=22, bullet=True, space=20)
 picture(s, "fig_3_2_dataset_link.png", 5.7, 2.4, w=7.3)
 
-# 10 Framework -------------------------------------------------------------------------------------
-s = new_slide("Research framework", 10, "One pipeline: clean and split the data once, give the same rows to the three models, evaluate them the same way, and explain each with SHAP. The 500 and 2,000 record sets show behaviour with little data.")
-picture(s, "fig_3_1_framework.png", 1.9, 1.5, w=9.5)
-text(s, 0.9, 6.3, 11.5, 0.6, "Same split and seed for all models. Training sizes: 500, 2,000, and all 17,284 records.", size=16, align=PP_ALIGN.CENTER)
+# 11 Framework -------------------------------------------------------------------------------------
+s = new_slide("Research framework", 11, "One pipeline: clean and split once, give the same rows to the three models, evaluate them the same way, and explain each with SHAP.")
+picture(s, "fig_3_1_framework.png", 1.9, 1.6, w=9.5)
+text(s, 0.9, 6.3, 11.5, 0.6, "Same split and seed for all models.", size=18, align=PP_ALIGN.CENTER)
 
-# 11 Models ----------------------------------------------------------------------------------------
-s = new_slide("Models", 11, "Three different ways to predict. CatBoost needs training and tuning. TabPFN and TabFM only read the training rows as context and predict, so they need no tuning.")
-table(s, 0.65, 1.6, 12.0, [
-    ["Model", "How it works", "Training and tuning"],
-    ["CatBoost", "Many small symmetric decision trees, each correcting the previous ones", "Trained and tuned: grid search with 5-fold cross-validation"],
-    ["TabPFN", "Transformer reads training rows and the patient, predicts in one pass", "None; weights are fixed"],
-    ["TabFM", "Transformer with column and row attention, about 400 million parameters", "None; weights are fixed"],
-], [2.2, 6.0, 3.8], size=16, row_h=1.0)
-text(s, 0.65, 5.9, 12, 0.8, "TabPFN and TabFM will run on a Kaggle GPU; CatBoost and the statistics on a Mac.", size=16)
+# 12 Models ----------------------------------------------------------------------------------------
+s = new_slide("Models", 12, "CatBoost needs training and tuning. TabPFN and TabFM only read the training rows as context and predict, so they need no tuning.")
+table(s, 0.65, 1.8, 12.0, [
+    ["Model", "Tuning"],
+    ["CatBoost", "Trained and tuned (grid search, 5-fold cross-validation)"],
+    ["TabPFN", "None"],
+    ["TabFM", "None"],
+], [3.8, 8.2], size=22, row_h=0.9)
 
-# 12 Explain + evaluate ---------------------------------------------------------------------------
-s = new_slide("Explainability and evaluation", 12, "SHAP shows which features push each prediction up or down. Metrics are macro averages because the tiers are not equal in size. McNemar's test tells us if differences are real.")
-text(s, 0.6, 1.6, 5.9, 5.0, [
-    "SHAP for all three models:",
-    "TreeExplainer for CatBoost",
-    "KernelExplainer for TabPFN and TabFM",
-    "Global ranking and per-patient explanations",
-], size=20, bullet=False, space=12)
-text(s, 6.9, 1.6, 5.9, 5.0, [
-    "Evaluation on the same test set:",
-    "Accuracy, macro-precision, macro-recall, macro-F1",
-    "ROC-AUC (one-versus-rest)",
-    "Confusion matrix",
-    "McNemar's test and Wilson 95% intervals",
-], size=20, space=12)
-
-# 13 Expected outcomes -----------------------------------------------------------------------------
-s = new_slide("Expected outcomes", 13, "These are expectations to test, not results. The study can also show the opposite, and a difference counts only if McNemar's test supports it.")
-text(s, 0.8, 1.7, 11.7, 4.8, [
-    "A fair comparison of three model families on the same hair fall data.",
-    "A properly tuned CatBoost as a strong baseline.",
-    "TabPFN and TabFM competitive without tuning, especially with small training sets (to be tested).",
-    "The practical limits of TabFM recorded on a real health dataset.",
-    "SHAP explanations that agree with known causes: iron, stress, family history.",
-], size=22, bullet=True, space=16)
-
-# 14 Schedule -------------------------------------------------------------------------------------
-s = new_slide("Schedule: 4 months", 14, "Months 1 and 2 are the proposal work. Months 3 and 4 are the final work after approval, in the order of the methodology. Thank you; questions are welcome.")
-picture(s, "fig_4_1_gantt.png", 2.6, 1.4, h=5.4)
+# 13 Expected outcomes ------------------------------------------------------------------------------
+s = new_slide("Expected outcomes", 13, "These are expectations to test, not results. The study can also show the opposite.")
+text(s, 0.8, 1.9, 11.7, 4.5, [
+    "A fair comparison of the three models on the same data.",
+    "TabPFN and TabFM competitive without tuning (to be tested).",
+    "Explanations that agree with known causes: iron, stress, family history.",
+], size=26, bullet=True, space=26)
 
 # Thank you -----------------------------------------------------------------------------------------
 s = prs.slides.add_slide(BLANK)
