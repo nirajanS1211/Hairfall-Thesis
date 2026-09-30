@@ -18,7 +18,8 @@ GREY = RGBColor(0x59, 0x59, 0x59)
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 BLANK = prs.slide_layouts[6]
-TOTAL = 14
+TOTAL = 16
+COUNT = [1]
 
 
 def text(slide, x, y, w, h, paras, size=20, bold=False, align=PP_ALIGN.LEFT, color=BLACK, anchor=MSO_ANCHOR.TOP, bullet=False, space=8):
@@ -40,6 +41,8 @@ def line(slide, x, y, w):
 
 
 def new_slide(title, n, notes):
+    COUNT[0] += 1
+    n = COUNT[0]
     s = prs.slides.add_slide(BLANK)
     text(s, 0.6, 0.35, 12.1, 0.9, title, size=32, bold=True, anchor=MSO_ANCHOR.MIDDLE)
     line(s, 0.65, 1.25, 12.0)
@@ -92,6 +95,19 @@ text(s, 0.8, 3.2, 11.7, 1.7, "Comparing CatBoost, TabPFN, and TabFM for Explaina
 line(s, 3.2, 5.05, 7.0)
 text(s, 0.8, 5.25, 11.7, 1.6, ["Dissertation Proposal", "Submitted by: Nirajan Shahi (Roll no. 49/079)", "Supervised by: Asst. Prof. Jagadish Bhatta", "Central Department of Computer Science and Information Technology, Kirtipur, Kathmandu"], size=16, align=PP_ALIGN.CENTER, space=4)
 s.notes_slide.notes_text_frame.text = "Introduce the topic: we compare three models for predicting hair fall risk and explain each prediction."
+
+# Contents ------------------------------------------------------------------------------------------
+s = new_slide("Contents", 2, "This is the outline of the talk: the problem, what is known, the gap, the data and methods, what we expect, and the schedule.")
+table(s, 2.2, 1.6, 8.9, [
+    ["Topic", "Slides"],
+    ["1.  Project at a glance", "3"],
+    ["2.  Problem statement and objectives", "4 - 5"],
+    ["3.  Background and literature", "6 - 8"],
+    ["4.  Research gap", "9"],
+    ["5.  Data, framework, models, and evaluation", "10 - 13"],
+    ["6.  Expected outcomes", "14"],
+    ["7.  Schedule", "15"],
+], [7.0, 1.9], size=20, row_h=0.6)
 
 # 2 At a glance ------------------------------------------------------------------------------------
 s = new_slide("Project at a glance", 2, "One-slide summary. Problem, aim, data, method, expected result and time. Each point is explained on the next slides.")
@@ -222,6 +238,15 @@ text(s, 0.8, 1.7, 11.7, 4.8, [
 s = new_slide("Schedule: 4 months", 14, "Months 1 and 2 are the proposal work. Months 3 and 4 are the final work after approval, in the order of the methodology. Thank you; questions are welcome.")
 picture(s, "fig_4_1_gantt.png", 2.6, 1.4, h=5.4)
 
+# Thank you -----------------------------------------------------------------------------------------
+s = prs.slides.add_slide(BLANK)
+COUNT[0] += 1
+text(s, 0.8, 2.3, 11.7, 1.4, "Thank you", size=54, bold=True, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+line(s, 4.2, 3.9, 5.0)
+text(s, 0.8, 4.1, 11.7, 1.2, ["Questions are welcome", "Nirajan Shahi  |  Supervisor: Asst. Prof. Jagadish Bhatta"], size=20, align=PP_ALIGN.CENTER, space=8)
+text(s, 11.7, 7.0, 1.0, 0.35, f"{COUNT[0]} / {TOTAL}", size=11, color=GREY, align=PP_ALIGN.RIGHT)
+s.notes_slide.notes_text_frame.text = "Thank the panel and invite questions."
+
 prs.save(OUT / "Hairfall_Presentation.pptx")
 subprocess.run(["soffice", "--headless", "--convert-to", "pdf", "--outdir", str(OUT), str(OUT / "Hairfall_Presentation.pptx")], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-print("ok", len(prs.slides.__iter__.__self__._sldIdLst))
+print("ok", COUNT[0])
