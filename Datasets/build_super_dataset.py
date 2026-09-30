@@ -103,7 +103,13 @@ sup = pd.concat([
     r1.add_prefix("d1_"), r2.add_prefix("d2_"),
     s1.add_prefix("d1src_"), s2.drop(columns="d2_row").add_prefix("d2src_"),
 ], axis=1)
-sup.to_csv(OUT / "super_dataset.csv", index=False)
+# the file shows the Dataset 2 answers as Yes / No (like Dataset 2 itself); the pipeline below uses 1 / 0
+sup_out = sup.copy()
+for c in BINC:
+    for pre in ("d2_", "d2src_"):
+        sup_out[pre + c] = sup_out[pre + c].map({1: "Yes", 0: "No"})
+sup_out.to_csv(OUT / "super_dataset.csv", index=False)
+del sup_out
 # how much the randomised values differ from the source values (Dataset 1 / Dataset 2)
 cmp_rows = []
 for c in ["age"] + D1_NUM + ["hair_fall"]:

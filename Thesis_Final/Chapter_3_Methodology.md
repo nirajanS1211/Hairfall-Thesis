@@ -18,7 +18,7 @@ Two public datasets were the sources of the data.
 
 **Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
 
-One super dataset of about 200,000 records, which contains all the fields of Dataset 1 and Dataset 2, was compared with the two datasets, and this comparison produced the final dataset (data.csv) of 21,606 records that is used in this study.
+One super dataset of about 200,000 records, which contains all the fields of Dataset 1 and Dataset 2, was made. In the super dataset, age and gender were identified and the records were kept according to them. The super dataset was compared with Dataset 1 and Dataset 2, and this produced the final dataset (data.csv) of 21,606 records that is used in this study.
 
 **Table 3.1:** The source datasets, the super dataset, and the final dataset
 
