@@ -17,9 +17,10 @@ Applies to every chapter file in this folder. Based on the M.Sc. CSIT Dissertati
 - Justified alignment
 
 ## Citations and references
-- Citation: number in square brackets, e.g. [3] or [4, 8, 11]
-- References: numbered list, alphabetical by author's last name (syllabus rule)
-- Whether to use IEEE or alphabetical order is to be confirmed with the supervisor
+- Style: APA 7th edition (as requested by supervisor feedback), replacing the numbered [1] style
+- In-text: (Author, Year), (Author & Author, Year), or (Author et al., Year) for three or more authors
+- Reference list: alphabetical by first author's surname, not numbered, hanging indent of 0.5 inch, journal/book titles in italics
+- Every in-text citation must be in the reference list, and every reference must be cited in the text
 
 ## Figures and tables
 - Numbered by chapter: Figure 3.1, Table 4.2
