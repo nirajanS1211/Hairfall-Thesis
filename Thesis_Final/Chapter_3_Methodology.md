@@ -1,8 +1,10 @@
 # Chapter 3: Methodology
 
+Chapter 2 ended with five research gaps, and Chapter 1 set two objectives: to benchmark three models and to explain them. This chapter describes the data and the methods that answer them. It starts with the overall framework (Section 3.1), then the dataset and its preparation (Sections 3.2 and 3.3), the three models (3.4), the explainability method (3.5), the tools and environment (3.6 and 3.7), and the evaluation metrics (3.8). The dataset work and preprocessing have already been done, and the experiments will be carried out after the proposal is approved.
+
 ## 3.1 Research Framework
 
-The study follows one pipeline from data to explanation, shown in Figure 3.1. The final dataset is cleaned and split once. The same training and test rows are then given to three models, CatBoost, TabPFN, and TabFM. Their predictions are compared with the same metrics and statistical tests, and SHAP is applied to all three so that each predicted risk tier can be traced to its features.
+The study follows one pipeline from data to explanation, shown in Figure 3.1. The final dataset is cleaned and split once. The same training and test rows are then given to three models, CatBoost, TabPFN, and TabFM. To see how each model behaves when little data is available, each will also be given two smaller stratified subsets of the training rows (500 and 2,000 records) in addition to all 17,284. Their predictions are compared with the same metrics and statistical tests, and SHAP is applied to all three so that each predicted risk tier can be traced to its features.
 
 ![Figure 3.1: Overall research framework](figures/fig_3_1_framework.png)
 
@@ -124,7 +126,15 @@ Three models from different families are compared: a tuned gradient boosting mod
 
 **Figure 3.3:** CatBoost model (gradient boosted symmetric trees)
 
-CatBoost builds many small decision trees one after another, and each new tree is trained to correct the mistakes of the trees before it. All trees are symmetric, meaning that one split is used for a whole level of the tree, which makes the model fast and hard to overfit. The tree outputs are added to give one score for each risk tier, and a softmax turns the three scores into probabilities. Categorical answers are encoded using only earlier rows, which avoids target leakage (Prokhorenkova et al., 2018). CatBoost is the only model that is trained and tuned on the hair fall data.
+CatBoost builds many small decision trees one after another, and each new tree h_t is trained to correct the mistakes of the ensemble F_(t-1) built so far, by minimising
+
+$$\mathcal{L}^{(t)}=\sum_{i=1}^{n} l\big(y_i,\;F_{t-1}(x_i)+h_t(x_i)\big)+\Omega(h_t)\tag{i}$$
+
+where l is the multi-class cross-entropy loss, y_i is the true tier of record i, and Ω(h_t) is a penalty on the complexity of the new tree, which limits overfitting. All trees are symmetric, meaning that one split is used for a whole level of the tree, which makes the model fast and hard to overfit. The tree outputs are added to give one score s_k for each risk tier k, and a softmax turns the three scores into probabilities:
+
+$$P(y=k\mid x)=\frac{e^{s_k}}{\sum_{j=1}^{3}e^{s_j}}\tag{ii}$$
+
+Categorical answers are encoded using only earlier rows, which avoids target leakage (Prokhorenkova et al., 2018). CatBoost is the only model that will be trained and tuned on the hair fall data. Its tuning will be a grid search over tree depth and learning rate, scored by macro-F1 with 5-fold cross-validation on the training rows only, so that the test set stays untouched. The two foundation models will not be tuned.
 
 ### 3.4.2 TabPFN
 
@@ -132,7 +142,11 @@ CatBoost builds many small decision trees one after another, and each new tree i
 
 **Figure 3.4:** TabPFN model (in-context learning)
 
-TabPFN is a transformer that was trained beforehand on millions of synthetic tables (Hollmann et al., 2025). To predict, it receives the training rows together with their known risk tiers and the patient to be predicted. Every value is turned into a vector, and attention layers let the model relate the features of a row and relate the patient to the training rows. The class probabilities are produced in a single forward pass. No weights are changed, so nothing is trained on the hair fall data.
+TabPFN is a transformer that was trained beforehand on millions of synthetic tables (Hollmann et al., 2025). To predict, it receives the training rows together with their known risk tiers and the patient to be predicted. Every value is turned into a vector, and attention layers let the model relate the features of a row and relate the patient to the training rows. The class probabilities are produced in a single forward pass:
+
+$$P(y\mid x_{test},\,D_{train})=f_{\theta}\big(x_{test},\,D_{train}\big)\tag{iii}$$
+
+where D_train is the set of training rows with their tiers and f_θ is the pretrained network with fixed weights θ. No weights are changed, so nothing is trained on the hair fall data. TabFM works in the same way, with its own network in place of f_θ.
 
 ### 3.4.3 TabFM
 
@@ -150,14 +164,14 @@ TabFM is a model of about 400 million parameters developed by Google Research an
 
 SHAP splits a prediction into one contribution per feature, based on Shapley values from game theory (Lundberg & Lee, 2017). The contributions add up to the difference between the model's output and its average output:
 
-f(x) = φ₀ + φ₁ + φ₂ + … + φ₂₀
+$$f(x)=\phi_0+\sum_{j=1}^{20}\phi_j\tag{iv}$$
 
-where φ₀ is the average prediction and φⱼ is the contribution of feature j (for example iron or stress_level) to the predicted risk tier.
+where f(x) is the model output for a patient x, φ₀ is the average prediction and φⱼ is the contribution of feature j (for example iron or stress_level) to the predicted risk tier.
 
-- **CatBoost:** TreeExplainer, which uses the tree structure to compute exact values, applied to a sample of 1,000 test records.
-- **TabPFN and TabFM:** KernelExplainer, which estimates the values by repeatedly changing the inputs and predicting again. Because every repeat is a full forward pass of a large model, it is applied to a small sample of test records (a few tens) with a small k-means background set.
+- **CatBoost:** TreeExplainer, which uses the tree structure to compute exact values, will be applied to a sample of 1,000 test records.
+- **TabPFN and TabFM:** KernelExplainer, which estimates the values by repeatedly changing the inputs and predicting again. Because every repeat is a full forward pass of a large model, it will be applied to a small sample of test records (a few tens) with a small k-means background set.
 
-The results are a global ranking of the features (which matter most overall) and per-patient explanations (why this person received this tier). The rankings of the three models are compared with each other and with the known biology from Chapter 2.
+The results will be a global ranking of the features (which matter most overall) and per-patient explanations (why this person received this tier). The rankings of the three models will be compared with each other and with the known biology from Chapter 2.
 
 ## 3.6 Tools and Technologies
 
@@ -190,20 +204,43 @@ The work is divided between two environments (Figure 3.7).
 
 **Figure 3.7:** Experimental environment
 
-**Local machine.** Data preparation, the split, CatBoost tuning and training, the statistical tests, and the result tables and figures are run on an Apple-silicon Mac (macOS, 17.2 GB memory, Apple GPU) with Python 3.12. The steps are run one by one in a local lab application that stores the data in PostgreSQL and the outputs in MinIO, so every run is saved and can be reopened.
+**Local machine.** Data preparation and the split have already been done on an Apple-silicon Mac (macOS, 17.2 GB memory, Apple GPU) with Python 3.12, and CatBoost tuning and training, the statistical tests, and the result tables and figures will be run there as well. The steps are run one by one in a local lab application that stores the data in PostgreSQL and the outputs in MinIO, so every run is saved and can be reopened.
 
-**Kaggle notebooks.** TabFM and TabPFN need a GPU to make their predictions in reasonable time, and TabFM is the largest model (about 6.5 GB of weights). These runs are therefore done in Kaggle notebooks, which offer more GPU capacity than Google Colab. The train and test files created on the local machine are uploaded to the notebook, and the metrics and predictions are downloaded back for comparison. SHAP for the two foundation models is also run there.
+**Kaggle notebooks.** TabFM and TabPFN need a GPU to make their predictions in reasonable time, and TabFM is the largest model (about 6.5 GB of weights). These runs will therefore be done in Kaggle notebooks, which offer more GPU capacity than Google Colab. The train and test files created on the local machine are uploaded to the notebook, and the metrics and predictions are downloaded back for comparison. SHAP for the two foundation models will also be run there.
 
 To keep the comparison fair, all three models use the same split and the same random seed (42), and the environment of every session (Python, GPU, memory, package versions) is recorded and reported.
 
 ## 3.8 Performance Evaluation Metrics
 
-Model performance is measured on the same held-out test set for every model. Because the three risk tiers are not equally common (45%, 35%, 20%), the class-averaged (macro) versions of the metrics are used, so that the smaller High tier counts as much as the Low tier. Here TP, FP, and FN are the true positives, false positives, and false negatives of one class, and K = 3 is the number of classes.
+Model performance will be measured on the same held-out test set for every model. Because the three risk tiers are not equally common (45%, 35%, 20%), the class-averaged (macro) versions of the metrics are used, so that the smaller High tier counts as much as the Low tier. Here TP_k, FP_k, and FN_k are the true positives, false positives, and false negatives of tier k. Each equation is numbered on the right and cited in the text as Equation (i), (ii), and so on.
 
-- **Accuracy:** the share of test records whose tier is predicted correctly. Accuracy = (number correct) / (number of test records).
-- **Macro-precision:** Precision_k = TP_k / (TP_k + FP_k) for each class, averaged over the three classes. It shows how trustworthy a predicted tier is.
-- **Macro-recall:** Recall_k = TP_k / (TP_k + FN_k) for each class, averaged over the three classes. It shows how many patients of a tier are found.
-- **Macro-F1:** the harmonic mean of precision and recall for each class, averaged over the classes: F1_k = 2 × Precision_k × Recall_k / (Precision_k + Recall_k).
-- **ROC-AUC:** the area under the ROC curve for each tier against the other two (one-versus-rest), averaged over the three tiers. It measures how well the predicted probabilities rank patients, independent of any cut-off.
+**Accuracy** is the share of test records whose tier is predicted correctly, where N is the number of test records:
+
+$$\text{Accuracy}=\frac{TP_1+TP_2+TP_3}{N}\tag{v}$$
+
+**Precision** shows how trustworthy a predicted tier is. It is computed for each tier k and then averaged over the three tiers (macro-precision):
+
+$$\text{Precision}_k=\frac{TP_k}{TP_k+FP_k},\qquad \text{Macro-Precision}=\frac{1}{3}\sum_{k=1}^{3}\text{Precision}_k\tag{vi}$$
+
+**Recall** shows how many patients of a tier are found (macro-recall is the average over the three tiers):
+
+$$\text{Recall}_k=\frac{TP_k}{TP_k+FN_k},\qquad \text{Macro-Recall}=\frac{1}{3}\sum_{k=1}^{3}\text{Recall}_k\tag{vii}$$
+
+**Macro-F1** is the harmonic mean of precision and recall for each tier, averaged over the tiers:
+
+$$F1_k=\frac{2\,\text{Precision}_k\,\text{Recall}_k}{\text{Precision}_k+\text{Recall}_k},\qquad \text{Macro-F1}=\frac{1}{3}\sum_{k=1}^{3}F1_k\tag{viii}$$
+
+**ROC-AUC** is the area under the ROC curve of each tier against the other two (one-versus-rest), averaged over the three tiers. It measures how well the predicted probabilities rank patients, independent of any cut-off:
+
+$$\text{Macro ROC-AUC}=\frac{1}{3}\sum_{k=1}^{3}AUC_k\tag{ix}$$
+
 - **Confusion matrix:** shows which tiers are mixed up. This matters here because the tiers are ordered, and confusing Low with High is a worse mistake than confusing neighbouring tiers.
-- **Statistical significance:** McNemar's test is applied to every pair of models on the test set, to decide whether a difference in the number of correct predictions is larger than chance, and the accuracy of each model is given with a 95% Wilson confidence interval.
+**Statistical significance.** McNemar's test will be applied to every pair of models on the test set, to decide whether a difference in the number of correct predictions is larger than chance. Let b be the number of records that only the first model predicts correctly and c the number that only the second model predicts correctly:
+
+$$\chi^2=\frac{(|b-c|-1)^2}{b+c}\tag{x}$$
+
+with one degree of freedom (the −1 is the continuity correction). The accuracy of each model is also given with a 95% Wilson confidence interval, where p̂ is the accuracy, n is the number of test records, and z = 1.96:
+
+$$\frac{\hat p+\dfrac{z^2}{2n}\pm z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}}\tag{xi}$$
+
+The next chapter states what this study expects these methods to show and sets out the schedule for carrying them out.

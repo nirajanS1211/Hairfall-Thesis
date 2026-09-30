@@ -22,9 +22,16 @@ Applies to every chapter file in this folder. Based on the M.Sc. CSIT Dissertati
 - Reference list: alphabetical by first author's surname, not numbered, hanging indent of 0.5 inch, journal/book titles in italics
 - Every in-text citation must be in the reference list, and every reference must be cited in the text
 
+## Equations
+- Every equation is on its own line, centred, with its number in Roman numerals at the right edge: (i), (ii), (iii)...
+- Numbering runs on continuously through the whole document
+- In the text: "Equation (iv)"
+
 ## Figures and tables
 - Numbered by chapter: Figure 3.1, Table 4.2
 - Every one is referred to in the text
+- Figure caption below the figure, table caption above the table, both left-aligned
+- Gantt chart (working schedule) is drawn as a figure, not a table
 
 ## Report structure (syllabus)
 Title page, Abstract (max 500 words), Acknowledgements, Table of contents, Introduction, Related work, Methodology, Description of the work, Discussion and Conclusions, References, Appendices.

@@ -1,5 +1,7 @@
 # Chapter 2: Background Study and Literature Review
 
+This chapter builds the case for the study. Section 2.1 explains what causes hair loss and how it affects people, which is the reason a risk model needs both blood measurements and lifestyle information. Section 2.2 reviews the earlier studies that tried to predict hair loss and the machine learning methods this study uses, and Section 2.2.1 ends with the research gaps that the objectives in Chapter 1 respond to.
+
 ## 2.1 Background Study
 
 Human hair grows in a repeating cycle of three phases: a growth phase (anagen), a short regression phase (catagen), and a resting phase (telogen) after which the hair is shed. Losing some hair every day is therefore normal. Hair loss becomes a medical problem when this cycle is disturbed, so that too many follicles enter the resting phase early or the follicles shrink and stop producing thick hair. Clinically, the most common forms are androgenetic alopecia (pattern hair loss driven by hormones and inheritance), telogen effluvium (a temporary but heavy shedding that follows a physical or emotional trigger), and alopecia areata (patchy loss caused by an autoimmune reaction).
@@ -65,17 +67,17 @@ Leema et al. (2025) collected questionnaire data from 750 university students an
 
 Reading the studies together shows five gaps, and each one explains a choice made in this project.
 
-1. **Only classical algorithms were compared on hair loss tables.** The survey-based studies used Logistic Regression, SVM, KNN, Random Forest, and XGBoost (Khatun et al., 2022; Sai et al., 2023; Siami & Azis, 2025). The reported accuracies range from about 50% to 100% on different datasets, so there is no reliable picture of which type of model suits hair loss data. This project therefore compares different families of models on one dataset with one fixed test set.
+1. **Only classical algorithms were compared on hair loss tables.** The survey-based studies used Logistic Regression, SVM, KNN, Random Forest, and XGBoost (Khatun et al., 2022; Sai et al., 2023; Siami & Azis, 2025). The reported accuracies range from about 50% to 100% on different datasets, so there is no reliable picture of which type of model suits hair loss data. This project therefore compares different families of models on one dataset with one fixed split.
 
 2. **CatBoost was never properly tuned for hair loss.** CatBoost was designed for categorical features, which dominate survey data, yet it appears only once as a side comparison with a low score (Kumar et al., 2025). This project tunes CatBoost carefully so that it acts as a strong baseline.
 
-3. **Tabular foundation models have not been tested on hair loss or on health survey data.** TabPFN and TabFM were evaluated on general benchmarks (Hollmann et al., 2025; Kong et al., 2026), and the only independent check of TabFM used TabArena datasets (Pandey, 2026). Whether such models can match a tuned boosted-tree model on a health table is not known. This is the reason TabPFN and TabFM are included and trained on the same data.
+3. **Tabular foundation models have not been tested on hair loss or on health survey data.** TabPFN and TabFM were evaluated on general benchmarks (Hollmann et al., 2025; Kong et al., 2026), and the only independent check of TabFM used TabArena datasets (Pandey, 2026). Whether such models can match a tuned boosted-tree model on a health table is not known. This is the reason TabPFN and TabFM are included and given the same data.
 
 4. **TabFM is very new and its practical limits are unclear.** The independent reproduction found software defects and memory failures on larger tables (Pandey, 2026). Running TabFM on a real dataset and reporting its cost and limitations is a contribution in itself.
 
 5. **Explanations are not compared across models.** The hair loss studies report accuracy and rarely explain individual predictions, and none explains a boosted-tree model and foundation models side by side. This project applies SHAP (Lundberg & Lee, 2017) to all three models so the clinical plausibility of their explanations can be compared.
 
-Taken together, the gaps lead to the aim of this study: to benchmark CatBoost, TabPFN, and TabFM on the same hair fall risk dataset, and to explain every model with SHAP.
+Taken together, the gaps lead to the two objectives of this study: to benchmark CatBoost, TabPFN, and TabFM on the same hair fall risk dataset (Objective 1), and to explain every model with SHAP (Objective 2). Chapter 3 describes the dataset and methods that will be used to do this.
 
 ## References
 
