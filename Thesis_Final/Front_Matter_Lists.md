@@ -82,7 +82,7 @@ Table 2.1: Summary of reviewed studies
 
 Table 3.1: The source datasets, the super dataset, and the final dataset
 
-Table 3.2: Where each column of the final dataset comes from
+Table 3.2: Source of each column of the final dataset in Dataset 1, Dataset 2, and the super dataset
 
 Table 3.3: Risk factors in Dataset 2 and in the final dataset (percentage points)
 

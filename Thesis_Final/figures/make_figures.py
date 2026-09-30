@@ -41,7 +41,7 @@ def save(fig, name):
 
 # ---------------- Figure 3.1: overall framework ----------------
 fig, ax = canvas(12.4, 5.2)
-box(ax, 0.2, 2.1, 1.8, 1.0, "Final dataset\n(data.csv)\n21,606 records", MID, bold=True)
+box(ax, 0.2, 2.1, 1.8, 1.0, "Final dataset\n21,606 records", MID, bold=True)
 box(ax, 2.4, 2.1, 2.2, 1.0, "Preprocessing\nremove identifiers,\nencode gender", LIGHT)
 box(ax, 5.0, 2.1, 1.7, 1.0, "Stratified split\n80 % train\n20 % test", LIGHT)
 box(ax, 7.3, 3.75, 2.1, 0.85, "CatBoost\n(tuned and trained)", "white")
@@ -63,7 +63,7 @@ box(ax, 0.2, 2.6, 2.7, 1.5, "Dataset 1 (Kaggle)\n100,000 rows\n13 columns", MID,
 box(ax, 0.2, 0.3, 2.7, 1.5, "Dataset 2 (Mendeley)\n716 survey answers\n14 columns", MID, fs=FS - 1)
 box(ax, 3.6, 1.45, 2.6, 1.6, "Super dataset\nabout 200,000 rows\nmany fields; age and\ngender identified", LIGHT, bold=True, fs=FS - 1)
 box(ax, 6.9, 1.45, 2.3, 1.6, "Comparison\nwith Dataset 1\nand Dataset 2", "white", fs=FS - 1)
-box(ax, 9.9, 1.45, 1.5, 1.6, "Final\ndata.csv\n21,606\nrecords", MID, bold=True, fs=FS - 1)
+box(ax, 9.9, 1.45, 1.5, 1.6, "Final\ndataset\n21,606\nrecords", MID, bold=True, fs=FS - 1)
 arrow(ax, 2.9, 3.3, 3.6, 2.7); arrow(ax, 2.9, 1.3, 3.6, 1.9)
 arrow(ax, 6.2, 2.25, 6.9, 2.25); arrow(ax, 9.2, 2.25, 9.9, 2.25)
 save(fig, "fig_3_2_dataset_link.png")
@@ -127,14 +127,14 @@ save(fig, "fig_3_5_tabfm.png")
 
 # ---------------- Figure 3.6: SHAP workflow ----------------
 fig, ax = canvas(11, 4.8)
-box(ax, 0.2, 1.9, 1.9, 1.2, "Trained model\n(CatBoost / TabPFN /\nTabFM)", MID)
+box(ax, 0.2, 1.9, 2.1, 1.2, "Trained model:\nCatBoost,\nTabPFN, TabFM", MID)
 box(ax, 2.6, 3.3, 2.3, 1.0, "CatBoost:\nTreeExplainer (exact)", LIGHT)
 box(ax, 2.6, 0.7, 2.3, 1.0, "TabPFN, TabFM:\nKernelExplainer\n(repeated predictions)", LIGHT)
-arrow(ax, 2.1, 2.7, 2.6, 3.7); arrow(ax, 2.1, 2.3, 2.6, 1.3)
+arrow(ax, 2.3, 2.7, 2.6, 3.7); arrow(ax, 2.3, 2.3, 2.6, 1.3)
 box(ax, 5.4, 1.9, 2.0, 1.2, "SHAP value of\neach feature for\neach patient", "white")
 arrow(ax, 4.9, 3.8, 5.4, 2.8); arrow(ax, 4.9, 1.2, 5.4, 2.2)
-box(ax, 8.0, 3.3, 2.8, 1.0, "Global ranking\n(which features matter most)", MID)
-box(ax, 8.0, 0.7, 2.8, 1.0, "Per-patient explanation\n(why this risk tier)", MID)
+box(ax, 8.0, 3.3, 2.8, 1.0, "Global ranking\n(which features\nmatter most)", MID)
+box(ax, 8.0, 0.7, 2.8, 1.0, "Per-patient\nexplanation\n(why this tier)", MID)
 arrow(ax, 7.4, 2.8, 8.0, 3.7); arrow(ax, 7.4, 2.2, 8.0, 1.3)
 save(fig, "fig_3_6_shap.png")
 

@@ -69,7 +69,7 @@ def fmt(p, align=None, space_after=12, spacing=1.5, before=0, keep_next=False, l
         pf.left_indent = Inches(hanging); pf.first_line_indent = Inches(-hanging)
 
 SUB_LEFT = {"D", "x", "h", "F", "y", "s", "f", "TP", "FP", "FN", "Precision", "Recall", "F1", "AUC", "p"}
-SUB_RE = re.compile(r"(?<![A-Za-z0-9_])([A-Za-z][A-Za-z0-9]*)_(\([^)]+\)|[A-Za-zθ0-9]{1,5})(?![A-Za-z0-9_])")
+SUB_RE = re.compile(r"(?<![A-Za-z0-9_])([A-Za-zφ][A-Za-z0-9]*)_(\([^)]+\)|[A-Za-zθ0-9]{1,5})(?![A-Za-z0-9_])")
 
 def add_text(p, text, size=12, bold=False, italic=False):
     """Adds text with **bold**, *italic*, subscripts (x_k) and yellow [CONFIRM ...] highlights."""
@@ -95,7 +95,7 @@ def _plain(p, s, size, bold, italic):
         pos = 0
         for m in SUB_RE.finditer(chunk):
             left, right = m.group(1), m.group(2)
-            if not (len(left) <= 2 or left in SUB_LEFT): continue
+            if left in ("d1", "d2") or not (len(left) <= 2 or left in SUB_LEFT): continue
             if right.startswith("("): right = right[1:-1]
             emit(chunk[pos:m.start()]); emit(left); emit(right, sub=True); pos = m.end()
         emit(chunk[pos:])
@@ -160,30 +160,32 @@ class Builder:
         fmt(p, WD_ALIGN_PARAGRAPH.CENTER, space_after=6, spacing=1.0, keep_next=True)
 
     def equation(self, latex):
+        """Equation centred; a dotted leader runs from the equation to its number (i), (ii), ... at the right edge."""
         from docx.enum.table import WD_ALIGN_VERTICAL
         tag = re.search(r"\\tag\{([^}]*)\}", latex).group(1)
         self.eq_n += 1
         path, w, h = render_equation(latex, self.eq_n)
+        widths = [0.15, TEXT_W - 1.45, 1.3]
         t = self.doc.add_table(rows=1, cols=3); t.autofit = False; t.alignment = WD_TABLE_ALIGNMENT.CENTER
-        widths = [0.65, TEXT_W - 1.3, 0.65]
         for col, wd in zip(t.columns, widths): col.width = Inches(wd)
         for c, wd in zip(t.rows[0].cells, widths):
             c.width = Inches(wd); c.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        pm = t.rows[0].cells[1].paragraphs[0]
         maxw = widths[1] - 0.1
-        if w > maxw: pm.add_run().add_picture(str(path), width=Inches(maxw))
-        else: pm.add_run().add_picture(str(path))
+        pm = t.rows[0].cells[1].paragraphs[0]
+        pm.add_run().add_picture(str(path), width=Inches(min(w, maxw)))
         fmt(pm, WD_ALIGN_PARAGRAPH.CENTER, space_after=0, spacing=1.0)
-        pn = t.rows[0].cells[2].paragraphs[0]; r = pn.add_run(f"({tag})"); set_font(r, 12)
-        fmt(pn, WD_ALIGN_PARAGRAPH.RIGHT, space_after=0, spacing=1.0)
-        pe = t.rows[0].cells[0].paragraphs[0]; fmt(pe, None, space_after=0, spacing=1.0)
+        pn = t.rows[0].cells[2].paragraphs[0]
+        pn.paragraph_format.tab_stops.add_tab_stop(Inches(widths[2] - 0.2), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
+        r = pn.add_run("\t(" + tag + ")"); set_font(r, 12)
+        fmt(pn, WD_ALIGN_PARAGRAPH.LEFT, space_after=0, spacing=1.0)
+        fmt(t.rows[0].cells[0].paragraphs[0], None, space_after=0, spacing=1.0)
         sp = self.doc.add_paragraph(); fmt(sp, None, space_after=6, spacing=1.0)
 
     def table(self, rows):
-        ncol = len(rows[0]); size = 12 if ncol <= 4 else 10.5
+        ncol = len(rows[0]); size = 12 if ncol <= 4 else 9.5
         t = self.doc.add_table(rows=len(rows), cols=ncol); t.style = "Table Grid"; t.alignment = WD_TABLE_ALIGNMENT.CENTER
         t.autofit = False
-        weights = [min(max(len(r[c]) for r in rows), 34) + 6 for c in range(ncol)]
+        weights = [min(max(len(r[c]) for r in rows), 30) + 1 for c in range(ncol)]
         widths = [TEXT_W * w / sum(weights) for w in weights]
         for col, wd in zip(t.columns, widths): col.width = Inches(wd)
         for i, row in enumerate(rows):
