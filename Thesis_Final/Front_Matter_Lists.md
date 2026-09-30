@@ -92,14 +92,12 @@ Table 3.2: Columns of the final dataset and where they come from
 | AutoML | Automated Machine Learning |
 | CNN | Convolutional Neural Network |
 | COVID-19 | Coronavirus Disease 2019 |
-| DT | Decision Tree |
 | EHR | Electronic Health Record |
-| GB | Gradient Boosting |
+| FN | False Negatives |
+| FP | False Positives |
 | GPU | Graphics Processing Unit |
 | KNN | k-Nearest Neighbours |
-| LR | Logistic Regression |
 | LSTM | Long Short-Term Memory |
-| RF | Random Forest |
 | ROC | Receiver Operating Characteristic |
 | ROC-AUC | Area Under the Receiver Operating Characteristic Curve |
 | SHAP | Shapley Additive Explanations |
@@ -107,4 +105,5 @@ Table 3.2: Columns of the final dataset and where they come from
 | TabFM | Tabular Foundation Model |
 | TabPFN | Tabular Prior-Data Fitted Network |
 | TFT | Temporal Fusion Transformer |
+| TP | True Positives |
 | XGBoost | Extreme Gradient Boosting |

@@ -2,7 +2,7 @@
 
 ## 3.1 Research Framework
 
-The study follows one pipeline from data to explanation, shown in Figure 3.1. The final dataset is cleaned and split once. The same training and test rows are then given to three models, CatBoost, TabPFN, and TabFM. To see how each model behaves when little data is available, each will also be given two smaller stratified subsets of the training rows (500 and 2,000 records) in addition to all 17,284. Their predictions are compared with the same metrics and statistical tests, and SHAP is applied to all three so that each predicted risk tier can be traced to its features.
+The study follows one pipeline from data to explanation, shown in Figure 3.1. The final dataset will be cleaned and split once. The same training and test rows will then be given to three models, CatBoost, TabPFN, and TabFM. To see how each model behaves when little data is available, each will also be given two smaller stratified subsets of the training rows (500 and 2,000 records) in addition to all 17,284. Their predictions will be compared with the same metrics and statistical tests, and SHAP will be applied to all three so that each predicted risk tier can be traced to its features.
 
 ![Figure 3.1: Overall research framework](figures/fig_3_1_framework.png)
 
@@ -12,13 +12,13 @@ The study follows one pipeline from data to explanation, shown in Figure 3.1. Th
 
 ### 3.2.1 Source datasets and how they are related
 
-Two public datasets were the sources of the data.
+Two public datasets are the sources of the data.
 
 **Dataset 1** (Dhankour, 2023) has 100,000 records and 13 columns: age, gender, ten numeric measurement columns (total_protein, total_keratine, hair_texture, vitamin, manganese, iron, calcium, body_water_content, stress_level, and liver_data), and the target hair_fall with values from 0 to 5.
 
-**Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
+**Dataset 2** (Arnob et al., 2024) is a survey of 716 people with 14 columns: a timestamp, the name of the respondent (to be removed before use), age, gender, whether the person has a hair fall problem, eight yes/no questions (family history of hair fall, chronic illness, staying up late, sleep disturbance, water as a reason, use of chemicals on hair, anemia, and stress), and food habit.
 
-A super dataset of 200,000 records was taken. It contains all the fields of Dataset 1 and Dataset 2 and many additional fields (for example age group, hair fall tier, and number of risk factors). In the super dataset, age and gender were identified and the records were kept according to them. It was compared with Dataset 1 and Dataset 2, and this gave the final dataset of 21,606 records that is used in this study.
+A super dataset of 200,000 records will be taken. It contains all the fields of Dataset 1 and Dataset 2 and many additional fields (for example age group, hair fall tier, and number of risk factors). In the super dataset, age and gender will be identified and the records kept according to them. It will be compared with Dataset 1 and Dataset 2, and this will give the final dataset of 21,606 records to be used in this study.
 
 **Table 3.1:** The source datasets, the super dataset, and the final dataset
 
@@ -71,14 +71,14 @@ The final dataset has 21,606 records with 20 features and one target.
 
 ## 3.3 Data Preprocessing
 
-The following steps were applied to the final dataset before any model was run.
+The following steps will be applied to the final dataset before any model is run.
 
-1. **Removal of identifiers.** The id column and the full_name column (which holds personal names in encoded form) were removed, because they do not describe health and could create false patterns. After removal, 20 features remain.
-2. **Quality checks.** The dataset has no missing values and no duplicate records (ignoring id).
-3. **Clinical range check.** Each blood and body measurement was compared with its normal reference range and with limits that are physiologically impossible. No values were impossible, so no record was removed. Values outside the normal range were kept on purpose, because they are the information that indicates risk.
-4. **Encoding.** Gender was coded 0 = Female, 1 = Male, 2 = Other. The yes/no columns were already 0/1, and the target was already coded 0, 1, 2.
-5. **Stratified split.** The records were split 80% to 20% with the class shares kept equal (random seed 42): 17,284 training records and 4,322 test records, with 45% Low, 35% Moderate, and 20% High in both parts.
-6. **Training sizes.** Three training sizes were prepared from the 17,284 training records: 500 records, 2,000 records, and all 17,284. The smaller sets were drawn with the class shares kept equal (45% Low, 35% Moderate, 20% High). The same 4,322 test records are used for every size and every model.
+1. **Removal of identifiers.** The id column and the full_name column (which holds personal names in encoded form) will be removed, because they do not describe health and could create false patterns. This leaves 20 features.
+2. **Quality checks.** The dataset will be checked for missing values and duplicate records (ignoring id).
+3. **Clinical range check.** Each blood and body measurement will be compared with its normal reference range and with limits that are physiologically impossible. Only impossible values will be removed. Values outside the normal range will be kept on purpose, because they are the information that indicates risk.
+4. **Encoding.** Gender will be coded 0 = Female, 1 = Male, 2 = Other. The yes/no columns are already 0/1, and the target is already coded 0, 1, 2.
+5. **Stratified split.** The records will be split 80% to 20% with the class shares kept equal (random seed 42), giving 17,284 training records and 4,322 test records, with 45% Low, 35% Moderate, and 20% High in both parts.
+6. **Training sizes.** Three training sizes will be prepared from the 17,284 training records: 500 records, 2,000 records, and all 17,284. The smaller sets will be drawn with the class shares kept equal (45% Low, 35% Moderate, 20% High). The same 4,322 test records will be used for every size and every model.
 
 ## 3.4 Model Selection
 

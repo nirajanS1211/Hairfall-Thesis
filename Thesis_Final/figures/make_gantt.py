@@ -1,5 +1,5 @@
 """Draws the Gantt chart for Section 4.2. Run: python make_gantt.py
-Change MONTHS or the task list below to adjust the schedule."""
+Only the proposal is completed; the remaining work is planned over MONTHS months after approval."""
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -8,70 +8,56 @@ from matplotlib.patches import Rectangle
 plt.rcParams["font.family"] = "serif"
 plt.rcParams["font.serif"] = ["Times New Roman", "Times", "DejaVu Serif"]
 
-MONTHS = 6
-TODAY = 2.0  # end of month 2 = proposal submission
+MONTHS = 3
+PRE = 0.6  # width of the "done" column before Month 1
 
-# (task, start, end, done)   start/end are in months from the beginning (0 to MONTHS)
-done_tasks = [
-    ("Problem formulation", 0.0, 1.0),
-    ("Literature review and gap", 0.5, 2.0),
-    ("Dataset preparation", 1.0, 2.0),
-    ("Preprocessing and split", 1.5, 2.0),
-    ("Lab environment and code", 1.0, 2.0),
-]
+done_tasks = [("Proposal", -PRE, 0.0)]
 plan_tasks = [
-    ("CatBoost tuning and training", 2.0, 3.0),
-    ("TabPFN and TabFM (Kaggle)", 2.5, 4.0),
-    ("Training-size experiment", 3.0, 4.5),
-    ("SHAP explanations", 3.5, 5.0),
-    ("Metrics and McNemar test", 4.5, 5.5),
-    ("Results and discussion", 5.0, 6.0),
-    ("Thesis writing and defence", 4.0, 6.0),
+    ("Data preprocessing and split", 0.0, 0.5),
+    ("CatBoost tuning and training", 0.3, 1.2),
+    ("TabPFN and TabFM (Kaggle)", 0.8, 1.8),
+    ("Training-size experiment", 1.3, 2.1),
+    ("SHAP explanations", 1.6, 2.4),
+    ("Metrics and McNemar test", 2.0, 2.6),
+    ("Results and discussion", 2.3, 3.0),
+    ("Thesis writing and defence", 1.8, 3.0),
 ]
 rows = [("done",) + t for t in done_tasks] + [("plan",) + t for t in plan_tasks]
 n = len(rows)
-gap = 0.8  # extra space between the two groups
-
-fig, ax = plt.subplots(figsize=(6.8, 6.4))
-ylab, y = [], 0
-ypos = []
+gap = 0.6
+ypos, y = [], 0
 for i, r in enumerate(rows):
     if i == len(done_tasks):
         y += gap
-    ypos.append(y)
-    y += 1
+    ypos.append(y); y += 1
 total_h = y
 
-for (kind, name, s, e), yy in zip(rows, ypos):
+fig, ax = plt.subplots(figsize=(7.0, 5.6))
+ylab = []
+for k, ((kind, name, s, e), yy) in enumerate(zip(rows, ypos)):
     yc = total_h - yy - 0.5
     if kind == "done":
         ax.add_patch(Rectangle((s, yc - 0.3), e - s, 0.6, fc="black", ec="black"))
     else:
         ax.add_patch(Rectangle((s, yc - 0.3), e - s, 0.6, fc="white", ec="black", hatch="////", lw=1.2))
-    ylab.append((yc, f"{rows.index((kind, name, s, e)) + 1}. {name}"))
-
+    ylab.append((yc, f"{k + 1}. {name}"))
 ax.set_yticks([a for a, _ in ylab]); ax.set_yticklabels([b for _, b in ylab], fontsize=12.5)
-ax.set_xlim(0, MONTHS); ax.set_ylim(0, total_h + 0.3)
-ax.set_xticks([i + 0.5 for i in range(MONTHS)]); ax.set_xticklabels([f"Month {i+1}" for i in range(MONTHS)], fontsize=12.5)
+ax.set_xlim(-PRE, MONTHS); ax.set_ylim(0, total_h + 0.3)
+ax.set_xticks([-PRE / 2] + [i + 0.5 for i in range(MONTHS)])
+ax.set_xticklabels(["Done"] + [f"Month {i + 1}" for i in range(MONTHS)], fontsize=12.5)
 ax.xaxis.tick_top()
-for i in range(MONTHS + 1):
-    ax.axvline(i, color="#999999", lw=0.8)
+for x in [-PRE] + list(range(MONTHS + 1)):
+    ax.axvline(x, color="#999999", lw=0.8)
 for a, _ in ylab:
     ax.axhline(a - 0.5, color="#dddddd", lw=0.6)
-ax.axvline(TODAY, color="black", lw=1.6, ls="--")
-ax.text(TODAY + 0.05, 0.05, "Proposal\nsubmission", fontsize=11.5, va="bottom", style="italic")
-
-# group headings at left inside the plot
-ax.text(-0.02, total_h - 0.02, "", fontsize=1)
+ax.axvline(0, color="black", lw=1.6, ls="--")
 for spine in ("right", "bottom"):
     ax.spines[spine].set_visible(False)
 ax.tick_params(length=0)
-
-# legend below
-lx = 0.3
-ax.add_patch(Rectangle((lx, -1.1), 0.5, 0.4, fc="black", ec="black", clip_on=False))
-ax.text(lx + 0.6, -0.9, "Completed", fontsize=11.5, va="center")
-ax.add_patch(Rectangle((lx + 1.9, -1.1), 0.5, 0.4, fc="white", ec="black", hatch="////", clip_on=False))
-ax.text(lx + 2.5, -0.9, "Planned after approval", fontsize=11.5, va="center")
+lx = -0.5
+ax.add_patch(Rectangle((lx, -1.15), 0.3, 0.4, fc="black", ec="black", clip_on=False))
+ax.text(lx + 0.4, -0.95, "Completed", fontsize=11.5, va="center")
+ax.add_patch(Rectangle((lx + 1.3, -1.15), 0.3, 0.4, fc="white", ec="black", hatch="////", clip_on=False))
+ax.text(lx + 1.7, -0.95, "Planned after approval", fontsize=11.5, va="center")
 fig.savefig("fig_4_1_gantt.png", dpi=220, bbox_inches="tight", facecolor="white")
 print("ok")
